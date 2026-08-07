@@ -107,6 +107,12 @@ export const authService = {
     return response.data;
   },
 
+  async googleLogin(data: { token: string }): Promise<AuthResponse> {
+    console.log('[AuthService] POST /auth/google-login', data);
+    const response = await apiClient.post<AuthResponse>('/auth/google-login', data);
+    return response.data;
+  },
+
   async register(data: RegisterRequest): Promise<AuthResponse> {
     console.log('[AuthService] POST /auth/register', { ...data, password: '***' });
     try {

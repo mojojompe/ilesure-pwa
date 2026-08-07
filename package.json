@@ -12,7 +12,7 @@
   "dependencies": {
     "@hugeicons/react": "^0.3.0",
     "@paystack/inline-js": "^2.22.9",
-    "@react-oauth/google": "^0.12.1",
+    "@react-oauth/google": "^0.12.2",
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
     "react": "^18.3.1",
