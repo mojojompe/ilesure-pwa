@@ -22,13 +22,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={clsx('flex flex-col w-full', containerClassName)}>
       {label && (
-        <label className="mb-1.5 text-sm font-semibold text-textPrimary">
+        <label className="mb-1.5 text-sm font-semibold text-text-primary">
           {label}
         </label>
       )}
       <div className="relative flex items-center">
         {leftIcon && (
-          <div className="absolute left-4 flex items-center justify-center text-textSecondary z-10">
+          <div className="absolute left-4 flex items-center justify-center text-text-secondary z-10">
             {leftIcon}
           </div>
         )}
@@ -36,11 +36,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         <input
           ref={ref}
           className={clsx(
-            'w-full bg-surfaceLight border border-borderLight rounded-2xl px-4 py-3.5 text-sm text-textPrimary transition-colors outline-none focus:border-btn-primary focus:bg-white',
+            'w-full bg-soft-surface border border-border-light rounded-2xl px-4 py-3.5 text-sm text-text-primary transition-colors outline-none focus:border-primary focus:bg-white',
             leftIcon ? 'pl-11' : '',
             rightIcon ? 'pr-11' : '',
             error ? 'border-status-error focus:border-status-error' : '',
-            disabled ? 'opacity-50 cursor-not-allowed bg-borderLight' : '',
+            disabled ? 'opacity-50 cursor-not-allowed bg-border-light' : '',
             className
           )}
           disabled={disabled}
@@ -48,7 +48,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         />
 
         {rightIcon && (
-          <div className="absolute right-4 flex items-center justify-center text-textSecondary z-10">
+          <div className="absolute right-4 flex items-center justify-center text-text-secondary z-10">
             {rightIcon}
           </div>
         )}

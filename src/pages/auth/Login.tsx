@@ -1,137 +1,183 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
-import { Button } from '../../components/ui/Button';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft01Icon, Alert01Icon, GoogleIcon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
-import { authService } from '../../api/authService';
+import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
-import { MobileHeader } from '../../components/layout/MobileHeader';
+import { authService } from '../../api/authService';
 
 export function Login() {
   const navigate = useNavigate();
-  const setUser = useAuthStore(state => state.setUser);
-  const setTokens = useAuthStore(state => state.setTokens);
+  const { setUser, setTokens } = useAuthStore();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => setIsReady(true), 50);
+  }, []);
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!email.includes('@')) e.email = 'Enter a valid email';
+    if (!password) e.password = 'Password is required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (!validate()) return;
     setLoading(true);
     try {
       const response = await authService.login({ email, password });
-      if (response.success) {
-        setUser(response.user as any);
+      if (response.success && response.user) {
+        const userWithMeta = { ...response.user, createdAt: new Date().toISOString() } as any;
+        setUser(userWithMeta);
         setTokens(response.accessToken, response.refreshToken);
-        navigate('/discover', { replace: true });
+        navigate('/');
+      } else {
+        setErrors({ general: 'Invalid email or password. Try again.' });
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } catch (error: any) {
+      setErrors({ general: error.message || 'Invalid email or password. Try again.' });
     } finally {
       setLoading(false);
     }
   };
 
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setLoading(true);
-      setError('');
-      try {
-        const response = await authService.googleLogin({ token: tokenResponse.access_token });
-        if (response.success) {
-          setUser(response.user as any);
-          setTokens(response.accessToken, response.refreshToken);
-          navigate('/discover', { replace: true });
-        }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Google login failed.');
-      } finally {
-        setLoading(false);
-      }
-    },
-    onError: (error) => {
-      console.error('Google Login Failed', error);
-      setError('Google login failed.');
-    }
-  });
-
   return (
-    <div className="flex flex-col h-screen bg-background max-w-md mx-auto">
-      <MobileHeader title="Welcome Back" />
-      
-      <div className="flex-1 px-6 py-8 overflow-y-auto">
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold text-textPrimary">Log in to your account</h2>
-          <p className="text-textSecondary mt-2">Enter your details to continue.</p>
-        </div>
+    <div className="min-h-screen bg-primary flex flex-col font-sans overflow-hidden">
+      {/* TOP HEADER SECTION (Brown) */}
+      <div className="h-[40vh] relative flex flex-col px-6 pt-safe overflow-hidden">
+        <AnimatePresence>
+          {isReady && (
+            <motion.img
+              src="/images/bg_login_transparent.png"
+              className="absolute -right-5 -top-2.5 w-[240px] h-[240px] object-contain z-0"
+              initial={{ x: 150, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                type: 'spring',
+                delay: 0.15
+              }}
+            />
+          )}
+        </AnimatePresence>
+        
+        <AnimatePresence>
+          {isReady && (
+            <motion.div 
+              className="flex-1 flex flex-col z-10 pt-2"
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <button
+                onClick={() => navigate(-1)}
+                className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center mb-auto"
+              >
+                <ArrowLeft01Icon size={24} className="text-white" />
+              </button>
 
-        {error && (
-          <div className="mb-6 p-3 rounded-xl bg-status-error/10 text-status-error text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="flex flex-col gap-4 mb-6">
-          <Input 
-            label="Email Address" 
-            type="email" 
-            placeholder="johndoe@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input 
-            label="Password" 
-            type="password" 
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          
-          <div className="flex justify-end">
-            <button type="button" className="text-sm font-bold text-btn-primary">
-              Forgot Password?
-            </button>
-          </div>
-
-          <Button type="submit" variant="primary" fullWidth loading={loading} className="mt-2">
-            Log In
-          </Button>
-        </form>
-
-        <div className="relative flex items-center justify-center my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-borderLight" />
-          </div>
-          <span className="relative bg-background px-4 text-xs font-medium text-textSecondary uppercase tracking-widest">
-            Or continue with
-          </span>
-        </div>
-
-        <Button 
-          type="button" 
-          variant="outline" 
-          fullWidth 
-          onClick={() => loginWithGoogle()}
-          disabled={loading}
-          leftIcon={
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-          }
-        >
-          Google
-        </Button>
-
-        <p className="text-center text-sm text-textSecondary mt-8">
-          Don't have an account?{' '}
-          <Link to="/register" className="font-bold text-btn-primary">
-            Sign Up
-          </Link>
-        </p>
+              <div className="pr-[90px] mb-[34px]">
+                <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
+                  Welcome back !
+                </h1>
+                <p className="text-base text-white/85 leading-[22px] font-medium">
+                  Sign in to find your sure home anywhere
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* BOTTOM SHEET SECTION (White) */}
+      <AnimatePresence>
+        {isReady && (
+          <motion.div
+            className="flex-1 bg-white rounded-t-[36px] -mt-[30px] shadow-[0_-10px_20px_rgba(0,0,0,0.15)] z-20 flex flex-col"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            transition={{
+              type: 'spring',
+              delay: 0.15
+            }}
+          >
+            <form onSubmit={handleLogin} className="flex-1 overflow-y-auto px-6 pt-8 pb-12 flex flex-col">
+              {errors.general && (
+                <div className="flex flex-row items-center gap-2 bg-[#FFEBEE] rounded-lg p-4 mb-6 border border-[#FFCDD2]">
+                  <Alert01Icon size={16} className="text-status-error" />
+                  <span className="text-sm text-status-error flex-1">{errors.general}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <Input
+                  label="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  type="email"
+                  error={errors.email}
+                />
+                <Input
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Your password"
+                  type="password"
+                  error={errors.password}
+                />
+
+                <div className="flex justify-end mt-1 mb-6">
+                  <button type="button" onClick={() => navigate('/auth/forgot-password')}>
+                    <span className="text-sm font-bold text-primary">Forgot password?</span>
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mb-4"
+                disabled={loading}
+              >
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full !border-border-light text-text-primary !py-4 rounded-[50px] flex items-center justify-center gap-2"
+                onClick={() => {}}
+              >
+                {/* Simplified Google Icon for PWA */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+              </Button>
+
+              <div className="flex justify-center mt-8">
+                <button type="button" onClick={() => navigate('/auth/role')}>
+                  <span className="text-base font-medium text-text-secondary">
+                    Don't have an account?{' '}
+                    <span className="font-extrabold text-primary">Create One</span>
+                  </span>
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

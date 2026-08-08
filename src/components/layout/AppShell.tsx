@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { BottomTabBar } from './BottomTabBar';
 import { clsx } from 'clsx';
 import { useLocation } from 'react-router-dom';
+import { InstallPrompt } from '../ui/InstallPrompt';
 
 interface AppShellProps {
   children: ReactNode;
@@ -27,6 +28,8 @@ export function AppShell({ children, hideTabBar = false }: AppShellProps) {
       </main>
       
       {!shouldHideTabBar && <BottomTabBar />}
+      
+      <InstallPrompt />
     </div>
   );
 }
