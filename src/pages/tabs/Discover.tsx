@@ -33,6 +33,8 @@ export function Discover() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeChip, setActiveChip] = useState('all');
   const [savedListings, setSavedListings] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   
   // Hardcoded for now until ChatService is integrated
   const unreadCount = 0; 
@@ -55,6 +57,10 @@ export function Discover() {
   useEffect(() => {
     fetchListings();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset pagination on search or filter
+  }, [searchQuery, activeChip]);
 
   const toggleSave = (id: string) => {
     // Optimistic local update for now
@@ -80,6 +86,9 @@ export function Discover() {
       return matchesSearch && matchesChip;
     });
   }, [listings, searchQuery, activeChip]);
+
+  const paginatedListings = filteredListings.slice(0, currentPage * ITEMS_PER_PAGE);
+  const hasMore = paginatedListings.length < filteredListings.length;
 
   // Framer Motion staggered animation variants
   const containerVariants = {
@@ -152,7 +161,7 @@ export function Discover() {
 
           {/* Search Row */}
           <div className="flex flex-row gap-3 mb-2">
-            <div className="flex-1 h-14 bg-surfaceLight rounded-2xl flex flex-row items-center px-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+            <div className="flex-1 h-[52px] bg-surfaceLight rounded-full flex flex-row items-center px-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-borderLight">
               <Search01Icon size={20} className="text-textTertiary mr-2" />
               <input 
                 type="text" 
@@ -163,9 +172,35 @@ export function Discover() {
               />
             </div>
             
-            <button className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
-              <FilterIcon size={22} className="text-white" />
+            <button className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
+              <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
             </button>
+          </div>
+        </motion.div>
+
+        {/* Ads Carousel & Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="w-full overflow-x-auto snap-x snap-mandatory flex flex-row gap-4 px-5 pb-6 no-scrollbar"
+        >
+          {/* Header Card */}
+          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-[#3E1F0A] relative overflow-hidden flex flex-col justify-end p-5 shadow-md">
+            <div className="absolute top-0 right-[-20px] w-48 h-48 opacity-40 pointer-events-none">
+              <img src="/assets/backgrounds/hero_student.png" alt="" className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            </div>
+            <h2 className="text-white text-2xl font-black tracking-tight leading-tight w-[70%]">Find Your Perfect Space</h2>
+          </div>
+          
+          {/* Ad Placeholder 1 */}
+          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-surfaceLight border-2 border-dashed border-borderLight flex items-center justify-center">
+            <span className="text-textTertiary font-medium text-sm">Ad Space Available</span>
+          </div>
+
+          {/* Ad Placeholder 2 */}
+          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-surfaceLight border-2 border-dashed border-borderLight flex items-center justify-center">
+            <span className="text-textTertiary font-medium text-sm">Ad Space Available</span>
           </div>
         </motion.div>
 
@@ -212,7 +247,7 @@ export function Discover() {
               animate="show"
               className="pb-[20px]"
             >
-              {filteredListings.map((listing: any) => (
+              {paginatedListings.map((listing: any) => (
                 <motion.div key={listing._id || listing.id} variants={itemVariants}>
                   <ListingCard 
                     listing={listing}
@@ -222,6 +257,17 @@ export function Discover() {
                   />
                 </motion.div>
               ))}
+
+              {hasMore && (
+                <div className="px-5 mt-4 mb-8">
+                  <button 
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight"
+                  >
+                    Load More
+                  </button>
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div 

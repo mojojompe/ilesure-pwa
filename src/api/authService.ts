@@ -160,4 +160,8 @@ export const authService = {
     return response.data;
   },
 
+  async updateProfile(data: Partial<UserProfile>): Promise<{ success: boolean; data: UserProfile }> {
+    const response = await apiClient.patch<{ success: boolean; data: UserProfile }>('/users/me', data);
+    return response.data;
+  },
 };

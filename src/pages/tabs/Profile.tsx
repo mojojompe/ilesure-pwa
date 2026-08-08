@@ -72,7 +72,7 @@ export function Profile() {
   };
 
   const accountItems = [
-    { id: 'edit', icon: PencilEdit02Icon, label: 'Edit Profile', badge: null, path: '/settings' },
+    { id: 'edit', icon: PencilEdit02Icon, label: 'Edit Profile', badge: null, path: '/settings/edit-profile' },
     { id: 'verification', icon: CheckmarkBadge01Icon, label: 'Verification', badge: user?.ninVerified ? 'Done' : 'Pending', path: '/booking/kyc/temp' },
     { id: 'saved', icon: FavouriteIcon, label: 'Saved Listings', badge: savedCount > 0 ? savedCount.toString() : null, path: '/saved-listings' },
     ...(user?.role !== 'individual' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/settings' }] : []),
@@ -84,7 +84,6 @@ export function Profile() {
     { id: 'privacy', icon: LockKeyIcon, label: 'Privacy & Security', path: '/settings/privacy' },
     { id: 'help', icon: HelpCircleIcon, label: 'Help & Support', path: '/support' },
     { id: 'terms', icon: Note01Icon, label: 'Terms & Privacy Policy', path: '/terms' },
-    { id: 'waitlist', icon: Note01Icon, label: 'Join Waitlist', path: '/waitlist' },
   ];
 
   return (

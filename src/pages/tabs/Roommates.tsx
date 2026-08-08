@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
 import { MatchCard } from '../../components/roommate/MatchCard';
@@ -17,9 +17,11 @@ import {
 } from '@hugeicons/react';
 import roommateService, { MatchResult } from '../../api/roommateService';
 import { apiClient } from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
 
 export function Roommates() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -82,6 +84,10 @@ export function Roommates() {
       console.error('Failed to pass', error);
     }
   };
+
+  if (user?.role !== 'student') {
+    return <Navigate to="/discover" replace />;
+  }
 
   if (loading && !refreshing) {
     return (

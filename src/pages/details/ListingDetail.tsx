@@ -31,6 +31,9 @@ import { clsx } from 'clsx';
 import { BookAppointmentModal } from '../../components/common/BookAppointmentModal';
 import { PrePaymentModal } from '../../components/common/PrePaymentModal';
 import { InspectionBookingModal } from '../../components/common/InspectionBookingModal';
+import { AgentReportModal } from '../../components/common/AgentReportModal';
+import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
+import { customAlert } from '../../stores/alertStore';
 
 type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
 
@@ -51,6 +54,7 @@ export function ListingDetail() {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [inquiries, setInquiries] = useState<any[]>([]);
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -59,6 +63,8 @@ export function ListingDetail() {
   const [showBookModal, setShowBookModal] = useState(false);
   const [showPrePaymentModal, setShowPrePaymentModal] = useState(false);
   const [showInspectionBooking, setShowInspectionBooking] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
   
   const [existingBooking, setExistingBooking] = useState<any>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -79,6 +85,12 @@ export function ListingDetail() {
           s._id === id || s.id === id
         );
         setIsSaved(!!isListingSaved);
+
+        // Fetch Inquiries
+        try {
+          const inqRes = await listingService.getInquiries(id);
+          setInquiries(inqRes.data?.inquiries || []);
+        } catch(e) {}
 
         // Fetch bookings if user is logged in
         if (user) {
@@ -129,14 +141,14 @@ export function ListingDetail() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to start chat');
+      customAlert('Failed to start chat', 'Error', 'error');
     }
   };
 
   const handleBook = async (data: any) => {
     if (!listing) return;
     if (!user?.ninVerified) {
-      alert('You need to verify your NIN before booking.');
+      navigate('/booking/kyc/temp');
       return;
     }
     
@@ -151,11 +163,11 @@ export function ListingDetail() {
       });
       setShowBookModal(false);
       setExistingBooking(result.data);
-      alert('Booking request created! Schedule your physical inspection.');
+      await customAlert('Booking request created! Schedule your physical inspection.', 'Success', 'success');
       setShowInspectionBooking(true);
     } catch (err) {
       console.error(err);
-      alert('Failed to create booking');
+      customAlert('Failed to create booking', 'Error', 'error');
     }
   };
 
@@ -170,11 +182,11 @@ export function ListingDetail() {
       if (res.success) {
         setExistingBooking(res.data);
         setShowInspectionBooking(false);
-        alert('Inspection scheduled successfully.');
+        customAlert('Inspection scheduled successfully.', 'Success', 'success');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to schedule inspection');
+      customAlert('Failed to schedule inspection', 'Error', 'error');
     }
   };
 
@@ -188,7 +200,7 @@ export function ListingDetail() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to initiate payment');
+      customAlert('Failed to initiate payment', 'Error', 'error');
     } finally {
       setPaymentLoading(false);
     }
@@ -207,7 +219,7 @@ export function ListingDetail() {
       case 'rejected':
         return { title: 'Book Again', action: () => setShowBookModal(true) };
       default:
-        return { title: 'View Status', action: () => alert('Booking is ' + existingBooking.status) };
+        return { title: 'View Timeline', action: () => setShowTimelineModal(true) };
     }
   };
 
@@ -291,7 +303,7 @@ export function ListingDetail() {
         </div>
 
         {/* Scrollable Content overlaying image */}
-        <div className="relative z-10 bg-background -mt-6 rounded-t-[24px] shadow-[0_-4px_16px_rgba(0,0,0,0.1)] flex-1 min-h-[60vh]">
+        <div className="relative z-10 bg-background -mt-6 rounded-t-[24px] shadow-[0_-4px_16px_rgba(0,0,0,0.1)] flex-1 min-h-[60vh] pb-[100px]">
           {/* Drag handle indicator */}
           <div className="w-10 h-1 bg-borderLight rounded-full mx-auto my-3" />
 
@@ -376,7 +388,10 @@ export function ListingDetail() {
                       <p className="text-xs text-textSecondary">Property Manager</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
+                        className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center"
+                      >
                         <Alert02Icon size={16} className="text-error" />
                       </button>
                       <button 
@@ -389,7 +404,10 @@ export function ListingDetail() {
                   </div>
 
                   {/* Safety Banner */}
-                  <div className="flex items-center gap-3 p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl mb-6">
+                  <div 
+                    onClick={() => navigate('/safety-tips')}
+                    className="flex items-center gap-3 p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl mb-6 cursor-pointer active:scale-[0.98] transition-transform"
+                  >
                     <CheckmarkBadge01Icon size={24} className="text-[#16A34A] shrink-0" variant="solid" />
                     <div className="flex-1">
                       <h4 className="text-sm font-bold text-[#166534]">House Hunting Safety Tips</h4>
@@ -540,15 +558,37 @@ export function ListingDetail() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-4">Inquiries</h3>
                   
-                  <div className="flex flex-col items-center justify-center py-10 gap-4">
-                    <BubbleChatIcon size={48} className="text-textTertiary" />
-                    <p className="text-sm text-textSecondary">No inquiries yet</p>
-                  </div>
+                  {inquiries.length > 0 ? (
+                    <div className="space-y-4">
+                      {inquiries.map((inq: any, i: number) => (
+                        <div key={inq._id || i} className="bg-surface p-4 rounded-xl border border-borderLight">
+                          <p className="text-sm font-medium text-textPrimary mb-1">{inq.question}</p>
+                          <p className="text-xs text-textSecondary">{inq.answer ? inq.answer : 'Waiting for response'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-10 gap-4">
+                      <BubbleChatIcon size={48} className="text-textTertiary" />
+                      <p className="text-sm text-textSecondary">No inquiries yet</p>
+                    </div>
+                  )}
                   
                   <button
                     className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
-                    onClick={() => {
-                      // Navigate to ask question or show modal
+                    onClick={async () => {
+                      const question = window.prompt("What is your question for the agent?");
+                      if (question && question.trim().length > 0) {
+                        try {
+                          await listingService.submitInquiry(listing._id, question);
+                          await customAlert('Question submitted successfully', 'Success', 'success');
+                          // Fetch again
+                          const inqRes = await listingService.getInquiries(listing._id);
+                          setInquiries(inqRes.data?.inquiries || []);
+                        } catch (err) {
+                          customAlert('Failed to submit question', 'Error', 'error');
+                        }
+                      }
                     }}
                   >
                     <span className="text-sm font-semibold text-primary">Ask a Question</span>
@@ -572,6 +612,7 @@ export function ListingDetail() {
             onClick={cta.action}
             disabled={paymentLoading}
             loading={paymentLoading}
+            className="bg-[#3E1F0A] text-[#FFF8E1] hover:bg-[#3E1F0A]/90"
           >
             {cta.title}
           </Button>
@@ -602,6 +643,18 @@ export function ListingDetail() {
         initialName={user?.fullName || ''}
       />
 
+      <AgentReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        agentName={agentName}
+        targetId={listing._id}
+      />
+
+      <BookingTimelineModal 
+        visible={showTimelineModal}
+        onClose={() => setShowTimelineModal(false)}
+        booking={existingBooking}
+      />
     </AppShell>
   );
 }

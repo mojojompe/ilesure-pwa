@@ -8,6 +8,7 @@ import { Home01Icon, Chatting01Icon } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
 import { chatService } from '../../api/chatService';
 import { clsx } from 'clsx';
+import { customAlert, customConfirm } from '../../stores/alertStore';
 
 export function BookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -32,14 +33,15 @@ export function BookingDetail() {
   }, [id]);
 
   const handleCancel = async () => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
+    const isConfirmed = await customConfirm('Are you sure you want to cancel this booking?');
+    if (isConfirmed) {
       try {
         await bookingService.cancelBooking(id!);
-        alert('Booking has been cancelled.');
+        await customAlert('Booking has been cancelled.', 'Success', 'success');
         navigate(-1);
       } catch (error) {
         console.error(error);
-        alert('Failed to cancel');
+        customAlert('Failed to cancel the booking.', 'Error', 'error');
       }
     }
   };
