@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { clsx } from 'clsx';
-// import { notificationService } from '../../api/notificationService'; // Uncomment when available
+import notificationService from '../../api/notificationService';
+import { customAlert } from '../../stores/alertStore';
 
 const NOTIFICATION_SETTINGS = [
   { id: 'bookings', title: 'Booking Updates', description: 'Get notified about booking status changes', hasSwitch: true },
@@ -36,15 +37,28 @@ export function NotificationSettings() {
   const [settings, setSettings] = useState<Record<string, boolean>>(DEFAULTS);
 
   useEffect(() => {
-    // Mock fetching settings
-    setTimeout(() => {
-      setLoading(false);
-    }, 800);
+    const fetchSettings = async () => {
+      try {
+        const response = await notificationService.getSettings();
+        setSettings(prev => ({ ...prev, ...(response.data || {}) }));
+      } catch (error: any) {
+        customAlert(error.response?.data?.error?.message || 'Failed to load settings', 'Error', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
   }, []);
 
-  const toggleSetting = (id: string) => {
-    setSettings(prev => ({ ...prev, [id]: !prev[id] }));
-    // In a real app, call API here
+  const toggleSetting = async (id: string) => {
+    const updated = { ...settings, [id]: !settings[id] };
+    setSettings(updated);
+    try {
+      await notificationService.updateSettings(updated);
+    } catch (error: any) {
+      setSettings(settings); // Revert on failure
+      customAlert('Failed to update setting', 'Error', 'error');
+    }
   };
 
   const handleReset = () => {

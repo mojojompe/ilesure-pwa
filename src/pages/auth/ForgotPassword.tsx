@@ -1,43 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft01Icon, Mail01Icon, MailOpen01Icon } from '@hugeicons/react';
+import { ArrowLeft01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { authService } from '../../api/authService';
 
+type Step = 'request' | 'otp' | 'newPassword' | 'success';
+
 export function ForgotPassword() {
   const navigate = useNavigate();
+  const [step, setStep] = useState<Step>('request');
   
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     setTimeout(() => setIsReady(true), 50);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Invalid email format');
-      return;
-    }
-
-    setIsLoading(true);
+  const handleRequest = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!email.includes('@')) { setError('Enter a valid email'); return; }
     setError('');
-
+    setIsLoading(true);
     try {
       await authService.forgotPassword(email);
-      setEmailSent(true);
+      setStep('otp');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to send reset email. Please try again.');
+      setError(err.response?.data?.error?.message || 'Failed to send reset email');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (otp.length < 4) { setError('Enter the code sent to your email'); return; }
+    setError('');
+    setIsLoading(true);
+    try {
+      await authService.verifyOTP(otp, email);
+      setStep('newPassword');
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Invalid or expired code');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (newPassword !== confirmPassword) { setError('Passwords do not match'); return; }
+    setError('');
+    setIsLoading(true);
+    try {
+      await authService.resetPassword(email, otp, newPassword);
+      setStep('success');
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Failed to reset password');
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +73,7 @@ export function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-primary flex flex-col font-sans overflow-hidden">
-      {/* TOP HEADER SECTION (Brown) */}
+      {/* TOP HEADER SECTION */}
       <div className="h-[40vh] relative flex flex-col px-6 pt-safe overflow-hidden">
         <AnimatePresence>
           {isReady && (
@@ -55,11 +83,11 @@ export function ForgotPassword() {
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: 'spring', delay: 0.15 }}
-              onError={(e: any) => e.target.style.display = 'none'} // Fallback if image doesn't exist
+              onError={(e: any) => e.target.style.display = 'none'}
             />
           )}
         </AnimatePresence>
-        
+
         <AnimatePresence>
           {isReady && (
             <motion.div 
@@ -68,19 +96,28 @@ export function ForgotPassword() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <button
-                onClick={() => navigate(-1)}
-                className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center mb-auto"
-              >
-                <ArrowLeft01Icon size={24} className="text-white" />
-              </button>
+              {step !== 'success' && (
+                <button
+                  onClick={() => step === 'request' ? navigate(-1) : setStep('request')}
+                  className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center mb-auto"
+                >
+                  <ArrowLeft01Icon size={24} className="text-white" />
+                </button>
+              )}
+              {step === 'success' && <div className="mb-auto"></div>}
 
               <div className="pr-[90px] mb-[34px]">
                 <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
-                  Forgot Password
+                  {step === 'request' && 'Forgot Password'}
+                  {step === 'otp' && 'Verify Code'}
+                  {step === 'newPassword' && 'New Password'}
+                  {step === 'success' && 'Password Reset!'}
                 </h1>
                 <p className="text-base text-white/85 leading-[22px] font-medium">
-                  Let's get you back into your account.
+                  {step === 'request' && "Let's get you back into your account."}
+                  {step === 'otp' && "We've sent a secure PIN to your email."}
+                  {step === 'newPassword' && "Choose a strong password you'll remember."}
+                  {step === 'success' && "You can now log in with your new password."}
                 </p>
               </div>
             </motion.div>
@@ -88,7 +125,7 @@ export function ForgotPassword() {
         </AnimatePresence>
       </div>
 
-      {/* BOTTOM SHEET SECTION (White) */}
+      {/* BOTTOM SHEET SECTION */}
       <AnimatePresence>
         {isReady && (
           <motion.div
@@ -97,45 +134,94 @@ export function ForgotPassword() {
             animate={{ y: 0 }}
             transition={{ type: 'spring', delay: 0.15 }}
           >
-            <div className="flex-1 overflow-y-auto px-6 pt-8 pb-12 flex flex-col">
-              {emailSent ? (
-                <div className="flex-1 flex flex-col pt-4">
-                  <div className="w-20 h-20 rounded-full bg-[#E8F5E9] flex items-center justify-center self-center mb-6">
-                    <MailOpen01Icon size={40} className="text-status-success" />
-                  </div>
-                  <h2 className="text-2xl font-extrabold text-text-primary text-center mb-2">Check Your Email</h2>
-                  <p className="text-base text-text-secondary text-center mb-8 leading-6">
-                    We've sent password reset instructions to<br />
-                    <span className="font-bold text-text-primary">{email}</span>
-                  </p>
-                  <Button
-                    onClick={() => navigate('/login')}
-                    className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm"
-                  >
-                    Back to Login
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="flex-1 flex flex-col pt-4">
+            <div className="flex-1 flex flex-col pt-8 pb-12 px-6 overflow-y-auto">
+              {step === 'request' && (
+                <form onSubmit={handleRequest} className="flex-1 flex flex-col pt-4">
                   <div className="mb-4">
                     <Input
-                      label="Email"
+                      label="Email Address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder="email@example.com"
                       type="email"
                       error={error}
                     />
                   </div>
-
                   <Button
                     type="submit"
                     className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mt-4"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Sending...' : 'Send Reset Link'}
+                    {isLoading ? 'Sending...' : 'Send Reset Code'}
                   </Button>
                 </form>
+              )}
+
+              {step === 'otp' && (
+                <form onSubmit={handleVerifyOtp} className="flex-1 flex flex-col pt-4">
+                  <div className="mb-4">
+                    <Input
+                      label="Reset Code"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="Enter 6-digit code"
+                      type="text"
+                      error={error}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mt-4"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Verifying...' : 'Verify Code'}
+                  </Button>
+                </form>
+              )}
+
+              {step === 'newPassword' && (
+                <form onSubmit={handleReset} className="flex-1 flex flex-col pt-4">
+                  <div className="mb-4">
+                    <Input
+                      label="New Password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      type="password"
+                      error={error}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <Input
+                      label="Confirm Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repeat your password"
+                      type="password"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mt-4"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Resetting...' : 'Reset Password'}
+                  </Button>
+                </form>
+              )}
+
+              {step === 'success' && (
+                <div className="flex-1 flex flex-col items-center justify-center pt-8">
+                  <div className="w-24 h-24 bg-[#E8F5E9] rounded-full flex items-center justify-center mb-6">
+                    <CheckmarkCircle02Icon size={48} className="text-[#4CAF50]" />
+                  </div>
+                  <Button
+                    onClick={() => navigate('/login')}
+                    className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mt-4"
+                  >
+                    Back to Login
+                  </Button>
+                </div>
               )}
             </div>
           </motion.div>

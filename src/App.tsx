@@ -42,6 +42,7 @@ import { TermsPrivacy } from './pages/settings/TermsPrivacy';
 import { HelpSupport } from './pages/settings/HelpSupport';
 import { EditProfile } from './pages/settings/EditProfile';
 import { AlertModal } from './components/common/AlertModal';
+import { PWAInstallModal } from './components/common/PWAInstallModal';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
@@ -98,6 +99,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <AlertModal />
+      <PWAInstallModal />
     </div>
   );
 }

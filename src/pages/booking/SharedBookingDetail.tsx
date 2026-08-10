@@ -14,6 +14,7 @@ import {
 } from '@hugeicons/react';
 import { sharedBookingService, SharedBooking } from '../../api/sharedBookingService';
 import { useAuthStore } from '../../stores/authStore';
+import { customAlert, customConfirm } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: any }> = {
@@ -84,20 +85,21 @@ export function SharedBookingDetail() {
         window.location.href = result.data.authorizationUrl;
       }
     } catch (error: any) {
-      alert(error.response?.data?.error?.message || 'Could not process payment');
+      customAlert(error.response?.data?.error?.message || 'Could not process payment', 'Error', 'error');
     } finally {
       setPaying(false);
     }
   };
 
   const handleCancel = async () => {
-    if (window.confirm('This will cancel the shared booking and initiate refunds for any payments made. Are you sure?')) {
+    const isConfirmed = await customConfirm('This will cancel the shared booking and initiate refunds for any payments made. Are you sure?');
+    if (isConfirmed) {
       try {
         await sharedBookingService.cancelSharedBooking(id!);
-        alert('Refunds have been initiated where applicable.');
+        await customAlert('Refunds have been initiated where applicable.', 'Success', 'success');
         navigate(-1);
       } catch (error: any) {
-        alert(error.response?.data?.error?.message || 'Failed to cancel');
+        customAlert(error.response?.data?.error?.message || 'Failed to cancel', 'Error', 'error');
       }
     }
   };

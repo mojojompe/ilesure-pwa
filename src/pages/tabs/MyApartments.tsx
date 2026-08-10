@@ -52,11 +52,38 @@ export function MyApartments() {
     }
   };
 
-  const handleChatWithListing = (item: any, e: React.MouseEvent) => {
+  const handleChatWithListing = async (item: any, e: React.MouseEvent) => {
     e.stopPropagation();
-    // In a real app we'd resolve participantId and call chatService.startChat, 
-    // then navigate to the chat room. For now we navigate to Chats tab.
-    navigate('/chats');
+    const listing = item.listingId;
+    if (!listing || typeof listing !== 'object') return;
+    
+    const listingId = listing._id || listing.id;
+    let participantId: string | null = null;
+    
+    if (listing.agentId?._id) participantId = listing.agentId._id;
+    else if (typeof listing.agentId === 'string') participantId = listing.agentId;
+    else if (listing.companyId?._id) participantId = listing.companyId._id;
+    else if (typeof listing.companyId === 'string') participantId = listing.companyId;
+    else if (listing.landlordId?._id) participantId = listing.landlordId._id;
+    else if (typeof listing.landlordId === 'string') participantId = listing.landlordId;
+    
+    if (!participantId) { 
+      navigate('/chats'); 
+      return; 
+    }
+    
+    try {
+      // Assuming chatService.startChat is available in PWA similar to RN
+      const { chatService } = await import('../../api/chatService');
+      const chatResponse = await chatService.startChat(participantId, listingId);
+      if (chatResponse.success && chatResponse.data?.id) {
+        navigate(`/chat/${chatResponse.data.id}`);
+      } else {
+        navigate('/chats');
+      }
+    } catch { 
+      navigate('/chats'); 
+    }
   };
 
   const displayedData = activeFilter === 'booked' ? apartments.booked : apartments.current;

@@ -163,8 +163,7 @@ export function Register() {
           selectedSchool: initialRole === 'student' ? school : undefined,
           companyName: initialRole === 'company' ? companyName : undefined,
         });
-        // navigate to login (or OTP in future)
-        navigate('/login'); 
+        navigate('/auth/otp', { state: { email, role: initialRole, fullName } }); 
       } catch (error: any) {
         setErrors({ general: error.response?.data?.error?.message || 'Please try again later' });
       } finally {
@@ -403,7 +402,7 @@ export function Register() {
                 </Button>
 
                 {step === 0 && (
-                  <button onClick={() => navigate('/auth/login')} className="flex justify-center mt-2">
+                  <button onClick={() => navigate('/login')} className="flex justify-center mt-2">
                     <span className="text-base font-medium text-text-secondary">
                       Already have an account?{' '}
                       <span className="font-extrabold text-primary">Log in</span>

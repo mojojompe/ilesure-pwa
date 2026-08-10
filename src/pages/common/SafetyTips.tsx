@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { CheckmarkBadge01Icon } from '@hugeicons/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { customAlert } from '../../stores/alertStore';
 
 export function SafetyTips() {
   const navigate = useNavigate();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleReportSubmit = async () => {
+    setIsSubmitting(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSubmitting(false);
+    setIsReportModalOpen(false);
+    setReportText('');
+    customAlert('Your report has been submitted successfully. Our team will review it shortly.', 'Report Submitted', 'success');
+  };
 
   return (
     <AppShell hideTabBar>
@@ -56,12 +71,66 @@ export function SafetyTips() {
             </p>
             <button 
               className="w-full bg-[#DC2626] text-white font-bold py-3 rounded-xl active:opacity-80"
-              onClick={() => alert('Navigate to support or report page')}
+              onClick={() => setIsReportModalOpen(true)}
             >
               Report Suspicious Activity
             </button>
           </div>
         </div>
+
+        {/* Report Modal */}
+        <AnimatePresence>
+          {isReportModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-0">
+              <motion.div 
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsReportModalOpen(false)}
+              />
+              
+              <motion.div 
+                className="bg-surface w-full sm:w-[400px] rounded-[24px] overflow-hidden shadow-xl z-10 flex flex-col"
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100%', opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              >
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-textPrimary mb-2">Report Activity</h3>
+                  <p className="text-sm text-textSecondary mb-6">
+                    Please provide details about the suspicious activity. Your report will be kept confidential.
+                  </p>
+                  
+                  <textarea
+                    className="w-full bg-surfaceLight border border-borderLight rounded-xl p-4 text-sm text-textPrimary min-h-[120px] outline-none focus:border-primary transition-colors"
+                    placeholder="Describe what happened..."
+                    value={reportText}
+                    onChange={(e) => setReportText(e.target.value)}
+                  />
+                  
+                  <div className="flex gap-3 mt-6">
+                    <button 
+                      className="flex-1 py-3 rounded-xl font-bold text-textSecondary bg-surfaceLight active:bg-surface transition-colors"
+                      onClick={() => setIsReportModalOpen(false)}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="flex-1 py-3 rounded-xl font-bold text-white bg-error active:opacity-80 transition-opacity disabled:opacity-50"
+                      onClick={handleReportSubmit}
+                      disabled={isSubmitting || !reportText.trim()}
+                    >
+                      {isSubmitting ? 'Sending...' : 'Submit Report'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </AppShell>
   );

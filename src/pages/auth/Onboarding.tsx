@@ -107,7 +107,7 @@ export function Onboarding() {
       startTimer(currentIndex + 1);
     } else {
       setHasSeenOnboarding(true);
-      navigate('/auth/choice', { replace: true });
+      navigate('/auth/role', { replace: true });
     }
   };
 
@@ -122,7 +122,7 @@ export function Onboarding() {
   const handleSkip = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setHasSeenOnboarding(true);
-    navigate('/auth/choice', { replace: true });
+    navigate('/auth/role', { replace: true });
   };
 
   const setSlide = (index: number) => {

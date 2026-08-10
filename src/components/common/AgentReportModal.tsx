@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
+import { customAlert } from '../../stores/alertStore';
 
 interface AgentReportModalProps {
   visible: boolean;
@@ -25,11 +26,11 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
 
   const handleSubmit = async () => {
     if (!reason) {
-      alert('Please select a reason');
+      customAlert('Please select a reason', 'Warning', 'warning');
       return;
     }
     // Assume reporting succeeds via API
-    alert('Report Submitted. We will review this shortly.');
+    customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
     onClose();
   };
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { useAuthStore } from '../../stores/authStore';
+import { customAlert } from '../../stores/alertStore';
 import { 
   UserCircleIcon, 
   CheckmarkBadge01Icon, 
@@ -67,7 +68,7 @@ export function KYC() {
       setSyncing(false);
       setShowRefInput(false);
       setManualRefId('');
-      alert('Sync complete!');
+      customAlert('Sync complete!', 'Success', 'success');
     }, 1000);
   };
 

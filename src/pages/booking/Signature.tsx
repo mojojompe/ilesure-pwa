@@ -4,6 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { ArrowDown01Icon } from '@hugeicons/react';
 import SignatureCanvas from 'react-signature-canvas';
+import { customAlert } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 // import { contractService } from '../../api/contractService'; // Uncomment when available
 // import { bookingService } from '../../api/bookingService'; // Uncomment when available
@@ -57,7 +58,7 @@ export function Signature() {
 
   const handleSign = async () => {
     if (sigCanvas.current?.isEmpty()) {
-      alert('Please sign the document first');
+      customAlert('Please sign the document first', 'Warning', 'warning');
       return;
     }
     

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
@@ -8,10 +8,12 @@ import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
 import { authService } from '../../api/authService';
+import { userService } from '../../api/userService';
 
 export function EditProfile() {
   const navigate = useNavigate();
   const { user, setUser } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
@@ -19,6 +21,7 @@ export function EditProfile() {
     bio: (user as any)?.bio || '',
   });
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -29,6 +32,31 @@ export function EditProfile() {
       });
     }
   }, [user]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      customAlert('Image size should be less than 5MB', 'Error', 'error');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append('avatar', file);
+      const res = await userService.uploadAvatar(form);
+      if (res.success && res.data?.avatar) {
+        setUser({ ...user, avatar: res.data.avatar } as any);
+        customAlert('Profile photo updated successfully', 'Success', 'success');
+      }
+    } catch (err: any) {
+      customAlert(err.response?.data?.error?.message || 'Failed to upload photo', 'Error', 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.fullName.trim() || !formData.phone.trim()) {
@@ -60,14 +88,34 @@ export function EditProfile() {
         
         <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
           <div className="flex flex-col items-center mb-4">
-            <div className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-3">
+            <input 
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="w-24 h-24 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-3 relative overflow-hidden"
+            >
               {user?.avatar ? (
-                <img src={user.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                <img src={user.avatar} alt="Profile" className={`w-full h-full object-cover ${uploadingAvatar ? 'opacity-50' : ''}`} />
               ) : (
-                <UserCircleIcon size={48} className="text-primary" />
+                <UserCircleIcon size={48} className={`text-primary ${uploadingAvatar ? 'opacity-50' : ''}`} />
               )}
-            </div>
-            <span className="text-sm font-semibold text-primary">Change Photo</span>
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
+              <span className="text-sm font-semibold text-primary">
+                {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+              </span>
+            </button>
           </div>
 
           <Input

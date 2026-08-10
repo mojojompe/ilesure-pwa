@@ -82,14 +82,14 @@ export function Splash() {
     setShowBrand(false);
     setIsReady(true);
     
-    // Auth flow routing logic equivalent to RN
-    if (false) { // was isAuthenticated
-      navigate('/', { replace: true });
+    if (isAuthenticated) {
+      navigate('/discover', { replace: true });
       return;
     }
     
-    if (false) {
-      navigate('/login', { replace: true });
+    const hasSeenOnboardingLocal = localStorage.getItem('@has_seen_onboarding');
+    if (hasSeenOnboardingLocal === 'true') {
+      navigate('/auth/choice', { replace: true });
       return;
     }
 
@@ -110,7 +110,8 @@ export function Splash() {
       setCurrentSlide(currentIndex + 1);
       startTimer(currentIndex + 1);
     } else {
-      navigate('/onboarding', { replace: true });
+      localStorage.setItem('@has_seen_onboarding', 'true');
+      navigate('/auth/role', { replace: true });
     }
   };
 
@@ -124,7 +125,8 @@ export function Splash() {
 
   const handleSkip = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    navigate('/onboarding', { replace: true });
+    localStorage.setItem('@has_seen_onboarding', 'true');
+    navigate('/auth/role', { replace: true });
   };
 
   const setSlide = (index: number) => {
@@ -140,7 +142,7 @@ export function Splash() {
         const lastShownDate = localStorage.getItem('@splash_last_shown');
         const today = new Date().toDateString();
 
-        if (false) { // was lastShownDate === today
+        if (lastShownDate === today) {
           executeRouting();
         } else {
           localStorage.setItem('@splash_last_shown', today);

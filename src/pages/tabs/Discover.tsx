@@ -15,6 +15,8 @@ import {
 } from '@hugeicons/react';
 import { listingService, Listing } from '../../api/listingService';
 import { useAuthStore } from '../../stores/authStore';
+import { chatService } from '../../api/chatService';
+import { AdsCarousel } from '../../components/common/AdsCarousel';
 
 const CHIPS = [
   { id: 'all', label: 'All' },
@@ -34,20 +36,44 @@ export function Discover() {
   const [activeChip, setActiveChip] = useState('all');
   const [savedListings, setSavedListings] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreServer, setHasMoreServer] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
   const ITEMS_PER_PAGE = 10;
   
-  // Hardcoded for now until ChatService is integrated
-  const unreadCount = 0; 
-
-  const fetchListings = async (isRefresh = false) => {
+  const fetchInitialData = async (page = 1, isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
-      else setLoading(true);
+      else if (page === 1) setLoading(true);
       
-      const response = await listingService.getListings({});
-      setListings(response.listings);
+      const promises: any[] = [
+        listingService.getListings({}, page, ITEMS_PER_PAGE),
+        listingService.getSavedListings().catch(() => ({ data: { listings: [] } })),
+        chatService.getConversations().catch(() => ({ data: { chats: [] } }))
+      ];
+
+      const [listingsData, savedData, chatsData] = await Promise.all(promises);
+      
+      if (page === 1) {
+        setListings(listingsData.listings);
+      } else {
+        setListings(prev => {
+          const newIds = new Set(listingsData.listings.map((l: any) => l.id || l._id));
+          const filteredPrev = prev.filter(l => !newIds.has(l.id || l._id));
+          return [...filteredPrev, ...listingsData.listings];
+        });
+      }
+      
+      // Sync saved listings
+      const savedIds = savedData.data?.listings?.map((l: any) => l._id || l.id) || [];
+      setSavedListings(savedIds);
+
+      // Sync unread chats
+      const unreadChats = chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
+      setUnreadCount(unreadChats);
+      
+      setHasMoreServer(listingsData.listings.length === ITEMS_PER_PAGE);
     } catch (error) {
-      console.error('Failed to fetch listings', error);
+      console.error('Failed to fetch data', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -55,15 +81,23 @@ export function Discover() {
   };
 
   useEffect(() => {
-    fetchListings();
+    fetchInitialData(1);
   }, []);
 
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchInitialData(nextPage);
+  };
+
   useEffect(() => {
-    setCurrentPage(1); // Reset pagination on search or filter
+    // If they change search or filter, we might want to reset to page 1?
+    // But since filtering is local right now, we don't re-fetch from server.
+    // We just reset the local visible page.
+    setCurrentPage(1);
   }, [searchQuery, activeChip]);
 
   const toggleSave = (id: string) => {
-    // Optimistic local update for now
     setSavedListings(prev => 
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
@@ -88,7 +122,8 @@ export function Discover() {
   }, [listings, searchQuery, activeChip]);
 
   const paginatedListings = filteredListings.slice(0, currentPage * ITEMS_PER_PAGE);
-  const hasMore = paginatedListings.length < filteredListings.length;
+  // Show Load More if there are hidden local items OR the server has more items
+  const hasMore = paginatedListings.length < filteredListings.length || hasMoreServer;
 
   // Framer Motion staggered animation variants
   const containerVariants = {
@@ -183,25 +218,11 @@ export function Discover() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
-          className="w-full overflow-x-auto snap-x snap-mandatory flex flex-row gap-4 px-5 pb-6 no-scrollbar"
         >
-          {/* Header Card */}
-          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-[#3E1F0A] relative overflow-hidden flex flex-col justify-end p-5 shadow-md">
-            <div className="absolute top-0 right-[-20px] w-48 h-48 opacity-40 pointer-events-none">
-              <img src="/assets/backgrounds/hero_student.png" alt="" className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-            </div>
-            <h2 className="text-white text-2xl font-black tracking-tight leading-tight w-[70%]">Find Your Perfect Space</h2>
-          </div>
-          
-          {/* Ad Placeholder 1 */}
-          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-surfaceLight border-2 border-dashed border-borderLight flex items-center justify-center">
-            <span className="text-textTertiary font-medium text-sm">Ad Space Available</span>
-          </div>
-
-          {/* Ad Placeholder 2 */}
-          <div className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-surfaceLight border-2 border-dashed border-borderLight flex items-center justify-center">
-            <span className="text-textTertiary font-medium text-sm">Ad Space Available</span>
-          </div>
+          <AdsCarousel 
+            heroTitle="Find Your Perfect Space" 
+            heroImage="/assets/backgrounds/hero_student.png" 
+          />
         </motion.div>
 
         {/* Chips Row */}
@@ -235,7 +256,7 @@ export function Discover() {
         <div className="flex-1">
           <RefreshIndicator isRefreshing={refreshing} />
           
-          {loading && !refreshing ? (
+          {loading && !refreshing && currentPage === 1 ? (
             <div className="px-4 space-y-4">
               <ListingCardSkeleton />
               <ListingCardSkeleton />
@@ -261,10 +282,11 @@ export function Discover() {
               {hasMore && (
                 <div className="px-5 mt-4 mb-8">
                   <button 
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight"
+                    onClick={paginatedListings.length < filteredListings.length ? () => setCurrentPage(p => p + 1) : handleLoadMore}
+                    disabled={loading}
+                    className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight flex items-center justify-center disabled:opacity-50"
                   >
-                    Load More
+                    {loading && currentPage > 1 ? 'Loading...' : 'Load More'}
                   </button>
                 </div>
               )}

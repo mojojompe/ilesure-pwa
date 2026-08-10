@@ -4,6 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
+import { customConfirm } from '../../stores/alertStore';
 import { 
   PencilEdit02Icon,
   FavouriteIcon,
@@ -60,14 +61,15 @@ export function Profile() {
   }, []);
 
   const handleLogout = async () => {
-    if (!window.confirm('Are you sure you want to log out?')) return;
+    const isConfirmed = await customConfirm('Are you sure you want to log out?', 'Logout', 'warning');
+    if (!isConfirmed) return;
     try {
       await authService.logout();
     } catch (e) {
       // Ignore
     } finally {
       clearAuth();
-      navigate('/login', { replace: true });
+      navigate('/auth/choice', { replace: true });
     }
   };
 

@@ -23,7 +23,7 @@ export function BottomTabBar() {
     { path: '/roommates', icon: UserMultipleIcon, label: 'Match', restrictedTo: 'student' },
     { path: '/my-apartments', icon: Building03Icon, label: 'Manage' },
     { path: '/chats', icon: BubbleChatIcon, label: 'Chats' },
-    { path: '/notifications', icon: Notification01Icon, label: 'Notifs' },
+    { path: '/notifications', icon: Notification01Icon, label: 'Notifications' },
     { path: '/profile', icon: UserCircleIcon, label: 'Profile' },
   ];
 
@@ -33,6 +33,9 @@ export function BottomTabBar() {
   // Take the first 3 tabs for the bottom bar
   const mainTabs = allowedTabs.slice(0, 3);
   const moreTabs = allowedTabs.slice(3);
+
+  const isMoreActive = moreTabs.some(tab => location.pathname.startsWith(tab.path));
+  const isMoreButtonActive = isMoreActive || isMoreOpen;
 
   return (
     <>
@@ -74,14 +77,19 @@ export function BottomTabBar() {
             className="flex-1 flex flex-col items-center justify-center gap-1 min-w-[50px] py-2"
           >
             <div className={clsx(
-              'relative p-2 rounded-2xl transition-all duration-300 text-textSecondary hover:bg-surfaceLight'
+              'relative p-2 rounded-2xl transition-all duration-300',
+              isMoreButtonActive ? 'bg-btn-primary/10 text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
             )}>
               <Menu01Icon 
                 size={24} 
-                variant="stroke"
+                variant={isMoreButtonActive ? 'solid' : 'stroke'}
+                className={clsx('transition-transform duration-300', isMoreButtonActive && 'scale-110')}
               />
             </div>
-            <span className="text-[10px] font-medium text-textSecondary transition-colors duration-300">
+            <span className={clsx(
+              'text-[10px] font-medium transition-colors duration-300',
+              isMoreButtonActive ? 'text-btn-primary' : 'text-textSecondary'
+            )}>
               More
             </span>
           </button>

@@ -8,9 +8,11 @@ interface BookingTimelineModalProps {
   onClose: () => void;
   booking: any;
   loading?: boolean;
+  onScheduleInspection?: () => void;
+  onMakePayment?: () => void;
 }
 
-export function BookingTimelineModal({ visible, onClose, booking, loading }: BookingTimelineModalProps) {
+export function BookingTimelineModal({ visible, onClose, booking, loading, onScheduleInspection, onMakePayment }: BookingTimelineModalProps) {
   if (!visible) return null;
 
   const currentStep = booking?.timelineStep || 1;
@@ -106,6 +108,35 @@ export function BookingTimelineModal({ visible, onClose, booking, loading }: Boo
                           {step.title}
                         </h4>
                         <p className="text-xs text-textSecondary">{step.desc}</p>
+                        
+                        {/* Render action buttons based on active step */}
+                        {isActive && step.id === 3 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled' && (
+                          <div className="mt-3">
+                            <Button 
+                              size="small" 
+                              onClick={() => { onClose(); onScheduleInspection(); }}
+                              className="text-xs py-2 px-4 shadow-sm"
+                            >
+                              Schedule Inspection
+                            </Button>
+                          </div>
+                        )}
+                        {isActive && step.id === 3 && booking?.inspectionStatus === 'scheduled' && (
+                          <div className="mt-3 p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
+                            Inspection scheduled for {booking?.inspectionDate} at {booking?.inspectionTime}. Waiting for verification.
+                          </div>
+                        )}
+                        {isActive && step.id === 4 && onMakePayment && (
+                          <div className="mt-3">
+                            <Button 
+                              size="small" 
+                              onClick={() => { onClose(); onMakePayment(); }}
+                              className="text-xs py-2 px-4 shadow-sm"
+                            >
+                              Make Payment
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

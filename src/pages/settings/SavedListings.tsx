@@ -22,7 +22,6 @@ export function SavedListings() {
       
       const response = await listingService.getSavedListings();
       if (response.success) {
-        // Assume API returns populated listings in response.data or response.data.listings
         setListings(response.data?.listings || response.data || []);
       }
     } catch (error) {
@@ -36,6 +35,15 @@ export function SavedListings() {
   useEffect(() => {
     fetchSaved();
   }, []);
+
+  const handleUnsave = async (listingId: string) => {
+    try {
+      await listingService.unsaveListing(listingId);
+      setListings(prev => prev.filter(item => (item._id || item.id) !== listingId));
+    } catch (error) {
+      console.error('Failed to unsave listing', error);
+    }
+  };
 
   return (
     <AppShell hideTabBar>
@@ -53,9 +61,11 @@ export function SavedListings() {
           <div className="pb-6">
             {listings.map(listing => (
               <ListingCard 
-                key={listing._id}
+                key={listing._id || listing.id}
                 listing={listing}
-                onPress={() => navigate(`/listing/${listing._id}`)}
+                onPress={() => navigate(`/listing/${listing._id || listing.id}`)}
+                isSaved={true}
+                onSave={() => handleUnsave(listing._id || listing.id)}
               />
             ))}
           </div>

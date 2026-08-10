@@ -11,6 +11,8 @@ import {
   Home01Icon
 } from '@hugeicons/react';
 import { listingService, Listing } from '../../api/listingService';
+import { userService } from '../../api/userService';
+import { customAlert } from '../../stores/alertStore';
 
 export function AgentProfile() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +20,6 @@ export function AgentProfile() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Mocking agent & reviews data since there are no specific endpoints in PWA yet
   const [agent, setAgent] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
 
@@ -27,26 +28,22 @@ export function AgentProfile() {
       try {
         if (!id) return;
         setLoading(true);
-        // Using getListings with agentId
-        const response = await listingService.getListings({ agentId: id });
-        setListings(response.listings || []);
         
-        // Mock agent details
-        setAgent({
-          _id: id,
-          fullName: 'Jane Doe',
-          verified: true,
-          role: 'Property Manager',
-          averageRating: 4.8,
-          totalReviews: 24,
-          phone: '+2348000000000',
-        });
-        
-        setReviews([
-          { _id: '1', reviewerId: { fullName: 'John Smith' }, hasBooked: true, rating: 5, comment: 'Very professional and responsive. Helped me secure a great apartment!' },
-          { _id: '2', reviewerId: { fullName: 'Sarah Connor' }, hasBooked: false, rating: 4, comment: 'Good agent, nice properties.' }
+        const [listingsRes, userRes, reviewsRes] = await Promise.all([
+          listingService.getListings({ agentId: id }).catch(() => ({ listings: [] })),
+          userService.getUserById(id).catch(() => ({ success: false, data: null })),
+          userService.getAgentReviews(id).catch(() => ({ success: false, data: { reviews: [] } }))
         ]);
-
+        
+        setListings(listingsRes.listings || []);
+        
+        if (userRes.success && userRes.data) {
+          setAgent(userRes.data);
+        }
+        
+        if (reviewsRes.success && reviewsRes.data?.reviews) {
+          setReviews(reviewsRes.data.reviews);
+        }
       } catch (error) {
         console.error('Failed to fetch agent data', error);
       } finally {
@@ -60,7 +57,7 @@ export function AgentProfile() {
     if (agent?.phone) {
       window.open(`tel:${agent.phone}`);
     } else {
-      alert('Phone number not provided');
+      customAlert('Phone number not provided', 'Info', 'info');
     }
   };
 

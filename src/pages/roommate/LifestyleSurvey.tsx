@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { Button } from '../../components/ui/Button';
+import { customAlert } from '../../stores/alertStore';
 
 export function LifestyleSurvey() {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ export function LifestyleSurvey() {
           <Button
             className="w-full max-w-[280px] shadow-sm"
             onClick={() => {
-              // Placeholder for actual survey logic
-              alert('Survey component would launch here.');
+              customAlert('Survey component would launch here.', 'Info', 'info');
               navigate(-1);
             }}
           >

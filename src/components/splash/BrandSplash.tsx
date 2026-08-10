@@ -32,7 +32,7 @@ export const BrandSplash: React.FC<Props> = ({ onFinished }) => {
           <div className="flex flex-col items-center justify-center flex-1">
             {/* Logo */}
             <motion.div
-              className="flex items-center justify-center mb-4 shadow-[0_10px_15px_rgba(0,0,0,0.2)] rounded-full"
+              className="flex items-center justify-center mb-4"
               initial={{ opacity: 0, scale: 0, rotate: -30 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{

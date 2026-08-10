@@ -10,6 +10,8 @@ import {
   Alert02Icon
 } from '@hugeicons/react';
 import { roommateService, MatchResult } from '../../api/roommateService';
+import { chatService } from '../../api/chatService';
+import { customAlert } from '../../stores/alertStore';
 
 export function MatchProfile() {
   const { id } = useParams<{ id: string }>();
@@ -76,7 +78,7 @@ export function MatchProfile() {
     if (!match) return;
     try {
       // API call placeholder
-      alert('Interest Sent! Waiting for response');
+      customAlert('Interest Sent! Waiting for response', 'Success', 'success');
       setInterested(true);
     } catch (error) {
       console.error(error);
@@ -89,7 +91,7 @@ export function MatchProfile() {
       setCreatingBooking(true);
       // API call placeholder
       setTimeout(() => {
-        alert('Booking Created. You have 5 days to complete payment.');
+        customAlert('Booking Created. You have 5 days to complete payment.', 'Success', 'success');
         setCreatingBooking(false);
       }, 1000);
     } catch (error) {

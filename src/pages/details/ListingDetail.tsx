@@ -130,14 +130,19 @@ export function ListingDetail() {
   const handleChat = async () => {
     if (!listing) return;
     try {
-      let participantId: string | null = null;
-      if (listing.agent) participantId = (listing.agent as any).id || (listing.agent as any)._id;
+      const participantId = 
+        listing.agentId?._id || listing.agentId?.id || 
+        listing.landlordId?._id || listing.landlordId?.id ||
+        (listing.agent as any)?._id || (listing.agent as any)?.id ||
+        listing.companyId?._id || listing.companyId?.id;
       
       if (participantId) {
         const res = await chatService.startChat(participantId, listing._id, 'Hi, I\'m interested in this property. Can we chat?');
         if (res.success && res.data) {
           navigate('/chats');
         }
+      } else {
+        customAlert('Agent information is not available.', 'Error', 'error');
       }
     } catch (err) {
       console.error(err);
@@ -244,7 +249,8 @@ export function ListingDetail() {
   }
 
   const images = listing.images?.length > 0 ? listing.images : ['https://via.placeholder.com/800x400'];
-  const agentName = (listing.agent as any)?.fullName || 'Agent';
+  const agentName = listing.companyId?.name || listing.agentId?.fullName || listing.landlordId?.fullName || listing.agentName || listing.companyName || (listing.agent as any)?.fullName || 'Property Manager';
+  const agentAvatar = listing.companyId?.logo || listing.agentId?.avatar || listing.landlordId?.avatar || listing.agent?.avatar;
   const cta = getBookingCTA();
 
   return (
@@ -374,8 +380,8 @@ export function ListingDetail() {
                   {/* Agent Card */}
                   <div className="flex flex-row items-center p-4 bg-surface rounded-2xl border border-borderLight shadow-sm mb-5 cursor-pointer active:scale-[0.98] transition-transform">
                     <div className="w-12 h-12 rounded-full bg-btn-primary/10 flex items-center justify-center shrink-0 mr-3 border border-borderLight">
-                      {listing.agent?.avatar ? (
-                        <img src={listing.agent.avatar} alt="Agent" className="w-full h-full object-cover rounded-full" />
+                      {agentAvatar ? (
+                        <img src={agentAvatar} alt="Agent" className="w-full h-full object-cover rounded-full" />
                       ) : (
                         <span className="font-bold text-primary">{agentName.charAt(0)}</span>
                       )}
@@ -596,7 +602,7 @@ export function ListingDetail() {
                 </motion.div>
               )}
 
-              <div className="mt-8 p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl">
+              <div className="mt-8 mb-[100px] p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl">
                 <p className="text-xs text-[#92400E] leading-relaxed">
                   ileSure does not own this property. Always verify and inspect before making any payments. Report any suspicious activity.
                 </p>
@@ -654,6 +660,9 @@ export function ListingDetail() {
         visible={showTimelineModal}
         onClose={() => setShowTimelineModal(false)}
         booking={existingBooking}
+        loading={paymentLoading}
+        onScheduleInspection={() => setShowInspectionBooking(true)}
+        onMakePayment={() => setShowPrePaymentModal(true)}
       />
     </AppShell>
   );

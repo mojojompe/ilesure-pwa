@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { customAlert } from '../stores/alertStore';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -33,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           // If a company/agent logged in on the PWA somehow, boot them out
           logout();
-          alert('Agents and Companies must use the Web Portal.');
+          customAlert('Agents and Companies must use the Web Portal.', 'Access Denied', 'error');
         }
       }
     }
