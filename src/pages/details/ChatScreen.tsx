@@ -58,46 +58,26 @@ export function ChatScreen() {
         setLoading(true);
         const response = await chatService.getMessages(id);
         
-        // Mocking chat info
-        setChatInfo({
-          name: 'Jane Doe',
-          isOnline: true,
-          phone: '+2348000000000',
-          propertyTitle: '2 Bedroom Flat in Yaba',
-          type: 'agent'
-        });
+        // Fetch conversation info
+        try {
+          const convRes = await chatService.getConversations();
+          if (convRes.success && convRes.data?.chats) {
+            const chat = convRes.data.chats.find((c: any) => c.id === id);
+            if (chat) {
+              setChatInfo({
+                name: chat.participant?.fullName || 'User',
+                isOnline: Math.random() > 0.5, // Mock online status for now
+                propertyTitle: chat.listingId?.title,
+                type: chat.participant?.role as 'agent' | 'student'
+              });
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch chat info', e);
+        }
 
         if (response.success) {
-          // Add some mock advanced messages for UI testing
-          const mockAdvanced: ChatMessage[] = [
-            {
-              _id: 'img1',
-              text: 'Here is the floor plan.',
-              senderId: 'partner123',
-              createdAt: new Date(Date.now() - 100000).toISOString(),
-              type: 'image',
-              fileUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80',
-            } as any,
-            {
-              _id: 'doc1',
-              text: '',
-              senderId: user?.id || 'me',
-              createdAt: new Date(Date.now() - 50000).toISOString(),
-              type: 'file',
-              fileName: 'Tenancy_Agreement.pdf',
-              fileUrl: '#'
-            } as any,
-            {
-              _id: 'reply1',
-              text: 'Looks great! I will sign it today.',
-              senderId: 'partner123',
-              createdAt: new Date(Date.now() - 10000).toISOString(),
-              replyTo: 'doc1',
-              replyPreview: 'Tenancy_Agreement.pdf'
-            } as any
-          ];
-          
-          setMessages([...response.data.messages, ...mockAdvanced].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+          setMessages(response.data.messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
         }
       } catch (error) {
         console.error('Failed to fetch messages', error);

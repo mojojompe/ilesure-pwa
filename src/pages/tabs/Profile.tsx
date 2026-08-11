@@ -77,7 +77,7 @@ export function Profile() {
     { id: 'edit', icon: PencilEdit02Icon, label: 'Edit Profile', badge: null, path: '/settings/edit-profile' },
     { id: 'verification', icon: CheckmarkBadge01Icon, label: 'Verification', badge: user?.ninVerified ? 'Done' : 'Pending', path: '/booking/kyc/temp' },
     { id: 'saved', icon: FavouriteIcon, label: 'Saved Listings', badge: savedCount > 0 ? savedCount.toString() : null, path: '/saved-listings' },
-    ...(user?.role !== 'individual' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/settings' }] : []),
+    ...(user?.role !== 'individual' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/roommate-profile' }] : []),
     { id: 'payments', icon: CreditCardIcon, label: 'Payment History', badge: null, path: '/payment-history' },
   ];
 

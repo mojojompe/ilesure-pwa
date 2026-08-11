@@ -112,3 +112,15 @@ body {
   border: 1px solid #E7DCD4 !important;
   box-shadow: 0 8px 32px rgba(139,69,19,0.12) !important;
 }
+
+@layer utilities {
+  .pt-safe-top {
+    padding-top: max(env(safe-area-inset-top), 16px);
+  }
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 24px);
+  }
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top), 24px);
+  }
+}

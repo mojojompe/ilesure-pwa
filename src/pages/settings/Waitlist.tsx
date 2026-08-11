@@ -5,6 +5,8 @@ import { MobileHeader } from '../../components/layout/MobileHeader';
 import { CheckmarkBadge01Icon } from '@hugeicons/react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
+import { waitlistService } from '../../api/waitlistService';
+import { customAlert } from '../../stores/alertStore';
 
 const CORRIDORS = ['Toll Gate', 'Oba Otudeko', 'Bodija', 'Agodi', 'Sango'];
 const CONTACT_PREFS = ['WhatsApp', 'Email', 'Call'];
@@ -29,14 +31,25 @@ export function Waitlist() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await waitlistService.joinWaitlist({
+        budgetMin: Number(budgetMin),
+        budgetMax: Number(budgetMax),
+        preferredCorridor: selectedCorridors.join(', '),
+        moveInDate,
+        roommateNeeded: needsRoommate,
+        distancePreference: distancePref,
+        contactPreference: contactPref.toLowerCase() as any,
+      });
       setSubmitted(true);
-    }, 1200);
+    } catch (error) {
+      customAlert('Failed to join waitlist. Please try again.', 'Error', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {

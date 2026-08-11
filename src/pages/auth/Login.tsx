@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft01Icon, Alert01Icon, GoogleIcon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
+import { customAlert } from '../../stores/alertStore';
 
 export function Login() {
   const navigate = useNavigate();
@@ -136,9 +137,12 @@ export function Login() {
                 />
 
                 <div className="flex justify-end mt-1 mb-6">
-                  <button type="button" onClick={() => navigate('/auth/forgot-password')}>
+                  <div 
+                    onClick={() => navigate('/auth/forgot-password')} 
+                    className="cursor-pointer active:opacity-70"
+                  >
                     <span className="text-sm font-bold text-primary">Forgot password?</span>
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -154,7 +158,9 @@ export function Login() {
                 type="button"
                 variant="outline"
                 className="w-full !border-border-light text-text-primary !py-4 rounded-[50px] flex items-center justify-center gap-2"
-                onClick={() => {}}
+                onClick={() => {
+                  customAlert('Google Sign-In is not yet implemented.', 'Info', 'info');
+                }}
               >
                 {/* Simplified Google Icon for PWA */}
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,13 +172,16 @@ export function Login() {
                 Sign in with Google
               </Button>
 
-              <div className="flex justify-center mt-8">
-                <button type="button" onClick={() => navigate('/auth/role')}>
+              <div className="flex justify-center mt-8 pb-4">
+                <div 
+                  onClick={() => navigate('/auth/role')} 
+                  className="cursor-pointer active:opacity-70"
+                >
                   <span className="text-base font-medium text-text-secondary">
                     Don't have an account?{' '}
                     <span className="font-extrabold text-primary">Create One</span>
                   </span>
-                </button>
+                </div>
               </div>
             </form>
           </motion.div>

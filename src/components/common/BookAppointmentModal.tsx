@@ -249,7 +249,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                   initial={{ opacity: 0, height: 0 }} 
                   animate={{ opacity: 1, height: 'auto' }} 
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-6 border-t border-borderLight shrink-0 bg-background rounded-b-[24px]"
+                  className="p-6 pb-safe border-t border-borderLight shrink-0 bg-background rounded-b-[24px]"
                 >
                   <Button 
                     fullWidth

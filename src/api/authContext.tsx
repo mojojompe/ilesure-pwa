@@ -18,15 +18,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     clearAuth();
-    navigate('/login');
+    navigate('/auth/choice');
   };
 
   useEffect(() => {
-    const isPublicRoute = ['/login', '/register', '/auth', '/', '/verify-otp', '/reset-password'].includes(location.pathname);
+    const isPublicRoute = ['/login', '/register', '/auth', '/', '/verify-otp', '/reset-password'].some(route => 
+      route === '/' ? location.pathname === '/' : location.pathname.startsWith(route)
+    );
     
     if (!isLoading) {
       if (!isAuthenticated && !isPublicRoute) {
-        navigate('/login', { replace: true });
+        navigate('/auth/choice', { replace: true });
       } else if (isAuthenticated && isPublicRoute && user) {
         // Only allow student and individual to access PWA routes
         if (user.role === 'student' || user.role === 'individual') {

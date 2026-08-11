@@ -40,7 +40,7 @@ export function AlertModal() {
           initial={{ scale: 0.95, opacity: 0 }} 
           animate={{ scale: 1, opacity: 1 }} 
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-surface w-full max-w-sm rounded-[24px] p-6 shadow-2xl relative z-10 flex flex-col items-center text-center"
+          className="bg-surface w-full max-w-sm rounded-[24px] p-6 pb-safe shadow-2xl relative z-10 flex flex-col items-center text-center"
         >
           <div className="w-16 h-16 rounded-full bg-surfaceLight flex items-center justify-center mb-4">
             {getIcon()}

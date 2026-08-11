@@ -87,9 +87,9 @@ export function Splash() {
       return;
     }
     
-    const hasSeenOnboardingLocal = localStorage.getItem('@has_seen_onboarding');
-    if (hasSeenOnboardingLocal === 'true') {
-      navigate('/auth/choice', { replace: true });
+    const hasSeen = localStorage.getItem('@has_seen_onboarding');
+    if (hasSeen === 'true') {
+      navigate('/auth/role', { replace: true });
       return;
     }
 

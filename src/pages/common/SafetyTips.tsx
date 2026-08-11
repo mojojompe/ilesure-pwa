@@ -91,7 +91,7 @@ export function SafetyTips() {
               />
               
               <motion.div 
-                className="bg-surface w-full sm:w-[400px] rounded-[24px] overflow-hidden shadow-xl z-10 flex flex-col"
+                className="bg-surface w-full sm:w-[400px] rounded-[24px] overflow-hidden shadow-xl z-10 flex flex-col pb-safe"
                 initial={{ y: '100%', opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: '100%', opacity: 0 }}

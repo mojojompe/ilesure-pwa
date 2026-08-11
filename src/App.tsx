@@ -25,6 +25,8 @@ import { AgentProfile } from './pages/details/AgentProfile';
 import { MatchProfile } from './pages/details/MatchProfile';
 import { ChatScreen } from './pages/details/ChatScreen';
 import { LifestyleSurvey } from './pages/roommate/LifestyleSurvey';
+import { IncomingRequests } from './pages/roommate/IncomingRequests';
+import { RoommateProfile } from './pages/roommate/RoommateProfile';
 
 import { Checkout } from './pages/booking/Checkout';
 import { KYC } from './pages/booking/KYC';
@@ -74,6 +76,7 @@ export default function App() {
         <Route path="/listing/:id" element={<ListingDetail />} />
         <Route path="/agent/:id" element={<AgentProfile />} />
         <Route path="/match/:id" element={<MatchProfile />} />
+        <Route path="/roommate-profile" element={<RoommateProfile />} />
         <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
         <Route path="/chat/:id" element={<ChatScreen />} />
         
@@ -95,6 +98,11 @@ export default function App() {
         <Route path="/support" element={<HelpSupport />} />
         <Route path="/settings/edit-profile" element={<EditProfile />} />
         <Route path="/safety-tips" element={<SafetyTips />} />
+        
+        {/* Missing Parity Pages */}
+        <Route path="/incoming-requests" element={<IncomingRequests />} />
+        <Route path="/roommate-profile" element={<RoommateProfile />} />
+        <Route path="/waitlist" element={<Waitlist />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

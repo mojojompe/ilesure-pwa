@@ -26,14 +26,14 @@ export function ChatsList() {
         // Map to match RN ChatPreview
         const formattedChats = response.data.chats.map(chat => ({
           id: chat.id,
-          participantId: chat.participant._id,
-          name: chat.participant.fullName,
-          avatar: chat.participant.avatar,
+          participantId: chat.participant?._id || '',
+          name: chat.participant?.fullName || 'Unknown User',
+          avatar: chat.participant?.avatar,
           lastMessage: chat.lastMessage || 'No messages yet',
           timestamp: chat.lastMessageAt ? format(new Date(chat.lastMessageAt), 'h:mm a') : '',
-          unreadCount: chat.unreadCount,
+          unreadCount: chat.unreadCount || 0,
           isOnline: false, // We'd get this from sockets in a full impl
-          type: chat.participant.role,
+          type: chat.participant?.role || 'user',
           propertyTitle: chat.listingId?.title,
           listingId: chat.listingId?._id,
         }));

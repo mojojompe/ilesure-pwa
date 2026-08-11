@@ -10,7 +10,7 @@ import {
   Alert02Icon
 } from '@hugeicons/react';
 import { roommateService, MatchResult } from '../../api/roommateService';
-import { chatService } from '../../api/chatService';
+import { sharedBookingService } from '../../api/sharedBookingService';
 import { customAlert } from '../../stores/alertStore';
 
 export function MatchProfile() {
@@ -26,45 +26,11 @@ export function MatchProfile() {
       try {
         if (!id) return;
         setLoading(true);
-        // Note: mock data generation here for PWA testing purposes to match RN's structure
-        setMatch({
-          userId: id,
-          overallScore: 85,
-          recommendation: 'excellent',
-          isConnected: false,
-          isInterested: false,
-          user: {
-            _id: id,
-            fullName: 'Jane Doe',
-            avatar: ''
-          },
-          profile: {
-            courseOfStudy: 'Computer Science',
-            institution: 'University of Lagos',
-            lookingFor: 'Female Roommate',
-            budgetMin: 300000,
-            budgetMax: 500000
-          },
-          listing: {
-            title: '2 Bedroom Flat in Yaba',
-            areaCluster: 'Yaba',
-            rentAnnual: 1200000,
-            duration: 'annual'
-          },
-          categoryScores: {
-            lifestyle: 90,
-            preference: 80,
-            numeric: 85
-          },
-          dimensionScores: [
-            { label: 'Cleanliness', yourValue: 'Very Clean', theirValue: 'Very Clean', match: true },
-            { label: 'Sleep Schedule', yourValue: 'Night Owl', theirValue: 'Early Bird', match: false },
-            { label: 'Noise Tolerance', yourValue: 'Quiet', theirValue: 'Quiet', match: true }
-          ],
-          strengths: ['Highly compatible lifestyle habits', 'Similar cleanliness preferences'],
-          concerns: ['Different sleep schedules might cause friction']
-        } as unknown as MatchResult);
-        setInterested(false);
+        const response = await roommateService.getMatchById(id);
+        if (response.success && response.data) {
+          setMatch(response.data);
+          setInterested(response.data.isInterested || response.data.isConnected || false);
+        }
       } catch (error) {
         console.error('Failed to fetch match details', error);
       } finally {
@@ -77,25 +43,32 @@ export function MatchProfile() {
   const handleInterest = async () => {
     if (!match) return;
     try {
-      // API call placeholder
-      customAlert('Interest Sent! Waiting for response', 'Success', 'success');
+      const result = await roommateService.expressInterest(match.userId);
+      if (result.data?.connected) {
+        customAlert('It\'s a Match! Contact details shared', 'Success', 'success');
+      } else {
+        customAlert('Interest Sent! Waiting for response', 'Success', 'success');
+      }
       setInterested(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      customAlert(error?.response?.data?.error?.message || 'Failed to express interest', 'Error', 'error');
     }
   };
 
   const handleBookTogether = async () => {
-    if (!match) return;
+    if (!match || !match.requestId) return;
     try {
       setCreatingBooking(true);
-      // API call placeholder
-      setTimeout(() => {
+      const result = await sharedBookingService.createSharedBooking(match.requestId);
+      if (result.data?._id) {
         customAlert('Booking Created. You have 5 days to complete payment.', 'Success', 'success');
-        setCreatingBooking(false);
-      }, 1000);
-    } catch (error) {
+        navigate(`/shared-booking/${result.data._id}`);
+      }
+    } catch (error: any) {
       console.error(error);
+      customAlert(error?.response?.data?.error?.message || 'Failed to create booking', 'Error', 'error');
+    } finally {
       setCreatingBooking(false);
     }
   };

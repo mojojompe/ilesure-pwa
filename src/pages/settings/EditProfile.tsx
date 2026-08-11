@@ -151,7 +151,7 @@ export function EditProfile() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-borderLight z-30">
+        <div className="absolute bottom-0 left-0 right-0 p-4 pb-safe bg-white border-t border-borderLight z-30">
           <Button
             className="w-full shadow-md"
             onClick={handleSave}

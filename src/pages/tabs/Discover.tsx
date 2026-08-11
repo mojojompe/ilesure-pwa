@@ -17,6 +17,7 @@ import { listingService, Listing } from '../../api/listingService';
 import { useAuthStore } from '../../stores/authStore';
 import { chatService } from '../../api/chatService';
 import { AdsCarousel } from '../../components/common/AdsCarousel';
+import { FilterModal, FilterState } from '../../components/common/FilterModal';
 
 const CHIPS = [
   { id: 'all', label: 'All' },
@@ -38,6 +39,8 @@ export function Discover() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreServer, setHasMoreServer] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
   const ITEMS_PER_PAGE = 10;
   
   const fetchInitialData = async (page = 1, isRefresh = false) => {
@@ -117,9 +120,47 @@ export function Discover() {
         (activeChip === 'apartment' && !['hostel', 'shortlet'].includes(l.propertyType?.toLowerCase())) ||
         (activeChip === 'shortlet' && l.propertyType?.toLowerCase().includes('shortlet'));
 
-      return matchesSearch && matchesChip;
+      let matchesFilters = true;
+      if (activeFilters) {
+        const rent = l.rentAnnual || l.shortletPricing?.daily || 0;
+        if (rent < activeFilters.priceMin || rent > activeFilters.priceMax) matchesFilters = false;
+        
+        if (activeFilters.propertyTypes.length > 0) {
+          const typeMatch = activeFilters.propertyTypes.some(t => {
+            const mapped = t.toLowerCase().replace('-', '').replace(' ', '_');
+            return l.propertyType?.toLowerCase().includes(mapped);
+          });
+          if (!typeMatch) matchesFilters = false;
+        }
+
+        if (activeFilters.distance) {
+          const d = activeFilters.distance.toLowerCase();
+          if (d.includes('very close') && !l.distanceBucket?.toLowerCase().includes('very close')) matchesFilters = false;
+          if (d.includes('close (5') && !l.distanceBucket?.toLowerCase().includes('close (5')) matchesFilters = false;
+          if (d.includes('budget') && !l.distanceBucket?.toLowerCase().includes('budget')) matchesFilters = false;
+        }
+        
+        if (activeFilters.genderRestriction && activeFilters.genderRestriction !== 'Any') {
+          const target = activeFilters.genderRestriction === 'Female Only' ? 'female_only' : 'male_only';
+          if (l.genderRestriction !== target) matchesFilters = false;
+        }
+        
+        if (activeFilters.shareable && !l.shareable && !l.needsRoommate) matchesFilters = false;
+        if (activeFilters.furnished && !['fully_furnished', 'furnished'].includes(l.furnishing)) matchesFilters = false;
+        if (activeFilters.powerStable && !['constant', 'solar', 'hybrid', 'solar-backed'].includes(l.power)) matchesFilters = false;
+
+        if (activeFilters.schoolLocationOnly) {
+           const uniName = (user as any)?.university || 'Lead City University';
+           const shortUniName = uniName.replace(' University', '');
+           if (!l.areaCluster?.toLowerCase().includes(shortUniName.toLowerCase())) {
+             matchesFilters = false;
+           }
+        }
+      }
+
+      return matchesSearch && matchesChip && matchesFilters;
     });
-  }, [listings, searchQuery, activeChip]);
+  }, [listings, searchQuery, activeChip, activeFilters, user]);
 
   const paginatedListings = filteredListings.slice(0, currentPage * ITEMS_PER_PAGE);
   // Show Load More if there are hidden local items OR the server has more items
@@ -207,7 +248,7 @@ export function Discover() {
               />
             </div>
             
-            <button className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
+            <button onClick={() => setShowFilters(true)} className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
               <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
             </button>
           </div>
@@ -306,6 +347,18 @@ export function Discover() {
           )}
         </div>
       </div>
+      <FilterModal
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+        }}
+        onClear={() => {
+          setActiveFilters(null);
+        }}
+        userRole={user?.role}
+        university={(user as any)?.university}
+      />
     </AppShell>
   );
 }

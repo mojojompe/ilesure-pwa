@@ -32,9 +32,9 @@ export function Button({
   };
 
   const variants = {
-    primary: 'bg-btn-primary text-white shadow-clay-sm hover:shadow-clay',
-    secondary: 'bg-transparent text-burnt-brown border-2 border-burnt-brown hover:bg-burnt-brown-pale',
-    mustard: 'bg-btn-mustard text-white shadow-clay-sm hover:shadow-clay',
+    primary: 'bg-primary text-white shadow-clay-sm hover:shadow-clay',
+    secondary: 'bg-transparent text-primary border-2 border-primary hover:bg-surfaceLight',
+    mustard: 'bg-accent text-white shadow-clay-sm hover:shadow-clay',
     outline: 'bg-transparent text-textPrimary border-2 border-borderLight hover:bg-surfaceLight',
     ghost: 'bg-transparent text-textPrimary hover:bg-surfaceLight',
     success: 'bg-status-success text-white',

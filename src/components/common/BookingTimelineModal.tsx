@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { CheckmarkBadge01Icon, Time02Icon, InformationCircleIcon, Cancel01Icon } from '@hugeicons/react';
+import { customAlert } from '../../stores/alertStore';
 
 interface BookingTimelineModalProps {
   visible: boolean;
@@ -21,32 +22,26 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
   const steps = [
     {
       id: 1,
-      title: 'Booking Request Submitted',
-      desc: 'Your request is pending landlord/agent approval.',
+      title: 'Booking Requested',
+      desc: 'Your request has been submitted.',
       icon: Time02Icon
     },
     {
       id: 2,
-      title: 'Request Approved',
-      desc: 'Landlord has approved your request.',
+      title: 'Inspection Scheduled',
+      desc: booking?.inspectionDate ? `Scheduled for ${new Date(booking.inspectionDate).toLocaleDateString()} at ${booking.inspectionTime}` : 'Pending inspection schedule.',
       icon: CheckmarkBadge01Icon
     },
     {
       id: 3,
-      title: 'Physical Inspection',
-      desc: 'Schedule and complete a physical inspection.',
+      title: 'Inspection Verified',
+      desc: booking?.isVerified ? 'Inspection passed.' : 'Pending verification.',
       icon: InformationCircleIcon
     },
     {
       id: 4,
-      title: 'Make Payment',
-      desc: 'Pay your rent and fees securely via IleSure.',
-      icon: CheckmarkBadge01Icon
-    },
-    {
-      id: 5,
-      title: 'Move In',
-      desc: 'Get your keys and move into your new home!',
+      title: 'Payment',
+      desc: booking?.status === 'completed' ? 'Payment received.' : 'Pending payment.',
       icon: CheckmarkBadge01Icon
     }
   ];
@@ -94,7 +89,27 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                   if (isActive) iconBg = 'bg-accent/20 border-accent text-accent animate-pulse';
 
                   return (
-                    <div key={step.id} className="relative flex items-start mb-8 last:mb-0">
+                    <div 
+                      key={step.id} 
+                      className={`relative flex items-start mb-8 last:mb-0 cursor-pointer active:opacity-70 transition-opacity ${!isCompleted && !isActive ? 'opacity-50' : ''}`}
+                      onClick={() => {
+                        if (isCompleted) {
+                          customAlert(`${step.title} has been completed!`, 'Status', 'success');
+                        } else if (isActive) {
+                          if (step.id === 2 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled') {
+                            onClose();
+                            onScheduleInspection();
+                          } else if (step.id === 4 && onMakePayment) {
+                            onClose();
+                            onMakePayment();
+                          } else {
+                            customAlert(`You are currently on: ${step.title}`, 'Status', 'info');
+                          }
+                        } else {
+                          customAlert(`Please complete previous steps first.`, 'Status', 'info');
+                        }
+                      }}
+                    >
                       <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center relative z-10 mr-4 shrink-0 bg-background ${
                         isCompleted ? 'border-primary' : isActive ? 'border-accent' : 'border-borderLight'
                       }`}>
@@ -104,24 +119,24 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                       </div>
                       
                       <div className="flex-1 pt-1">
-                        <h4 className={`text-sm font-bold mb-1 ${isActive ? 'text-primary' : isCompleted ? 'text-textPrimary' : 'text-textSecondary'}`}>
+                        <h4 className={`text-sm font-bold mb-1 ${isActive ? 'text-primary' : isCompleted ? 'text-textPrimary' : 'text-textSecondary opacity-50'}`}>
                           {step.title}
                         </h4>
-                        <p className="text-xs text-textSecondary">{step.desc}</p>
+                        <p className={`text-xs ${isActive || isCompleted ? 'text-textSecondary' : 'text-textTertiary opacity-50'}`}>{step.desc}</p>
                         
                         {/* Render action buttons based on active step */}
-                        {isActive && step.id === 3 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled' && (
+                        {isActive && step.id === 2 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled' && (
                           <div className="mt-3">
                             <Button 
-                              size="small" 
-                              onClick={() => { onClose(); onScheduleInspection(); }}
+                              size="sm" 
+                              onClick={(e) => { e.stopPropagation(); onClose(); onScheduleInspection(); }}
                               className="text-xs py-2 px-4 shadow-sm"
                             >
                               Schedule Inspection
                             </Button>
                           </div>
                         )}
-                        {isActive && step.id === 3 && booking?.inspectionStatus === 'scheduled' && (
+                        {isActive && step.id === 2 && booking?.inspectionStatus === 'scheduled' && (
                           <div className="mt-3 p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
                             Inspection scheduled for {booking?.inspectionDate} at {booking?.inspectionTime}. Waiting for verification.
                           </div>
@@ -129,8 +144,8 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                         {isActive && step.id === 4 && onMakePayment && (
                           <div className="mt-3">
                             <Button 
-                              size="small" 
-                              onClick={() => { onClose(); onMakePayment(); }}
+                              size="sm" 
+                              onClick={(e) => { e.stopPropagation(); onClose(); onMakePayment(); }}
                               className="text-xs py-2 px-4 shadow-sm"
                             >
                               Make Payment

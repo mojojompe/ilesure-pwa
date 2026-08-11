@@ -46,7 +46,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
           <motion.div 
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="bg-background w-full max-w-md rounded-t-[24px] sm:rounded-[24px] p-6 z-10 flex flex-col max-h-[90vh] overflow-y-auto relative"
+            className="bg-background w-full max-w-md rounded-t-[24px] sm:rounded-[24px] p-6 pb-safe z-10 flex flex-col max-h-[90vh] overflow-y-auto relative"
           >
             <div className="w-12 h-1.5 bg-borderLight rounded-full mx-auto mb-6 sm:hidden" />
             <h2 className="text-xl font-bold text-textPrimary mb-4">Report {agentName}</h2>

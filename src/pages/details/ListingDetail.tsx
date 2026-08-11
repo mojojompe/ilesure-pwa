@@ -130,11 +130,12 @@ export function ListingDetail() {
   const handleChat = async () => {
     if (!listing) return;
     try {
+      const l = listing as any;
       const participantId = 
-        listing.agentId?._id || listing.agentId?.id || 
-        listing.landlordId?._id || listing.landlordId?.id ||
-        (listing.agent as any)?._id || (listing.agent as any)?.id ||
-        listing.companyId?._id || listing.companyId?.id;
+        l.agentId?._id || l.agentId?.id || 
+        l.landlordId?._id || l.landlordId?.id ||
+        l.agent?._id || l.agent?.id ||
+        l.companyId?._id || l.companyId?.id;
       
       if (participantId) {
         const res = await chatService.startChat(participantId, listing._id, 'Hi, I\'m interested in this property. Can we chat?');
@@ -168,8 +169,8 @@ export function ListingDetail() {
       });
       setShowBookModal(false);
       setExistingBooking(result.data);
-      await customAlert('Booking request created! Schedule your physical inspection.', 'Success', 'success');
-      setShowInspectionBooking(true);
+      await customAlert('Booking request created! Your request is pending landlord approval.', 'Success', 'success');
+      setShowTimelineModal(true);
     } catch (err) {
       console.error(err);
       customAlert('Failed to create booking', 'Error', 'error');
@@ -217,9 +218,9 @@ export function ListingDetail() {
     }
     switch (existingBooking.status) {
       case 'pending':
-        return { title: 'Schedule Inspection', action: () => setShowInspectionBooking(true) };
       case 'confirmed':
-        return { title: 'Make Payment', action: () => setShowPrePaymentModal(true) };
+      case 'completed':
+        return { title: 'View Booking Progress', action: () => setShowTimelineModal(true) };
       case 'cancelled':
       case 'rejected':
         return { title: 'Book Again', action: () => setShowBookModal(true) };
@@ -249,8 +250,9 @@ export function ListingDetail() {
   }
 
   const images = listing.images?.length > 0 ? listing.images : ['https://via.placeholder.com/800x400'];
-  const agentName = listing.companyId?.name || listing.agentId?.fullName || listing.landlordId?.fullName || listing.agentName || listing.companyName || (listing.agent as any)?.fullName || 'Property Manager';
-  const agentAvatar = listing.companyId?.logo || listing.agentId?.avatar || listing.landlordId?.avatar || listing.agent?.avatar;
+  const l = listing as any;
+  const agentName = l.companyId?.name || l.agentId?.fullName || l.landlordId?.fullName || l.agentName || l.companyName || l.agent?.fullName || 'Property Manager';
+  const agentAvatar = l.companyId?.logo || l.agentId?.avatar || l.landlordId?.avatar || l.agent?.avatar;
   const cta = getBookingCTA();
 
   return (
@@ -377,8 +379,13 @@ export function ListingDetail() {
                     </div>
                   )}
 
-                  {/* Agent Card */}
-                  <div className="flex flex-row items-center p-4 bg-surface rounded-2xl border border-borderLight shadow-sm mb-5 cursor-pointer active:scale-[0.98] transition-transform">
+                  <div 
+                    onClick={() => {
+                      const participantId = l.agentId?._id || l.agentId?.id || l.landlordId?._id || l.landlordId?.id || l.agent?._id || l.agent?.id || l.companyId?._id || l.companyId?.id;
+                      if (participantId) navigate(`/agent/${participantId}`);
+                    }}
+                    className="flex flex-row items-center p-4 bg-surface rounded-2xl border border-borderLight shadow-sm mb-5 cursor-pointer active:scale-[0.98] transition-transform"
+                  >
                     <div className="w-12 h-12 rounded-full bg-btn-primary/10 flex items-center justify-center shrink-0 mr-3 border border-borderLight">
                       {agentAvatar ? (
                         <img src={agentAvatar} alt="Agent" className="w-full h-full object-cover rounded-full" />
