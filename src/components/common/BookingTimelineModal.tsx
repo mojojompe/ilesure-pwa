@@ -129,11 +129,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                           <div className="mt-3">
                             <Button 
                               size="sm" 
-<<<<<<< HEAD
                               onClick={(e) => { e.stopPropagation(); onClose(); onScheduleInspection(); }}
-=======
-                              onClick={() => { onClose(); onScheduleInspection(); }}
->>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
                               className="text-xs py-2 px-4 shadow-sm"
                             >
                               Schedule Inspection
@@ -149,11 +145,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                           <div className="mt-3">
                             <Button 
                               size="sm" 
-<<<<<<< HEAD
                               onClick={(e) => { e.stopPropagation(); onClose(); onMakePayment(); }}
-=======
-                              onClick={() => { onClose(); onMakePayment(); }}
->>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
                               className="text-xs py-2 px-4 shadow-sm"
                             >
                               Make Payment

@@ -22,12 +22,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-<<<<<<< HEAD
-    const isPublicRoute = ['/login', '/register', '/auth', '/', '/verify-otp', '/reset-password'].some(route => 
-      route === '/' ? location.pathname === '/' : location.pathname.startsWith(route)
-    );
-    
-=======
     // SECURITY-FIX (P-H3): the previous exact-match allowlist missed real logged-out
     // routes (/onboarding, /auth/choice, /auth/role, /auth/school,
     // /auth/forgot-password, /auth/otp) and listed non-existent ones
@@ -40,8 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       path === '/register' ||
       path === '/onboarding' ||
       path.startsWith('/auth');
-
->>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
     if (!isLoading) {
       if (!isAuthenticated && !isPublicRoute) {
         navigate('/auth/choice', { replace: true });
