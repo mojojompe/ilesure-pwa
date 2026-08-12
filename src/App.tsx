@@ -30,6 +30,7 @@ import { Checkout } from './pages/booking/Checkout';
 import { KYC } from './pages/booking/KYC';
 import { Signature } from './pages/booking/Signature';
 import { Payment } from './pages/booking/Payment';
+import { PaymentCallback } from './pages/booking/PaymentCallback';
 import { BookingDetail } from './pages/booking/BookingDetail';
 import { SharedBookingDetail } from './pages/booking/SharedBookingDetail';
 import { PaymentHistory } from './pages/booking/PaymentHistory';
@@ -84,6 +85,8 @@ export default function App() {
         <Route path="/booking/kyc/:id" element={<KYC />} />
         <Route path="/booking/signature/:id" element={<Signature />} />
         <Route path="/booking/payment/:id" element={<Payment />} />
+        {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
+        <Route path="/payment/callback" element={<PaymentCallback />} />
         <Route path="/payment-history" element={<PaymentHistory />} />
         <Route path="/payment-detail" element={<PaymentDetail />} />
 

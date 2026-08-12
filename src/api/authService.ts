@@ -101,29 +101,23 @@ export interface UserProfile {
 
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
-    console.log('[AuthService] POST /auth/login', data);
+    // SECURITY-FIX: never log the login body (email/password) or the response
+    // (accessToken/refreshToken). Plaintext credentials/tokens must not reach the
+    // console or any telemetry that captures console output.
     const response = await apiClient.post<AuthResponse>('/auth/login', data);
-    console.log('[AuthService] Response:', response.status, response.data);
     return response.data;
   },
 
   async googleLogin(data: { token: string }): Promise<AuthResponse> {
-    console.log('[AuthService] POST /auth/google-login', data);
+    // SECURITY-FIX: do not log the Google id_token.
     const response = await apiClient.post<AuthResponse>('/auth/google-login', data);
     return response.data;
   },
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    console.log('[AuthService] POST /auth/register', { ...data, password: '***' });
-    try {
-      const response = await apiClient.post<AuthResponse>('/auth/register', data);
-      console.log('[AuthService] Register response status:', response.status);
-      console.log('[AuthService] Register response data:', response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error('[AuthService] Register error:', error.response?.data || error.message);
-      throw error;
-    }
+    // SECURITY-FIX: do not log registration PII or the token-bearing response.
+    const response = await apiClient.post<AuthResponse>('/auth/register', data);
+    return response.data;
   },
 
   async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {

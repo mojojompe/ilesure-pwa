@@ -22,12 +22,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const isPublicRoute = ['/login', '/register', '/auth', '/', '/verify-otp', '/reset-password'].includes(location.pathname);
-    
+    // SECURITY-FIX (P-H3): the previous exact-match allowlist missed real logged-out
+    // routes (/onboarding, /auth/choice, /auth/role, /auth/school,
+    // /auth/forgot-password, /auth/otp) and listed non-existent ones
+    // (/verify-otp, /reset-password), bouncing legitimate onboarding/registration/OTP/
+    // forgot-password users to /login. Use prefix matching aligned with App.tsx routes.
+    const path = location.pathname;
+    const isPublicRoute =
+      path === '/' ||
+      path === '/login' ||
+      path === '/register' ||
+      path === '/onboarding' ||
+      path.startsWith('/auth');
+
     if (!isLoading) {
       if (!isAuthenticated && !isPublicRoute) {
         navigate('/login', { replace: true });
       } else if (isAuthenticated && isPublicRoute && user) {
+        // DECISION (P-M2): the role read here comes from client-controlled storage and
+        // is used ONLY to pick which UI shell to render (and to keep non-renter roles
+        // out of the PWA). It is NOT an authorization boundary — the backend enforces
+        // role/permission on every route and endpoint. A tampered local role can change
+        // the UI but cannot grant access to protected data.
         // Only allow student and individual to access PWA routes
         if (user.role === 'student' || user.role === 'individual') {
           navigate('/discover', { replace: true });

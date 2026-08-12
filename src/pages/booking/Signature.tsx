@@ -6,8 +6,7 @@ import { ArrowDown01Icon } from '@hugeicons/react';
 import SignatureCanvas from 'react-signature-canvas';
 import { customAlert } from '../../stores/alertStore';
 import { clsx } from 'clsx';
-// import { contractService } from '../../api/contractService'; // Uncomment when available
-// import { bookingService } from '../../api/bookingService'; // Uncomment when available
+import { contractService } from '../../api/contractService';
 
 export function Signature() {
   const { id } = useParams<{ id: string }>();
@@ -61,13 +60,40 @@ export function Signature() {
       customAlert('Please sign the document first', 'Warning', 'warning');
       return;
     }
-    
+    if (!id) return;
+
+    // SECURITY-FIX (P-M4): the signature is now actually sent to the backend and we only
+    // advance to payment on a successful server response. Previously handleSign never
+    // read the canvas or called the contract service — a setTimeout simply navigated on,
+    // so no legal artifact was ever recorded. The backend must bind this signature to the
+    // authenticated tenant + bookingId and store the executed agreement.
     setSigning(true);
-    setTimeout(() => {
+    try {
+      const signatureBase64 = sigCanvas.current!.toDataURL();
+      const res = await contractService.signTenancyAgreement({
+        bookingId: id,
+        signatureBase64,
+        party: 'tenant',
+      });
+      if (res?.success) {
+        navigate(`/booking/payment/${id}`);
+      } else {
+        customAlert(
+          res?.message || 'Could not record your signature. Please try again.',
+          'Error',
+          'error'
+        );
+        setSigning(false);
+      }
+    } catch (err: any) {
+      customAlert(
+        err?.response?.data?.error?.message ||
+          'Could not record your signature. Please try again.',
+        'Error',
+        'error'
+      );
       setSigning(false);
-      // Navigate to Payment
-      navigate(`/booking/payment/${id}`);
-    }, 1500);
+    }
   };
 
   if (loading) {

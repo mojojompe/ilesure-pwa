@@ -150,6 +150,10 @@ export function Login() {
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
 
+              {/* SECURITY-FIX TODO (P-L1): this button is inert (onClick is a no-op).
+                  Wire it to Google OAuth via @react-oauth/google (e.g. useGoogleLogin)
+                  and pass the returned id_token to authService.googleLogin(). The backend
+                  must verify the id_token's aud/iss/signature/expiry before trusting it. */}
               <Button
                 type="button"
                 variant="outline"

@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+// SECURITY-FIX (P-M5): strip all `console.*` and `debugger` statements from production
+// builds so any residual credential/user-data logging cannot leak in prod. Applied only
+// for `vite build` (command === 'build') so console output is preserved during dev.
+export default defineConfig(({ command }) => ({
+  ...(command === 'build' ? { esbuild: { drop: ['console', 'debugger'] as ('console' | 'debugger')[] } } : {}),
   plugins: [
     react(),
     VitePWA({
@@ -55,4 +59,4 @@ export default defineConfig({
       }
     })
   ]
-});
+}));
