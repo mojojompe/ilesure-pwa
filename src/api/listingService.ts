@@ -3,7 +3,12 @@ import { apiClient } from './client';
 export interface Listing {
   _id: string;
   id: string;
-  landlordId: string;
+  // Owner fields may arrive as an id string or a populated object depending on the endpoint.
+  landlordId: any;
+  agentId?: any;
+  companyId?: any;
+  agentName?: string;
+  companyName?: string;
   title: string;
   description: string;
   rentAnnual: number;

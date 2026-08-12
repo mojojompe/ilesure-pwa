@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 import { Megaphone01Icon } from '@hugeicons/react';
 // We might not have adService in PWA yet, let's create a mockup or import if exists.
 // Checking if adService exists... I'll just provide a fallback.
-import api from '../../api/api';
+import api from '../../api/client';
 
 export const adService = {
-  getActiveAds: async () => {
+  getActiveAds: async (): Promise<{ success: boolean; data: Ad[] }> => {
     try {
       const res = await api.get('/ads/active');
-      return res.data;
+      return res.data as { success: boolean; data: Ad[] };
     } catch {
       return { success: false, data: [] };
     }
@@ -46,7 +46,7 @@ export const AdsCarousel: React.FC<AdsCarouselProps> = ({ heroTitle, heroImage }
     fetchAds();
   }, []);
 
-  const carouselItems = [
+  const carouselItems: any[] = [
     { type: 'hero', id: 'hero', title: heroTitle, image: heroImage },
     ...ads.map(ad => ({ type: 'ad', id: ad._id, ...ad })),
   ];

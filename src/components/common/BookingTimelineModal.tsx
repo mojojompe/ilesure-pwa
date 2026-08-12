@@ -113,7 +113,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                         {isActive && step.id === 3 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled' && (
                           <div className="mt-3">
                             <Button 
-                              size="small" 
+                              size="sm" 
                               onClick={() => { onClose(); onScheduleInspection(); }}
                               className="text-xs py-2 px-4 shadow-sm"
                             >
@@ -129,7 +129,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                         {isActive && step.id === 4 && onMakePayment && (
                           <div className="mt-3">
                             <Button 
-                              size="small" 
+                              size="sm" 
                               onClick={() => { onClose(); onMakePayment(); }}
                               className="text-xs py-2 px-4 shadow-sm"
                             >
