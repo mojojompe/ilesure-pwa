@@ -63,13 +63,14 @@ export interface SharedBookingListResponse {
 export const sharedBookingService = {
   /** Create a shared booking from a mutual match */
   async createSharedBooking(
-    roommateRequestId: string
+    roommateRequestId: string,
+    listingId?: string
   ): Promise<{ success: boolean; data: SharedBooking; message: string }> {
     const response = await apiClient.post<{
       success: boolean;
       data: SharedBooking;
       message: string;
-    }>('/shared-bookings', { roommateRequestId });
+    }>('/shared-bookings', { roommateRequestId, listingId });
     return response.data;
   },
 

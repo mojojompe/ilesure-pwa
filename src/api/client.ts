@@ -9,6 +9,10 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 30000,
+      // SECURITY-FIX: send credentials so the backend-set httpOnly refresh-token cookie
+      // is included on requests (notably /auth/refresh). The refresh token is no longer
+      // read from JS-accessible storage — the cookie is the source of truth.
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -82,22 +86,27 @@ class ApiClient {
 
   private async handleRefreshToken(): Promise<boolean> {
     try {
+      // SECURITY-FIX: the refresh token is delivered as an httpOnly cookie set by the
+      // backend and is NO LONGER persisted in / read from localStorage. With
+      // `withCredentials`, the cookie is sent automatically to /auth/refresh. We keep a
+      // transitional body fallback only if a refreshToken happens to still be in the
+      // in-memory store, but we never persist a (new) refresh token to localStorage.
       const authData = localStorage.getItem('ilesure_pwa_auth');
-      if (!authData) return false;
+      const parsed = authData ? JSON.parse(authData) : null;
+      const state = parsed?.state || parsed || {};
+      const refreshToken = state.refreshToken; // usually undefined now (cookie is truth)
 
-      const parsed = JSON.parse(authData);
-      const state = parsed.state || parsed;
-      const refreshToken = state.refreshToken;
-      if (!refreshToken) return false;
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/refresh`,
+        refreshToken ? { refreshToken } : {},
+        { withCredentials: true }
+      );
+      const { accessToken } = response.data;
 
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-      if (accessToken && newRefreshToken) {
-        // We'll update it via Zustand, but we can patch localStorage as a fallback here
-        if (parsed.state) {
+      if (accessToken) {
+        // Only the (short-lived) access token is patched back into storage.
+        if (parsed?.state) {
           parsed.state.token = accessToken;
-          parsed.state.refreshToken = newRefreshToken;
           localStorage.setItem('ilesure_pwa_auth', JSON.stringify(parsed));
         }
         return true;

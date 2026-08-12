@@ -40,8 +40,8 @@ export const socketService = {
         token = parsed.state?.token || parsed.accessToken || null;
       }
       if (token) connectSocket(token);
-    } catch (error) {
-      console.warn('Socket connect failed', error);
+    } catch {
+      // SECURITY-FIX: removed console log that could surface auth/session context.
     }
   },
   disconnect: () => {

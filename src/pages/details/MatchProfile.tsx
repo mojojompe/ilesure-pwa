@@ -11,6 +11,10 @@ import {
 } from '@hugeicons/react';
 import { roommateService, MatchResult } from '../../api/roommateService';
 import { sharedBookingService } from '../../api/sharedBookingService';
+<<<<<<< HEAD
+=======
+import { chatService } from '../../api/chatService';
+>>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
 import { customAlert } from '../../stores/alertStore';
 
 export function MatchProfile() {
@@ -27,12 +31,18 @@ export function MatchProfile() {
         if (!id) return;
         setLoading(true);
         const response = await roommateService.getMatchById(id);
+<<<<<<< HEAD
         if (response.success && response.data) {
           setMatch(response.data);
           setInterested(response.data.isInterested || response.data.isConnected || false);
         }
+=======
+        setMatch(response.data);
+        setInterested(response.data.isInterested || response.data.isConnected || false);
+>>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
       } catch (error) {
         console.error('Failed to fetch match details', error);
+        customAlert('Failed to load match details', 'Error', 'error');
       } finally {
         setLoading(false);
       }
@@ -41,18 +51,26 @@ export function MatchProfile() {
   }, [id]);
 
   const handleInterest = async () => {
-    if (!match) return;
+    if (!match || interested) return;
     try {
       const result = await roommateService.expressInterest(match.userId);
       if (result.data?.connected) {
+<<<<<<< HEAD
         customAlert('It\'s a Match! Contact details shared', 'Success', 'success');
+=======
+        customAlert("It's a Match! Contact details shared", 'Success', 'success');
+>>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
       } else {
         customAlert('Interest Sent! Waiting for response', 'Success', 'success');
       }
       setInterested(true);
     } catch (error: any) {
+<<<<<<< HEAD
       console.error(error);
       customAlert(error?.response?.data?.error?.message || 'Failed to express interest', 'Error', 'error');
+=======
+      customAlert(error.response?.data?.error?.message || 'Failed to send interest', 'Error', 'error');
+>>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
     }
   };
 
@@ -60,6 +78,7 @@ export function MatchProfile() {
     if (!match || !match.requestId) return;
     try {
       setCreatingBooking(true);
+<<<<<<< HEAD
       const result = await sharedBookingService.createSharedBooking(match.requestId);
       if (result.data?._id) {
         customAlert('Booking Created. You have 5 days to complete payment.', 'Success', 'success');
@@ -68,6 +87,15 @@ export function MatchProfile() {
     } catch (error: any) {
       console.error(error);
       customAlert(error?.response?.data?.error?.message || 'Failed to create booking', 'Error', 'error');
+=======
+      const result = await sharedBookingService.createSharedBooking(match.requestId, match.listing?.id);
+      if (result.data?._id) {
+        customAlert('Booking created. You have 5 days to complete payment.', 'Success', 'success');
+        navigate(`/shared-booking/${result.data._id}`);
+      }
+    } catch (error: any) {
+      customAlert(error.response?.data?.error?.message || 'Failed to create booking', 'Error', 'error');
+>>>>>>> f3ac5e797eee2f6ae6e7c35644c97f5bab03d6b3
     } finally {
       setCreatingBooking(false);
     }

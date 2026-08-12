@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# SECURITY-FIX (P-M3): never commit environment files (may hold VITE_* secrets)
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

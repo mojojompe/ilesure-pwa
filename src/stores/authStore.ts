@@ -79,6 +79,22 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'ilesure_pwa_auth',
       storage: createJSONStorage(() => localStorage),
+      // SECURITY-FIX: do NOT persist the refresh token into the localStorage blob. The
+      // refresh token is now an httpOnly cookie (source of truth); persisting it in JS-
+      // readable storage made it XSS-stealable and gave durable, renewable takeover that
+      // survived logout. `refreshToken` still exists in in-memory state for the session
+      // but is excluded from persistence here.
+      // FLAG: the access token (`token`) is still persisted short-term so sessions
+      // survive reload. It should be migrated to in-memory-only (or an httpOnly cookie)
+      // in a follow-up; access tokens are short-lived which limits the exposure window.
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+        hasSeenOnboarding: state.hasSeenOnboarding,
+        selectedSchool: state.selectedSchool,
+        acceptedDisclaimers: state.acceptedDisclaimers,
+      }),
     }
   )
 );

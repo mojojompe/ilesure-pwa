@@ -14,7 +14,7 @@ import {
 } from '@hugeicons/react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
-// import { kycService } from '../../api/kycService'; // Uncomment when backend is ready
+import { kycService } from '../../api/kycService';
 
 const KYC_REQUIRED_ROLES = ['agent', 'company', 'landlord', 'sub_agent'];
 
@@ -33,43 +33,83 @@ export function KYC() {
   const [showRefInput, setShowRefInput] = useState(false);
   const [manualRefId, setManualRefId] = useState('');
 
+  // SECURITY-FIX (P-C1): verification state is derived ONLY from the backend
+  // (kycService.getKYCStatus). The previous implementation faked verification with a
+  // setTimeout and self-wrote `ninVerified/bvnVerified: true` into the persisted auth
+  // store, letting any user reach "verified" with zero identity data. All client-side
+  // self-verification has been removed.
   const fetchStatus = async () => {
-    // Mocking the API call
     setLoadingStatus(true);
-    setTimeout(() => {
+    try {
+      const res = await kycService.getKYCStatus();
+      if (res?.success && res.data) {
+        setNinVerified(!!res.data.ninVerified);
+        setBvnVerified(!!res.data.bvnVerified);
+        setNinVerifiedAt(res.data.ninVerifiedAt || null);
+        setBvnVerifiedAt(res.data.bvnVerifiedAt || null);
+        // Keep the (UI-only) persisted store in sync with SERVER truth, never a timer.
+        if (user) {
+          setUser({
+            ...user,
+            ninVerified: !!res.data.ninVerified,
+            bvnVerified: !!res.data.bvnVerified,
+          } as any);
+        }
+      }
+    } catch {
+      customAlert('Could not load verification status. Please try again.', 'Error', 'error');
+    } finally {
       setLoadingStatus(false);
-    }, 1000);
+    }
   };
 
   useEffect(() => {
     fetchStatus();
   }, []);
 
-  const openWidget = (type: 'nin' | 'bvn') => {
+  const openWidget = async (type: 'nin' | 'bvn') => {
     setVerifying(type);
-    // Mock verification delay
-    setTimeout(() => {
-      if (type === 'nin') {
-        setNinVerified(true);
-        setNinVerifiedAt(new Date().toISOString());
-        setUser({ ...user, ninVerified: true } as any);
-      } else {
-        setBvnVerified(true);
-        setBvnVerifiedAt(new Date().toISOString());
-        setUser({ ...user, bvnVerified: true } as any);
+    try {
+      // Ask the backend to create a Dojah verification session for this user.
+      const res = await kycService.initialize(type);
+      const widgetUrl = res?.data?.widgetUrl;
+      // SECURITY-FIX TODO: fully embed the Dojah web widget (res.data.widgetUrl /
+      // res.data.html / res.data.widgetId) via the Dojah SDK and, on the widget's
+      // completion event, call kycService.verify(res.data.referenceId, type). The Dojah
+      // SDK is not yet bundled in the PWA, so we open the hosted widget and rely on the
+      // backend to record the result. Verified flags are NEVER set on the client.
+      if (widgetUrl) {
+        window.open(widgetUrl, '_blank', 'noopener,noreferrer');
       }
+      customAlert(
+        'Complete the verification in the Dojah widget, then tap "Sync with Dojah" to refresh your status.',
+        'Verification started',
+        'info'
+      );
+      // Refresh from the server (in case verification already completed server-side).
+      await fetchStatus();
+    } catch {
+      customAlert('Could not start verification. Please try again.', 'Error', 'error');
+    } finally {
       setVerifying(null);
-    }, 2000);
+    }
   };
 
-  const handleSync = () => {
+  const handleSync = async () => {
     setSyncing(true);
-    setTimeout(() => {
-      setSyncing(false);
+    try {
+      const ref = manualRefId.trim() || undefined;
+      // Pull the latest Dojah results server-side, then read authoritative status.
+      await kycService.sync(undefined, ref);
+      await fetchStatus();
       setShowRefInput(false);
       setManualRefId('');
       customAlert('Sync complete!', 'Success', 'success');
-    }, 1000);
+    } catch {
+      customAlert('Sync failed. Please try again.', 'Error', 'error');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const roleLabel = isKYCRequired ? 'Agent / Company' : 'Student / Individual';
