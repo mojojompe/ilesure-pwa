@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ApartmentCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { 
   Home01Icon, 
   Chatting01Icon
@@ -263,9 +264,10 @@ export function MyApartments() {
 
         <div className="flex-1">
           {loading && !refreshing ? (
-            <div className="flex flex-col items-center justify-center pt-20">
-              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-textSecondary mt-4 text-sm font-medium">Loading apartments...</p>
+            <div className="flex flex-col gap-2">
+              <ApartmentCardSkeleton />
+              <ApartmentCardSkeleton />
+              <ApartmentCardSkeleton />
             </div>
           ) : displayedData.length > 0 ? (
             <motion.div 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { Skeleton, NotificationSkeleton } from '../../components/ui/SkeletonLoader';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { 
   Notification01Icon, 
@@ -143,9 +143,11 @@ export function Notifications() {
         
         <div className="flex-1">
           {loading && !refreshing ? (
-            <div className="space-y-3">
-              <Skeleton height={100} className="w-full rounded-2xl" />
-              <Skeleton height={100} className="w-full rounded-2xl" />
+            <div className="flex flex-col">
+              <NotificationSkeleton />
+              <NotificationSkeleton />
+              <NotificationSkeleton />
+              <NotificationSkeleton />
             </div>
           ) : notifications.length > 0 ? (
             <motion.div 

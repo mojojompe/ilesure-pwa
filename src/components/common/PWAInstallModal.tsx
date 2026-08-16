@@ -8,42 +8,31 @@ export function PWAInstallModal() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      checkAndShowPrompt();
-    };
-
-    window.addEventListener('beforeinstallprompt', handler);
-
-    // If already standalone, we don't need to do anything
+    // Check if already installed / running in standalone mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
     if (isStandalone) {
       return;
     }
 
-    // Check if we should show the prompt based on date
-    const checkAndShowPrompt = () => {
-      const lastPrompt = localStorage.getItem('lastPWAInstallPromptDate');
-      const today = new Date().toDateString();
-      if (lastPrompt !== today) {
-        setShow(true);
-        localStorage.setItem('lastPWAInstallPromptDate', today);
-      }
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
     };
+    window.addEventListener('beforeinstallprompt', handler);
 
-    // If safari or cases where beforeinstallprompt doesn't fire, we still might want to show instructions
-    // We will just show the prompt daily anyway if they aren't installed
-    // checkAndShowPrompt(); // Actually, better to just show it when beforeinstallprompt fires to be actionable on Android/Chrome.
-    // For iOS, beforeinstallprompt doesn't exist, so we show it manually.
-    
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (isIOS) {
-       checkAndShowPrompt();
-    }
+    // Check if shown this session
+    const hasSeen = sessionStorage.getItem('pwa_install_prompt_seen');
+    if (hasSeen) return;
+
+    // Initial check (delay by 2s on first load)
+    const initialTimer = setTimeout(() => {
+      setShow(true);
+      sessionStorage.setItem('pwa_install_prompt_seen', 'true');
+    }, 2000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      clearTimeout(initialTimer);
     };
   }, []);
 
@@ -67,15 +56,15 @@ export function PWAInstallModal() {
   return (
     <AnimatePresence>
       {show && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={handleClose}
           />
           <motion.div 
-            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="bg-background w-full max-w-sm rounded-3xl shadow-2xl relative z-10 p-6 flex flex-col items-center text-center"
           >
             <button onClick={handleClose} className="absolute top-4 right-4 p-1.5 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">

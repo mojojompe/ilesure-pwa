@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { Skeleton, ChatItemSkeleton } from '../../components/ui/SkeletonLoader';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Search01Icon, BubbleChatIcon } from '@hugeicons/react';
 import { chatService, Conversation } from '../../api/chatService';
@@ -105,10 +105,11 @@ export function ChatsList() {
         
         <div className="flex-1">
           {loading && !refreshing ? (
-            <div className="space-y-3">
-              <Skeleton height={88} className="w-full rounded-2xl" />
-              <Skeleton height={88} className="w-full rounded-2xl" />
-              <Skeleton height={88} className="w-full rounded-2xl" />
+            <div className="flex flex-col">
+              <ChatItemSkeleton />
+              <ChatItemSkeleton />
+              <ChatItemSkeleton />
+              <ChatItemSkeleton />
             </div>
           ) : filteredChats.length > 0 ? (
             <motion.div 

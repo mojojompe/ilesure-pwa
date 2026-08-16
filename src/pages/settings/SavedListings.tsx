@@ -4,7 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { ListingCard } from '../../components/listing/ListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
-import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { FavouriteIcon } from '@hugeicons/react';
 import { listingService, Listing } from '../../api/listingService';
@@ -54,8 +54,8 @@ export function SavedListings() {
         
         {loading && !refreshing ? (
           <div className="space-y-4">
-            <Skeleton height={320} className="w-full rounded-3xl" />
-            <Skeleton height={320} className="w-full rounded-3xl" />
+            <ListingCardSkeleton />
+            <ListingCardSkeleton />
           </div>
         ) : listings.length > 0 ? (
           <div className="pb-6">

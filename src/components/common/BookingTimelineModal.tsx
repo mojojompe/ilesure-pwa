@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
-import { CheckmarkBadge01Icon, Time02Icon, InformationCircleIcon, Cancel01Icon } from '@hugeicons/react';
+import { CheckmarkBadge01Icon, Time02Icon, InformationCircleIcon, Cancel01Icon, Home01Icon } from '@hugeicons/react';
 import { customAlert } from '../../stores/alertStore';
 
 interface BookingTimelineModalProps {
@@ -28,7 +28,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
     },
     {
       id: 2,
-      title: 'Inspection Scheduled',
+      title: 'Physical Inspection',
       desc: booking?.inspectionDate ? `Scheduled for ${new Date(booking.inspectionDate).toLocaleDateString()} at ${booking.inspectionTime}` : 'Pending inspection schedule.',
       icon: CheckmarkBadge01Icon
     },
@@ -43,6 +43,12 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
       title: 'Payment',
       desc: booking?.status === 'completed' ? 'Payment received.' : 'Pending payment.',
       icon: CheckmarkBadge01Icon
+    },
+    {
+      id: 5,
+      title: 'Move In',
+      desc: booking?.status === 'completed' ? 'You have moved in.' : 'Pending move in.',
+      icon: Home01Icon
     }
   ];
 
@@ -79,7 +85,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
               <div className="relative pl-4">
                 <div className="absolute left-7 top-4 bottom-8 w-0.5 bg-borderLight" />
                 
-                {steps.map((step, index) => {
+                {steps.map((step) => {
                   const isCompleted = step.id < currentStep;
                   const isActive = step.id === currentStep;
                   const Icon = step.icon;
@@ -91,20 +97,43 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                   return (
                     <div 
                       key={step.id} 
-                      className={`relative flex items-start mb-8 last:mb-0 cursor-pointer active:opacity-70 transition-opacity ${!isCompleted && !isActive ? 'opacity-50' : ''}`}
-                      onClick={() => {
+                      className={`relative flex items-start mb-8 last:mb-0 cursor-pointer active:opacity-70 transition-opacity ${(!isCompleted && !isActive) || step.id > 3 && currentStep < 3 ? 'opacity-50 grayscale' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (isCompleted) {
                           customAlert(`${step.title} has been completed!`, 'Status', 'success');
-                        } else if (isActive) {
-                          if (step.id === 2 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled') {
-                            onClose();
-                            onScheduleInspection();
-                          } else if (step.id === 4 && onMakePayment) {
+                          return;
+                        }
+                        
+                        // If they click on Step 2 (Physical Inspection) and it's not completed, trigger schedule inspection
+                        if (step.id === 2 && onScheduleInspection && booking?.inspectionStatus !== 'scheduled') {
+                          onClose();
+                          onScheduleInspection();
+                          return;
+                        }
+
+                        // If they click on Step 4 (Payment) and it's not completed, check prerequisites
+                        if (step.id === 4 && onMakePayment) {
+                          if (currentStep < 4) {
+                            customAlert('Please complete the physical inspection and verification first.', 'Prerequisite Not Met', 'warning');
+                          } else {
                             onClose();
                             onMakePayment();
-                          } else {
-                            customAlert(`You are currently on: ${step.title}`, 'Status', 'info');
                           }
+                          return;
+                        }
+                        
+                        if (step.id === 5) {
+                          if (currentStep < 5) {
+                            customAlert('Payment must be completed before you can move in.', 'Prerequisite Not Met', 'warning');
+                          } else {
+                            customAlert('You have successfully moved in!', 'Status', 'success');
+                          }
+                          return;
+                        }
+
+                        if (isActive) {
+                          customAlert(`You are currently on: ${step.title}`, 'Status', 'info');
                         } else {
                           customAlert(`Please complete previous steps first.`, 'Status', 'info');
                         }

@@ -13,6 +13,8 @@ import {
 import { listingService, Listing } from '../../api/listingService';
 import { userService } from '../../api/userService';
 import { customAlert } from '../../stores/alertStore';
+import { AgentReportModal } from '../../components/common/AgentReportModal';
+import { AddRatingModal } from '../../components/common/AddRatingModal';
 
 export function AgentProfile() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +24,9 @@ export function AgentProfile() {
   
   const [agent, setAgent] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     const fetchAgentData = async () => {
@@ -153,11 +158,17 @@ export function AgentProfile() {
 
               {/* Actions */}
               <div className="flex w-full gap-4 mb-6">
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-borderLight active:bg-surfaceLight transition-colors">
+                <button 
+                  onClick={() => setShowRatingModal(true)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-borderLight active:bg-surfaceLight transition-colors"
+                >
                   <StarIcon size={18} className="text-textPrimary" />
                   <span className="text-sm font-bold text-textPrimary">Add a rating</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-error/30 active:bg-error/10 transition-colors">
+                <button 
+                  onClick={() => setShowReportModal(true)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-error/30 active:bg-error/10 transition-colors"
+                >
                   <Alert02Icon size={18} className="text-error" />
                   <span className="text-sm font-bold text-error">Report Agent</span>
                 </button>
@@ -245,6 +256,33 @@ export function AgentProfile() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AgentReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        agentName={agent.fullName || agent.name || 'Agent'}
+        targetId={id as string}
+      />
+
+      <AddRatingModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        agentName={agent.fullName || agent.name || 'Agent'}
+        onSubmit={async (rating, comment) => {
+          try {
+            await userService.submitAgentReview(id as string, rating, comment);
+            customAlert('Review submitted successfully!', 'Success', 'success');
+            // Refresh reviews
+            const reviewsRes = await userService.getAgentReviews(id as string);
+            if (reviewsRes.success && reviewsRes.data?.reviews) {
+              setReviews(reviewsRes.data.reviews);
+            }
+          } catch (error) {
+            customAlert('Failed to submit review', 'Error', 'error');
+          }
+        }}
+      />
     </AppShell>
   );
 }

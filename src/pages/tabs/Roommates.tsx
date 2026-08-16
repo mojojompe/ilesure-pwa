@@ -92,8 +92,9 @@ export function Roommates() {
   if (loading && !refreshing) {
     return (
       <AppShell>
-        <div className="flex-1 flex items-center justify-center pt-20">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="flex-1 px-5 pt-safe-top pb-6 min-h-full bg-background flex flex-col pt-20 gap-4">
+          <Skeleton height={200} className="w-full rounded-2xl" />
+          <Skeleton height={200} className="w-full rounded-2xl" />
         </div>
       </AppShell>
     );

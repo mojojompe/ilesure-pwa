@@ -19,7 +19,8 @@ import {
   Alert02Icon,
   BubbleChatIcon,
   InformationCircleIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  Wifi01Icon
 } from '@hugeicons/react';
 import { motion } from 'framer-motion';
 import { listingService, Listing } from '../../api/listingService';
@@ -33,6 +34,8 @@ import { PrePaymentModal } from '../../components/common/PrePaymentModal';
 import { InspectionBookingModal } from '../../components/common/InspectionBookingModal';
 import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
+import { FullscreenImageCarousel } from '../../components/common/FullscreenImageCarousel';
+import { InquiryModal } from '../../components/common/InquiryModal';
 import { customAlert } from '../../stores/alertStore';
 
 type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
@@ -65,6 +68,8 @@ export function ListingDetail() {
   const [showInspectionBooking, setShowInspectionBooking] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [showCarousel, setShowCarousel] = useState(false);
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
   
   const [existingBooking, setExistingBooking] = useState<any>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -288,12 +293,20 @@ export function ListingDetail() {
             onScroll={handleScroll}
           >
             {images.map((img, idx) => (
-              <img 
+              <button 
                 key={idx}
-                src={img} 
-                alt={`${listing.title} - ${idx}`}
-                className="w-full h-full object-cover shrink-0 snap-start"
-              />
+                className="w-full h-full shrink-0 snap-start active:opacity-90"
+                onClick={() => {
+                  setCurrentImageIndex(idx);
+                  setShowCarousel(true);
+                }}
+              >
+                <img 
+                  src={img} 
+                  alt={`${listing.title} - ${idx}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
             ))}
           </div>
           <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-1.5 z-10">
@@ -453,12 +466,26 @@ export function ListingDetail() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-3">Amenities</h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {(listing.amenities && listing.amenities.length > 0) ? listing.amenities.map((amenity: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 bg-surface p-3 rounded-xl border border-borderLight">
-                        <CheckmarkBadge01Icon size={16} className="text-accent shrink-0" variant="solid" />
-                        <span className="text-sm font-medium text-textPrimary capitalize truncate">{amenity}</span>
-                      </div>
-                    )) : (
+                    {(listing.amenities && listing.amenities.length > 0) ? listing.amenities.map((amenity: string, idx: number) => {
+                      const lower = amenity.toLowerCase();
+                      let Icon = CheckmarkBadge01Icon;
+                      if (lower.includes('wifi') || lower.includes('internet')) Icon = Wifi01Icon;
+                      else if (lower.includes('park') || lower.includes('garage')) Icon = CheckmarkBadge01Icon;
+                      else if (lower.includes('ac') || lower.includes('air') || lower.includes('condition')) Icon = CheckmarkBadge01Icon;
+                      else if (lower.includes('work') || lower.includes('desk') || lower.includes('study')) Icon = CheckmarkBadge01Icon;
+                      else if (lower.includes('balcony') || lower.includes('patio')) Icon = CheckmarkBadge01Icon;
+                      else if (lower.includes('secur') || lower.includes('guard')) Icon = CheckmarkBadge01Icon;
+                      else if (lower.includes('power') || lower.includes('electric')) Icon = FlashIcon;
+                      else if (lower.includes('water')) Icon = DropletIcon;
+                      else if (lower.includes('furnish')) Icon = Sofa01Icon;
+
+                      return (
+                        <div key={idx} className="flex items-center gap-2 bg-surface p-3 rounded-xl border border-borderLight">
+                          <Icon size={16} className="text-accent shrink-0" variant={Icon === CheckmarkBadge01Icon ? "solid" : "stroke"} />
+                          <span className="text-sm font-medium text-textPrimary capitalize truncate">{amenity}</span>
+                        </div>
+                      );
+                    }) : (
                       <p className="text-sm text-textSecondary">No amenities listed</p>
                     )}
                   </div>
@@ -589,20 +616,7 @@ export function ListingDetail() {
                   
                   <button
                     className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
-                    onClick={async () => {
-                      const question = window.prompt("What is your question for the agent?");
-                      if (question && question.trim().length > 0) {
-                        try {
-                          await listingService.submitInquiry(listing._id, question);
-                          await customAlert('Question submitted successfully', 'Success', 'success');
-                          // Fetch again
-                          const inqRes = await listingService.getInquiries(listing._id);
-                          setInquiries(inqRes.data?.inquiries || []);
-                        } catch (err) {
-                          customAlert('Failed to submit question', 'Error', 'error');
-                        }
-                      }
-                    }}
+                    onClick={() => setShowInquiryModal(true)}
                   >
                     <span className="text-sm font-semibold text-primary">Ask a Question</span>
                   </button>
@@ -670,6 +684,30 @@ export function ListingDetail() {
         loading={paymentLoading}
         onScheduleInspection={() => setShowInspectionBooking(true)}
         onMakePayment={() => setShowPrePaymentModal(true)}
+      />
+
+      <FullscreenImageCarousel 
+        images={images}
+        initialIndex={currentImageIndex}
+        visible={showCarousel}
+        onClose={() => setShowCarousel(false)}
+      />
+
+      <InquiryModal
+        visible={showInquiryModal}
+        onClose={() => setShowInquiryModal(false)}
+        agentName={agentName}
+        onSubmit={async (message) => {
+          try {
+            await listingService.submitInquiry(listing._id, message);
+            customAlert('Question submitted successfully', 'Success', 'success');
+            // Fetch again
+            const inqRes = await listingService.getInquiries(listing._id);
+            setInquiries(inqRes.data?.inquiries || []);
+          } catch (err) {
+            customAlert('Failed to submit question', 'Error', 'error');
+          }
+        }}
       />
     </AppShell>
   );

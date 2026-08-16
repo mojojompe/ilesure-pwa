@@ -19,20 +19,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide scrollbar globally for a cleaner mobile app feel */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: #F2EDE8;
-  border-radius: 99px;
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }
-::-webkit-scrollbar-thumb {
-  background: #D4821A;
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #8B4513;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @layer components {

@@ -4,7 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
-import { customConfirm } from '../../stores/alertStore';
+import { customConfirm, customAlert } from '../../stores/alertStore';
 import { 
   PencilEdit02Icon,
   FavouriteIcon,
@@ -23,14 +23,41 @@ import {
 } from '@hugeicons/react';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { listingService } from '../../api/listingService';
+import { userService } from '../../api/userService';
 
 export function Profile() {
-  const { user, clearAuth } = useAuthStore();
+  const { user, setUser, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const [savedCount, setSavedCount] = useState(0);
   const [matchesCount, setMatchesCount] = useState(0); // Optional: add roommateService if needed
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      customAlert('Image size should be less than 5MB', 'Error', 'error');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append('avatar', file);
+      const res = await userService.uploadAvatar(form);
+      if (res.success && res.data?.avatar) {
+        setUser({ ...user, avatar: res.data.avatar } as any);
+        customAlert('Profile photo updated successfully', 'Success', 'success');
+      }
+    } catch (err: any) {
+      customAlert(err.response?.data?.error?.message || 'Failed to upload photo', 'Error', 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const fetchProfileData = async (isRefresh = false) => {
     try {
@@ -114,9 +141,14 @@ export function Profile() {
                 )}
               </div>
             </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-surface active:scale-95 transition-transform">
-              <Camera01Icon size={14} className="text-white" />
-            </button>
+            <label className={`absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-surface cursor-pointer active:scale-95 transition-transform ${uploadingAvatar ? 'opacity-50' : ''}`}>
+              {uploadingAvatar ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera01Icon size={14} className="text-white" />
+              )}
+              <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" disabled={uploadingAvatar} />
+            </label>
           </div>
 
           <h2 className="text-[22px] font-extrabold text-textPrimary mb-1">

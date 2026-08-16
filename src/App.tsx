@@ -46,6 +46,7 @@ import { HelpSupport } from './pages/settings/HelpSupport';
 import { EditProfile } from './pages/settings/EditProfile';
 import { AlertModal } from './components/common/AlertModal';
 import { PWAInstallModal } from './components/common/PWAInstallModal';
+import { ProtectedRoute } from './components/layout/ProtectedRoute';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
@@ -66,46 +67,49 @@ export default function App() {
         <Route path="/auth/school" element={<SchoolSelection />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
         <Route path="/auth/otp" element={<OTP />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/roommates" element={<Roommates />} />
-        <Route path="/my-apartments" element={<MyApartments />} />
-        <Route path="/chats" element={<ChatsList />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/profile" element={<Profile />} />
-
-        {/* Details & Modals */}
-        <Route path="/listing/:id" element={<ListingDetail />} />
-        <Route path="/agent/:id" element={<AgentProfile />} />
-        <Route path="/match/:id" element={<MatchProfile />} />
-        <Route path="/roommate-profile" element={<RoommateProfile />} />
-        <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
-        <Route path="/chat/:id" element={<ChatScreen />} />
         
-        {/* Booking & Checkout */}
-        <Route path="/booking/:id" element={<BookingDetail />} />
-        <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
-        <Route path="/booking/checkout/:id" element={<Checkout />} />
-        <Route path="/booking/kyc/:id" element={<KYC />} />
-        <Route path="/booking/signature/:id" element={<Signature />} />
-        <Route path="/booking/payment/:id" element={<Payment />} />
-        {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
-        <Route path="/payment/callback" element={<PaymentCallback />} />
-        <Route path="/payment-history" element={<PaymentHistory />} />
-        <Route path="/payment-detail" element={<PaymentDetail />} />
+        {/* Protected Routes - Only for Students and Individuals on PWA */}
+        <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/roommates" element={<Roommates />} />
+          <Route path="/my-apartments" element={<MyApartments />} />
+          <Route path="/chats" element={<ChatsList />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/profile" element={<Profile />} />
 
-        {/* Settings & Support */}
-        <Route path="/saved-listings" element={<SavedListings />} />
-        <Route path="/settings/notifications" element={<NotificationSettings />} />
-        <Route path="/settings/privacy" element={<PrivacySecurity />} />
-        <Route path="/terms" element={<TermsPrivacy />} />
-        <Route path="/support" element={<HelpSupport />} />
-        <Route path="/settings/edit-profile" element={<EditProfile />} />
-        <Route path="/safety-tips" element={<SafetyTips />} />
-        
-        {/* Missing Parity Pages */}
-        <Route path="/incoming-requests" element={<IncomingRequests />} />
-        <Route path="/roommate-profile" element={<RoommateProfile />} />
-        <Route path="/waitlist" element={<Waitlist />} />
+          {/* Details & Modals */}
+          <Route path="/listing/:id" element={<ListingDetail />} />
+          <Route path="/agent/:id" element={<AgentProfile />} />
+          <Route path="/match/:id" element={<MatchProfile />} />
+          <Route path="/roommate-profile" element={<RoommateProfile />} />
+          <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
+          <Route path="/chat/:id" element={<ChatScreen />} />
+          
+          {/* Booking & Checkout */}
+          <Route path="/booking/:id" element={<BookingDetail />} />
+          <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
+          <Route path="/booking/checkout/:id" element={<Checkout />} />
+          <Route path="/booking/kyc/:id" element={<KYC />} />
+          <Route path="/booking/signature/:id" element={<Signature />} />
+          <Route path="/booking/payment/:id" element={<Payment />} />
+          {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
+          <Route path="/payment/callback" element={<PaymentCallback />} />
+          <Route path="/payment-history" element={<PaymentHistory />} />
+          <Route path="/payment-detail" element={<PaymentDetail />} />
+
+          {/* Settings & Support */}
+          <Route path="/saved-listings" element={<SavedListings />} />
+          <Route path="/settings/notifications" element={<NotificationSettings />} />
+          <Route path="/settings/privacy" element={<PrivacySecurity />} />
+          <Route path="/terms" element={<TermsPrivacy />} />
+          <Route path="/support" element={<HelpSupport />} />
+          <Route path="/settings/edit-profile" element={<EditProfile />} />
+          <Route path="/safety-tips" element={<SafetyTips />} />
+          
+          {/* Missing Parity Pages */}
+          <Route path="/incoming-requests" element={<IncomingRequests />} />
+          <Route path="/waitlist" element={<Waitlist />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
