@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, Download04Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
+import { customAlert } from '../../stores/alertStore';
 
 export function PWAInstallModal() {
   const [show, setShow] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
   useEffect(() => {
     // Check if already installed / running in standalone mode
@@ -14,44 +17,79 @@ export function PWAInstallModal() {
       return;
     }
 
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-
     // Check if shown this session
     const hasSeen = sessionStorage.getItem('pwa_install_prompt_seen');
     if (hasSeen) return;
 
-    // Initial check (delay by 2s on first load)
-    const initialTimer = setTimeout(() => {
-      setShow(true);
-      sessionStorage.setItem('pwa_install_prompt_seen', 'true');
-    }, 2000);
+    let initialTimer: NodeJS.Timeout;
+
+    // 1. Intercept beforeinstallprompt
+    const promptHandler = (e: any) => {
+      // Prevent default browser prompt
+      e.preventDefault();
+      // Save event so it can be triggered later
+      setDeferredPrompt(e);
+
+      // 2. Only show the custom modal after the browser has verified it's installable
+      // Optional enhancement: wait 3 seconds so it doesn't interrupt initial load
+      if (!isIOS) {
+        initialTimer = setTimeout(() => {
+          setShow(true);
+          sessionStorage.setItem('pwa_install_prompt_seen', 'true');
+        }, 3000);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', promptHandler);
+
+    // 4. Additional Polish: Listen for appinstalled
+    const installedHandler = () => {
+      setDeferredPrompt(null);
+      setShow(false);
+      customAlert('App successfully installed!', 'Success', 'success');
+    };
+    
+    window.addEventListener('appinstalled', installedHandler);
+
+    // Fallback for iOS (since beforeinstallprompt is not supported on iOS Safari)
+    if (isIOS) {
+      initialTimer = setTimeout(() => {
+        setShow(true);
+        sessionStorage.setItem('pwa_install_prompt_seen', 'true');
+      }, 3000);
+    }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-      clearTimeout(initialTimer);
+      window.removeEventListener('beforeinstallprompt', promptHandler);
+      window.removeEventListener('appinstalled', installedHandler);
+      if (initialTimer) clearTimeout(initialTimer);
     };
-  }, []);
+  }, [isIOS]);
 
   const handleInstall = async () => {
+    // 3. What Happens When the Install Button is Clicked
+    setShow(false); // Hide the modal
+
     if (deferredPrompt) {
+      // Trigger the native prompt
       deferredPrompt.prompt();
+      
+      // Wait for the user's response
       const { outcome } = await deferredPrompt.userChoice;
+      
       if (outcome === 'accepted') {
+        // They accepted, clear the prompt
         setDeferredPrompt(null);
+      } else {
+        // They dismissed it
+        console.log('User dismissed the install prompt');
       }
     }
-    setShow(false);
   };
 
   const handleClose = () => {
     setShow(false);
   };
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
   return (
     <AnimatePresence>
@@ -75,9 +113,9 @@ export function PWAInstallModal() {
               <Download04Icon size={32} />
             </div>
             
-            <h3 className="text-xl font-bold text-textPrimary mb-2">Install ileSure App</h3>
+            <h3 className="text-xl font-bold text-textPrimary mb-2">Install App</h3>
             <p className="text-sm text-textSecondary mb-6">
-              Install our app on your device for a faster, better experience and easy access to your properties.
+              Install for offline access, better performance, and a native app experience.
             </p>
             
             {isIOS && !deferredPrompt ? (
@@ -91,7 +129,7 @@ export function PWAInstallModal() {
             <div className="w-full flex gap-3">
               <Button fullWidth variant="outline" onClick={handleClose}>Not Now</Button>
               {(!isIOS || deferredPrompt) && (
-                <Button fullWidth onClick={handleInstall}>Install App</Button>
+                <Button fullWidth onClick={handleInstall}>Install</Button>
               )}
             </div>
           </motion.div>

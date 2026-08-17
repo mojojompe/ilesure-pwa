@@ -31,6 +31,7 @@
     "@types/react-signature-canvas": "^1.0.7",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.27",
+    "jimp": "^1.6.1",
     "postcss": "^8.5.9",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.2.2",
