@@ -24,7 +24,6 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
     };
   }, [visible, initialIndex]);
 
-  if (!visible || !images?.length) return null;
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();

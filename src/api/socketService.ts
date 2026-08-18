@@ -70,5 +70,11 @@ export const socketService = {
   },
   offUserTyping: () => {
     if (socket) socket.off('user_typing');
+  },
+  onNewNotification: (callback: (data: any) => void) => {
+    if (socket) socket.on('new_notification', callback);
+  },
+  offNewNotification: () => {
+    if (socket) socket.off('new_notification');
   }
 };

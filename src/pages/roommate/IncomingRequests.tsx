@@ -58,8 +58,9 @@ export function IncomingRequests() {
 
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {isLoading ? (
-            <div className="flex items-center justify-center py-10">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="flex flex-col gap-4">
+              <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
+              <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
             </div>
           ) : requests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">

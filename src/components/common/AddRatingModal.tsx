@@ -28,9 +28,13 @@ export function AddRatingModal({ visible, onClose, onSubmit, agentName }: AddRat
   return (
     <AnimatePresence>
       {visible && (
-        <div className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center">
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center"
+        >
+          <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={onClose}
           />
@@ -82,7 +86,7 @@ export function AddRatingModal({ visible, onClose, onSubmit, agentName }: AddRat
               Submit Rating
             </Button>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

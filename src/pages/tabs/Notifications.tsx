@@ -47,6 +47,31 @@ export function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
+
+    const { socketService } = require('../../api/socketService');
+    
+    socketService.onNewNotification((notifData: any) => {
+      setNotifications(prev => {
+        // Prepend new notification, avoiding duplicates if id is already present
+        if (prev.some(n => (n.id || n._id) === notifData.id)) {
+          return prev;
+        }
+        return [
+          {
+            ...notifData,
+            id: notifData.id || `temp-${Date.now()}`,
+            createdAt: notifData.createdAt || new Date().toISOString(),
+            read: false,
+            readAt: null
+          },
+          ...prev
+        ];
+      });
+    });
+
+    return () => {
+      socketService.offNewNotification();
+    };
   }, []);
 
   const handleNotificationPress = async (notif: any) => {

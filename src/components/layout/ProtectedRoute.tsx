@@ -13,10 +13,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   const location = useLocation();
 
   if (isLoading) {
-    // Return loading state while auth state is resolving
+    // Return a generic App shell skeleton while auth state is resolving
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex h-screen w-full flex-col bg-background p-5 pt-12 space-y-4">
+        <div className="w-3/4 h-10 bg-surfaceLight rounded-xl animate-pulse" />
+        <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
+        <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
+        <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
       </div>
     );
   }

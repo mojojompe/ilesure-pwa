@@ -79,8 +79,11 @@ export function MatchProfile() {
     return (
       <AppShell hideTabBar>
         <MobileHeader title="Loading..." onBack={() => navigate(-1)} />
-        <div className="flex-1 flex items-center justify-center text-primary">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="flex-1 flex flex-col p-5 space-y-4 pt-12 bg-background">
+          <div className="w-24 h-24 rounded-full bg-surfaceLight mx-auto animate-pulse" />
+          <div className="w-1/2 h-6 bg-surfaceLight mx-auto rounded animate-pulse" />
+          <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse mt-4" />
+          <div className="w-full h-32 bg-surfaceLight rounded-2xl animate-pulse" />
         </div>
       </AppShell>
     );

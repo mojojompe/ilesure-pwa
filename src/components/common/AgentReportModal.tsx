@@ -22,24 +22,33 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
   const [reason, setReason] = useState('');
   const [description, setDescription] = useState('');
 
-  if (!visible) return null;
 
   const handleSubmit = async () => {
     if (!reason) {
       customAlert('Please select a reason', 'Warning', 'warning');
       return;
     }
-    // Assume reporting succeeds via API
-    customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
-    onClose();
+    
+    try {
+      const { userService } = await import('../../api/userService');
+      await userService.reportAgent(targetId, reason, description);
+      customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
+      onClose();
+    } catch (error: any) {
+      customAlert('Failed to submit report', 'Error', 'error');
+    }
   };
 
   return (
     <AnimatePresence>
       {visible && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center sm:p-4"
+        >
+          <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
@@ -79,7 +88,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
               <Button className="flex-1 bg-error border-none text-white shadow-none hover:bg-error/90" onClick={handleSubmit}>Submit Report</Button>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

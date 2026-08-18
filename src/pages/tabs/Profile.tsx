@@ -104,7 +104,7 @@ export function Profile() {
     { id: 'edit', icon: PencilEdit02Icon, label: 'Edit Profile', badge: null, path: '/settings/edit-profile' },
     { id: 'verification', icon: CheckmarkBadge01Icon, label: 'Verification', badge: user?.ninVerified ? 'Done' : 'Pending', path: '/booking/kyc/temp' },
     { id: 'saved', icon: FavouriteIcon, label: 'Saved Listings', badge: savedCount > 0 ? savedCount.toString() : null, path: '/saved-listings' },
-    ...(user?.role !== 'individual' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/roommate-profile' }] : []),
+    ...(user?.role !== 'individual' && user?.role !== 'agent' && user?.role !== 'company' && user?.role !== 'sub_agent' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/roommate-profile' }] : []),
     { id: 'payments', icon: CreditCardIcon, label: 'Payment History', badge: null, path: '/payment-history' },
   ];
 
@@ -147,7 +147,7 @@ export function Profile() {
               ) : (
                 <Camera01Icon size={14} className="text-white" />
               )}
-              <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" disabled={uploadingAvatar} />
+              <input type="file" accept="image/*" onChange={handleAvatarChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={uploadingAvatar} />
             </label>
           </div>
 

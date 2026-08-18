@@ -112,8 +112,10 @@ export function PaymentHistory() {
           {/* Payments List */}
           <div className="px-4 flex flex-col gap-3">
             {loading ? (
-              <div className="flex justify-center py-10">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="flex flex-col gap-3">
+                <div className="w-full h-20 bg-surfaceLight rounded-2xl animate-pulse" />
+                <div className="w-full h-20 bg-surfaceLight rounded-2xl animate-pulse" />
+                <div className="w-full h-20 bg-surfaceLight rounded-2xl animate-pulse" />
               </div>
             ) : filteredPayments.length === 0 ? (
               <div className="text-center py-10 text-textSecondary">

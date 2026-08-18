@@ -10,11 +10,15 @@ interface Props {
 
 export const BrandSplash: React.FC<Props> = ({ onFinished }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onFinished, 600); // Wait for exit animation
+      setIsExiting(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        onFinished();
+      }, 500); // 500ms for the logo to grow before finishing
     }, 3500);
     return () => clearTimeout(timer);
   }, [onFinished]);
@@ -24,22 +28,23 @@ export const BrandSplash: React.FC<Props> = ({ onFinished }) => {
       {isVisible && (
         <motion.div
           className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#FFF5E1]"
-          initial={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.2 }}
-          transition={{ duration: 0.4 }}
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
         >
           {/* Content Center */}
           <div className="flex flex-col items-center justify-center flex-1">
             {/* Logo */}
             <motion.div
-              className="flex items-center justify-center mb-4"
+              className="flex items-center justify-center mb-4 z-50 origin-center"
               initial={{ opacity: 0, scale: 0, rotate: -30 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              animate={isExiting ? { scale: 150, opacity: 0 } : { opacity: 1, scale: 1, rotate: 0 }}
               transition={{
-                type: 'spring',
+                type: isExiting ? 'tween' : 'spring',
                 stiffness: 100,
                 damping: 5,
-                duration: 0.6,
+                duration: isExiting ? 0.6 : 0.6,
+                ease: isExiting ? 'easeInOut' : undefined,
               }}
             >
               <img
@@ -50,9 +55,18 @@ export const BrandSplash: React.FC<Props> = ({ onFinished }) => {
             </motion.div>
 
             {/* Brand Name */}
-            <div className="flex flex-row items-center justify-center mt-2">
+            <div className="flex flex-row items-center justify-center mt-2 z-10">
               {CHARS.map((char, i) => {
                 const isMustard = i < 3;
+                
+                // 1. 'il' (indices 0, 1) come from left
+                // 2. 'eSu' (indices 2, 3, 4) come from top
+                // 3. 're' (indices 5, 6) come from right
+                let initialAnim = { opacity: 0, x: 0, y: 0 };
+                if (i <= 1) initialAnim = { opacity: 0, x: -100, y: 0 };
+                else if (i <= 4) initialAnim = { opacity: 0, x: 0, y: -100 };
+                else initialAnim = { opacity: 0, x: 100, y: 0 };
+
                 return (
                   <motion.span
                     key={i}
@@ -61,13 +75,13 @@ export const BrandSplash: React.FC<Props> = ({ onFinished }) => {
                       color: isMustard ? '#E1AD01' : '#3E1F0A',
                       textShadow: '0 4px 8px rgba(0,0,0,0.15)',
                     }}
-                    initial={{ opacity: 0, y: -50 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={initialAnim}
+                    animate={isExiting ? { opacity: 0, scale: 0.5 } : { opacity: 1, x: 0, y: 0, scale: 1 }}
                     transition={{
                       type: 'spring',
                       stiffness: 120,
-                      damping: 4,
-                      delay: 0.4 + i * 0.08,
+                      damping: 8,
+                      delay: isExiting ? 0 : 0.4 + i * 0.1,
                     }}
                   >
                     {char}
