@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
@@ -13,11 +13,22 @@ import {
   Chatting01Icon,
   UserCircleIcon
 } from '@hugeicons/react';
-import { listingService, Listing } from '../../api/listingService';
+import { listingService, Listing, ListingFilter } from '../../api/listingService';
+import {
+  CHIP_PROPERTY_TYPES,
+  FURNISHED_VALUES,
+  STABLE_POWER_VALUES,
+  PropertyType,
+} from '../../constants/listingVocabulary';
 import { useAuthStore } from '../../stores/authStore';
 import { chatService } from '../../api/chatService';
 import { AdsCarousel } from '../../components/common/AdsCarousel';
-import { FilterModal, FilterState } from '../../components/common/FilterModal';
+import {
+  FilterModal,
+  FilterState,
+  PRICE_FLOOR,
+  PRICE_CEILING,
+} from '../../components/common/FilterModal';
 
 const CHIPS = [
   { id: 'all', label: 'All' },
@@ -34,6 +45,8 @@ export function Discover() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // Debounced mirror of searchQuery — the value the API is actually queried with.
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeChip, setActiveChip] = useState('all');
   const [savedListings, setSavedListings] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,14 +55,84 @@ export function Discover() {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
   const ITEMS_PER_PAGE = 10;
-  
-  const fetchInitialData = async (page = 1, isRefresh = false) => {
+
+  /**
+   * Translates the chips and the filter modal into the API's query parameters.
+   *
+   * Search and filtering used to run over the array already in memory, so they
+   * only ever saw the 10 listings on the current page, and the modal compared
+   * display labels ('2-Bedroom') against stored values ('2_bed') — which matched
+   * nothing. Both now run on the server against canonical values.
+   */
+  const { listingFilters, hasContradictoryTypes } = useMemo(() => {
+    const filters: ListingFilter = {};
+    if (searchTerm.trim()) filters.q = searchTerm.trim();
+
+    const chipTypes = CHIP_PROPERTY_TYPES[activeChip];
+    let propertyTypes: PropertyType[] = chipTypes ? [...chipTypes] : [];
+    let contradictory = false;
+
+    if (activeChip === 'shared') filters.shareable = true;
+
+    if (activeFilters) {
+      if (activeFilters.propertyTypes.length > 0) {
+        // A chip and the modal are both type filters — intersect them so the
+        // narrower wins rather than one silently replacing the other.
+        const intersection = propertyTypes.length > 0
+          ? propertyTypes.filter(t => activeFilters.propertyTypes.includes(t))
+          : [...activeFilters.propertyTypes];
+        // The server drops filter values it cannot resolve, so an impossible
+        // combination has to be caught here or it would show everything.
+        contradictory = intersection.length === 0;
+        propertyTypes = intersection;
+      }
+
+      if (activeFilters.priceMin > PRICE_FLOOR) filters.priceMin = activeFilters.priceMin;
+      if (activeFilters.priceMax < PRICE_CEILING) filters.priceMax = activeFilters.priceMax;
+      if (activeFilters.distance) filters.distanceBucket = [activeFilters.distance];
+      if (activeFilters.genderRestriction) filters.gender = [activeFilters.genderRestriction];
+      if (activeFilters.shareable) filters.shareable = true;
+      if (activeFilters.furnished) filters.furnishing = [...FURNISHED_VALUES];
+      if (activeFilters.powerStable) filters.power = [...STABLE_POWER_VALUES];
+      if (activeFilters.excludeStudentsOnly) filters.excludeStudentsOnly = true;
+
+      // Proximity around whatever the renter anchored to. A seeded place goes by
+      // name so the server applies its curated radius; a geocoded address goes
+      // as a point.
+      const anchor = activeFilters.anchor;
+      if (anchor?.landmark) {
+        filters.landmark = anchor.landmark;
+        filters.maxDistance = activeFilters.radiusMetres;
+      } else if (anchor?.coordinates) {
+        filters.nearLng = anchor.coordinates[0];
+        filters.nearLat = anchor.coordinates[1];
+        filters.maxDistance = activeFilters.radiusMetres;
+      }
+    }
+
+    if (propertyTypes.length > 0) filters.propertyType = propertyTypes;
+    return { listingFilters: filters, hasContradictoryTypes: contradictory };
+  }, [searchTerm, activeChip, activeFilters]);
+
+  // Debounce keystrokes so typing a place name is one request, not one per letter.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchTerm(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchInitialData = useCallback(async (page = 1, isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
       else if (page === 1) setLoading(true);
-      
+
+      if (hasContradictoryTypes) {
+        setListings([]);
+        setHasMoreServer(false);
+        return;
+      }
+
       const promises: any[] = [
-        listingService.getListings({}, page, ITEMS_PER_PAGE),
+        listingService.getListings(listingFilters, page, ITEMS_PER_PAGE),
         listingService.getSavedListings().catch(() => ({ data: { listings: [] } })),
         chatService.getConversations().catch(() => ({ data: { chats: [] } }))
       ];
@@ -81,11 +164,7 @@ export function Discover() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    fetchInitialData(1);
-  }, []);
+  }, [listingFilters, hasContradictoryTypes]);
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
@@ -93,12 +172,11 @@ export function Discover() {
     fetchInitialData(nextPage);
   };
 
+  // A new search, chip or filter is a new result set: back to page 1 and re-query.
   useEffect(() => {
-    // If they change search or filter, we might want to reset to page 1?
-    // But since filtering is local right now, we don't re-fetch from server.
-    // We just reset the local visible page.
     setCurrentPage(1);
-  }, [searchQuery, activeChip]);
+    fetchInitialData(1);
+  }, [fetchInitialData]);
 
   const toggleSave = (id: string) => {
     setSavedListings(prev => 
@@ -106,65 +184,9 @@ export function Discover() {
     );
   };
 
-  const filteredListings = useMemo(() => {
-    return listings.filter((l: any) => {
-      const matchesSearch =
-        !searchQuery ||
-        l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.areaCluster?.toLowerCase().includes(searchQuery.toLowerCase());
+  // The server has already applied the search, chips and filters.
+  const hasMore = hasMoreServer;
 
-      const matchesChip =
-        activeChip === 'all' ||
-        (activeChip === 'shared' && l.needsRoommate) ||
-        (activeChip === 'hostel' && l.propertyType?.toLowerCase().includes('hostel')) ||
-        (activeChip === 'apartment' && !['hostel', 'shortlet'].includes(l.propertyType?.toLowerCase())) ||
-        (activeChip === 'shortlet' && l.propertyType?.toLowerCase().includes('shortlet'));
-
-      let matchesFilters = true;
-      if (activeFilters) {
-        const rent = l.rentAnnual || l.shortletPricing?.daily || 0;
-        if (rent < activeFilters.priceMin || rent > activeFilters.priceMax) matchesFilters = false;
-        
-        if (activeFilters.propertyTypes.length > 0) {
-          const typeMatch = activeFilters.propertyTypes.some(t => {
-            const mapped = t.toLowerCase().replace('-', '').replace(' ', '_');
-            return l.propertyType?.toLowerCase().includes(mapped);
-          });
-          if (!typeMatch) matchesFilters = false;
-        }
-
-        if (activeFilters.distance) {
-          const d = activeFilters.distance.toLowerCase();
-          if (d.includes('very close') && !l.distanceBucket?.toLowerCase().includes('very close')) matchesFilters = false;
-          if (d.includes('close (5') && !l.distanceBucket?.toLowerCase().includes('close (5')) matchesFilters = false;
-          if (d.includes('budget') && !l.distanceBucket?.toLowerCase().includes('budget')) matchesFilters = false;
-        }
-        
-        if (activeFilters.genderRestriction && activeFilters.genderRestriction !== 'Any') {
-          const target = activeFilters.genderRestriction === 'Female Only' ? 'female_only' : 'male_only';
-          if (l.genderRestriction !== target) matchesFilters = false;
-        }
-        
-        if (activeFilters.shareable && !l.shareable && !l.needsRoommate) matchesFilters = false;
-        if (activeFilters.furnished && !['fully_furnished', 'furnished'].includes(l.furnishing)) matchesFilters = false;
-        if (activeFilters.powerStable && !['constant', 'solar', 'hybrid', 'solar-backed'].includes(l.power)) matchesFilters = false;
-
-        if (activeFilters.schoolLocationOnly) {
-           const uniName = (user as any)?.university || 'Lead City University';
-           const shortUniName = uniName.replace(' University', '');
-           if (!l.areaCluster?.toLowerCase().includes(shortUniName.toLowerCase())) {
-             matchesFilters = false;
-           }
-        }
-      }
-
-      return matchesSearch && matchesChip && matchesFilters;
-    });
-  }, [listings, searchQuery, activeChip, activeFilters, user]);
-
-  const paginatedListings = filteredListings.slice(0, currentPage * ITEMS_PER_PAGE);
-  // Show Load More if there are hidden local items OR the server has more items
-  const hasMore = paginatedListings.length < filteredListings.length || hasMoreServer;
 
   // Framer Motion staggered animation variants
   const containerVariants = {
@@ -302,14 +324,14 @@ export function Discover() {
               <ListingCardSkeleton />
               <ListingCardSkeleton />
             </div>
-          ) : filteredListings.length > 0 ? (
+          ) : listings.length > 0 ? (
             <motion.div 
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="pb-[20px]"
             >
-              {paginatedListings.map((listing: any) => (
+              {listings.map((listing: any) => (
                 <motion.div key={listing._id || listing.id} variants={itemVariants}>
                   <ListingCard 
                     listing={listing}
@@ -323,7 +345,7 @@ export function Discover() {
               {hasMore && (
                 <div className="px-5 mt-4 mb-8">
                   <button 
-                    onClick={paginatedListings.length < filteredListings.length ? () => setCurrentPage(p => p + 1) : handleLoadMore}
+                    onClick={handleLoadMore}
                     disabled={loading}
                     className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight flex items-center justify-center disabled:opacity-50"
                   >
@@ -350,6 +372,7 @@ export function Discover() {
       <FilterModal
         visible={showFilters}
         onClose={() => setShowFilters(false)}
+        initialFilters={activeFilters}
         onApply={(filters) => {
           setActiveFilters(filters);
         }}

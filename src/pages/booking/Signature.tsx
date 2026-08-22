@@ -14,41 +14,61 @@ export function Signature() {
   const sigCanvas = useRef<SignatureCanvas>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [contractText, setContractText] = useState<string>('');
-  const [contractTitle, setContractTitle] = useState<string>('TENANCY AGREEMENT');
+  const [documentUrl, setDocumentUrl] = useState<string>('');
+  const [agreementSource, setAgreementSource] = useState<'platform_template' | 'landlord_upload'>('platform_template');
+  const [loadError, setLoadError] = useState<string>('');
+  const contractTitle = 'TENANCY AGREEMENT';
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [hasOpenedDocument, setHasOpenedDocument] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
+  // Loads the actual agreement for this booking. Tenancy terms differ per
+  // property - a landlord or agent may have attached their own document to the
+  // listing - so the tenant must review the real PDF, never boilerplate text.
   useEffect(() => {
-    // Mock fetching contract
+    if (!id) return;
+    let cancelled = false;
+
     const initContract = async () => {
       setLoading(true);
-      setTimeout(() => {
-        setContractText(
-          'Your tenancy agreement has been generated and is ready for review.\n\n' +
-          'Please review the full agreement document carefully before signing. ' +
-          'By signing below, you acknowledge that you have read and agree to all terms and conditions ' +
-          'of this tenancy agreement, including the rent amount, caution fee, lease duration, ' +
-          'and all covenants contained herein.\n\n' +
-          'Once you sign, the landlord/agent will be notified to counter-sign. ' +
-          'The fully executed agreement will be emailed to all parties.' +
-          '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n' // Make it scrollable
-        );
-        setLoading(false);
-      }, 1000);
-    };
-    initContract();
-  }, []);
+      setLoadError('');
+      try {
+        // Generating is idempotent: it returns the existing record if there is one.
+        await contractService.generateTenancyAgreement({ bookingId: id });
+        const status = await contractService.getTenancyAgreementStatus(id);
+        if (cancelled) return;
 
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    const scrollableHeight = scrollHeight - clientHeight;
-    if (scrollableHeight <= 0) return;
-    const progress = scrollTop / scrollableHeight;
-    setScrollProgress(progress);
+        const url = status?.data?.documentUrl;
+        if (!url) {
+          setLoadError('We could not load your tenancy agreement. Please try again.');
+        } else {
+          setDocumentUrl(url);
+          setAgreementSource(status?.data?.agreementSource || 'platform_template');
+        }
+      } catch (err: any) {
+        if (cancelled) return;
+        setLoadError(
+          err?.response?.data?.error?.message ||
+            'We could not load your tenancy agreement. Please try again.'
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    initContract();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // Opening the PDF in a new tab is the reliable path on mobile browsers, where
+  // inline PDF rendering in an iframe is inconsistent.
+  const handleOpenDocument = () => {
+    if (!documentUrl) return;
+    setHasOpenedDocument(true);
+    window.open(documentUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleClear = () => {
@@ -56,6 +76,10 @@ export function Signature() {
   };
 
   const handleSign = async () => {
+    if (!documentUrl) {
+      customAlert('Your tenancy agreement has not loaded yet.', 'Warning', 'warning');
+      return;
+    }
     if (sigCanvas.current?.isEmpty()) {
       customAlert('Please sign the document first', 'Warning', 'warning');
       return;
@@ -112,38 +136,69 @@ export function Signature() {
       <div className="flex flex-col h-full bg-background relative overflow-hidden">
         <MobileHeader title={contractTitle} onBack={() => navigate(-1)} />
         
-        {/* Progress Bar */}
-        <div className="h-1 w-full bg-border">
-          <div 
-            className="h-full bg-primary transition-all duration-100" 
-            style={{ width: `${Math.min(scrollProgress * 100, 100)}%` }} 
-          />
+        {/* Source banner - tells the tenant whose terms these are */}
+        <div className="px-4 py-3 bg-surfaceLight border-b border-border">
+          <p className="text-[13px] text-textSecondary">
+            {agreementSource === 'landlord_upload'
+              ? 'This agreement was provided by the landlord/agent for this specific property.'
+              : 'This is the standard ileSure tenancy agreement for this property.'}
+          </p>
         </div>
 
-        {/* Scrollable Document Area */}
-        <div 
+        {/* Document Area */}
+        <div
           ref={scrollRef}
-          onScroll={handleScroll}
           className={clsx(
-            "flex-1 p-4 overflow-y-auto relative",
-            !scrollEnabled && "overflow-hidden"
+            'flex-1 overflow-y-auto relative bg-background',
+            !scrollEnabled && 'overflow-hidden'
           )}
         >
-          <p className="text-[15px] leading-[24px] text-textPrimary whitespace-pre-wrap pb-32">
-            {contractText}
-          </p>
-
-          {/* Scroll Overlay */}
-          {scrollProgress < 0.85 && (
-            <div className="fixed bottom-[320px] left-0 right-0 max-w-md mx-auto bg-black/70 p-4 flex flex-col items-center pointer-events-none z-20 backdrop-blur-sm">
-              <ArrowDown01Icon size={32} className="text-white" />
-              <p className="text-white text-[15px] font-bold mt-2">
-                Scroll to read the full agreement
+          {loadError ? (
+            <div className="p-6 text-center">
+              <p className="text-[15px] text-textPrimary font-semibold mb-2">
+                Agreement unavailable
               </p>
-              <p className="text-white/80 text-sm mt-1">
-                {Math.round(scrollProgress * 100)}% read
-              </p>
+              <p className="text-[14px] text-textSecondary">{loadError}</p>
             </div>
+          ) : (
+            <>
+              {/* Inline preview. Mobile browsers vary in PDF support, so the
+                  open-in-new-tab action below is the dependable fallback. */}
+              <object
+                data={documentUrl}
+                type="application/pdf"
+                className="w-full h-full min-h-[420px]"
+                aria-label="Tenancy agreement document"
+              >
+                <div className="p-6 text-center">
+                  <p className="text-[15px] text-textPrimary font-semibold mb-2">
+                    Preview not supported on this device
+                  </p>
+                  <p className="text-[14px] text-textSecondary">
+                    Tap the button below to open your tenancy agreement.
+                  </p>
+                </div>
+              </object>
+
+              <div className="p-4">
+                <button
+                  type="button"
+                  onClick={handleOpenDocument}
+                  className="w-full py-3 rounded-xl border border-primary text-primary text-[15px] font-bold active:bg-surfaceLight"
+                >
+                  Open full agreement
+                </button>
+              </div>
+
+              {!hasOpenedDocument && (
+                <div className="px-4 pb-4 flex flex-col items-center text-center">
+                  <ArrowDown01Icon size={24} className="text-textSecondary" />
+                  <p className="text-[13px] text-textSecondary mt-1">
+                    Please read the full agreement before signing.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -174,10 +229,10 @@ export function Signature() {
             </button>
             <button
               onClick={handleSign}
-              disabled={signing}
+              disabled={signing || !documentUrl}
               className={clsx(
                 "flex-[2] py-4 rounded-xl flex items-center justify-center transition-opacity",
-                signing ? "bg-primary/50" : "bg-primary active:scale-[0.98]"
+                signing || !documentUrl ? "bg-primary/50" : "bg-primary active:scale-[0.98]"
               )}
             >
               {signing ? (

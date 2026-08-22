@@ -5,6 +5,7 @@ import { ArrowLeft01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { authService } from '../../api/authService';
+import { isStrongPassword, PASSWORD_RULE_MESSAGE } from '../../utils/validation';
 
 type Step = 'request' | 'otp' | 'newPassword' | 'success';
 
@@ -46,7 +47,7 @@ export function ForgotPassword() {
     setError('');
     setIsLoading(true);
     try {
-      await authService.verifyOTP(otp, email);
+      await authService.verifyResetOTP(otp, email);
       setStep('newPassword');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Invalid or expired code');
@@ -57,7 +58,10 @@ export function ForgotPassword() {
 
   const handleReset = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (newPassword.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (!isStrongPassword(newPassword)) {
+      setError(PASSWORD_RULE_MESSAGE);
+      return;
+    }
     if (newPassword !== confirmPassword) { setError('Passwords do not match'); return; }
     setError('');
     setIsLoading(true);
@@ -186,7 +190,7 @@ export function ForgotPassword() {
                       label="New Password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="At least 6 characters"
+                      placeholder="8+ chars, upper, lower & number"
                       type="password"
                       error={error}
                     />

@@ -47,6 +47,8 @@ import { EditProfile } from './pages/settings/EditProfile';
 import { AlertModal } from './components/common/AlertModal';
 import { PWAInstallModal } from './components/common/PWAInstallModal';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { CallProvider } from './contexts/CallContext';
+import { CallOverlay } from './components/call/CallOverlay';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
@@ -56,6 +58,7 @@ export default function App() {
   }, []);
 
   return (
+    <CallProvider>
     <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">
       <Routes>
         <Route path="/" element={<Splash />} />
@@ -115,6 +118,9 @@ export default function App() {
       </Routes>
       <AlertModal />
       <PWAInstallModal />
+      {/* Above the router so a call survives navigation and can arrive on any screen. */}
+      <CallOverlay />
     </div>
+    </CallProvider>
   );
 }

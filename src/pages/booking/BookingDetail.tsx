@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { Home01Icon, Chatting01Icon } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
+import { RentRenewal } from '../../components/ui/RentRenewal';
 import { chatService } from '../../api/chatService';
 import { clsx } from 'clsx';
 import { customAlert, customConfirm } from '../../stores/alertStore';
@@ -175,6 +176,14 @@ export function BookingDetail() {
               {booking.nextDueDate && (
                 <p className="text-xs text-textTertiary">Next due: {new Date(booking.nextDueDate).toLocaleDateString()}</p>
               )}
+            </div>
+          )}
+
+          {/* Rent Renewal */}
+          {!isShortlet && booking.nextRentDue && (
+            <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+              <h3 className="text-base font-bold text-textPrimary mb-3">Rent Renewal</h3>
+              <RentRenewal bookingId={booking._id} nextRentDue={booking.nextRentDue} />
             </div>
           )}
 

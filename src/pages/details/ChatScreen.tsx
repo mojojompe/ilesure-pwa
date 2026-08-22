@@ -14,6 +14,8 @@ import {
   ArrowTurnBackwardIcon
 } from '@hugeicons/react';
 import { chatService, ChatMessage } from '../../api/chatService';
+import { callService } from '../../api/callService';
+import { useCall } from '../../contexts/CallContext';
 import { useAuthStore } from '../../stores/authStore';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
@@ -50,6 +52,37 @@ export function ChatScreen() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const call = useCall();
+  // Resolved from the server rather than the chat payload: it also tells us whether the
+  // other person is reachable, so the buttons render in the right state on first paint
+  // instead of after a tap that goes nowhere.
+  const [callAvailability, setCallAvailability] = useState<{
+    canCall: boolean;
+    peerId: string | null;
+    peerOnline: boolean;
+    peerBusy: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    callService
+      .getAvailability(id)
+      .then((data) => { if (!cancelled) setCallAvailability(data); })
+      .catch(() => { if (!cancelled) setCallAvailability(null); });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const canPlaceCall = Boolean(id && callAvailability?.canCall && !callAvailability.peerBusy);
+
+  const placeCall = (callType: 'audio' | 'video') => {
+    if (!id || !callAvailability?.peerId) return;
+    call.startCall(id, callType, {
+      id: callAvailability.peerId,
+      fullName: chatInfo.name,
+    });
+  };
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -158,12 +191,32 @@ export function ChatScreen() {
             </div>
           </div>
           
-          <button 
-            onClick={() => chatInfo.phone && window.open(`tel:${chatInfo.phone}`)}
-            className={clsx("w-10 h-10 flex items-center justify-center rounded-full active:bg-surfaceLight transition-colors", chatInfo.phone ? "text-primary" : "text-textTertiary")}
-          >
-            <CallIcon size={22} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => placeCall('audio')}
+              disabled={!canPlaceCall}
+              aria-label="Start voice call"
+              title={callAvailability?.peerBusy ? 'They are on another call' : 'Voice call'}
+              className={clsx(
+                "w-10 h-10 flex items-center justify-center rounded-full active:bg-surfaceLight transition-colors",
+                canPlaceCall ? "text-primary" : "text-textTertiary"
+              )}
+            >
+              <CallIcon size={22} />
+            </button>
+            <button
+              onClick={() => placeCall('video')}
+              disabled={!canPlaceCall}
+              aria-label="Start video call"
+              title={callAvailability?.peerBusy ? 'They are on another call' : 'Video call'}
+              className={clsx(
+                "w-10 h-10 flex items-center justify-center rounded-full active:bg-surfaceLight transition-colors",
+                canPlaceCall ? "text-primary" : "text-textTertiary"
+              )}
+            >
+              <Video01Icon size={22} />
+            </button>
+          </div>
         </div>
 
         {/* Property Banner */}
@@ -184,7 +237,26 @@ export function ChatScreen() {
             messages.map(msg => {
               const isMe = msg.senderId === user?.id;
               const isDeleted = (msg as any).isDeleted;
-              
+
+              // A call leaves a centred record in the transcript rather than a chat
+              // bubble — a missed call is otherwise invisible to the person who missed it.
+              if (msg.type === 'call') {
+                const missed = msg.call?.status === 'missed' || msg.call?.status === 'failed';
+                return (
+                  <div key={msg._id} className="self-center flex items-center gap-2 px-3 py-1.5 rounded-full bg-surfaceLight">
+                    {msg.call?.callType === 'video'
+                      ? <Video01Icon size={14} className={missed ? 'text-red-500' : 'text-textSecondary'} />
+                      : <CallIcon size={14} className={missed ? 'text-red-500' : 'text-textSecondary'} />}
+                    <span className={clsx('text-xs', missed ? 'text-red-500' : 'text-textSecondary')}>
+                      {msg.text}
+                    </span>
+                    <span className="text-[10px] text-textTertiary">
+                      {format(new Date(msg.createdAt), 'HH:mm')}
+                    </span>
+                  </div>
+                );
+              }
+
               return (
                 <div 
                   key={msg._id} 
