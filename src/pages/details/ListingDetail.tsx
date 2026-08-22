@@ -159,12 +159,18 @@ export function ListingDetail() {
     
     try {
       const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
+      const rateQuantity = data.rateQuantity || 1;
+      const selectedRate = listing.shortletRates?.find((r) => r.id === data.rateId);
+      const duration = isShortlet
+        ? (selectedRate ? `${rateQuantity} x ${selectedRate.label}` : `${rateQuantity} booking period${rateQuantity > 1 ? 's' : ''}`)
+        : '1 year';
       const result = await bookingService.createBooking({
         listingId: listing._id,
         moveInDate: new Date().toISOString(),
-        duration: isShortlet ? `${data.durationQuantity || 1} ${data.durationUnit || 'day'}${(data.durationQuantity || 1) > 1 ? 's' : ''}` : '1 year',
+        duration,
         message: 'Booking request from app',
         requiresRoommate: data.requiresRoommate,
+        ...(isShortlet ? { rateId: data.rateId, rateQuantity } : {}),
       });
       setShowBookModal(false);
       setExistingBooking(result.data);

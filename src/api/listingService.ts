@@ -1,5 +1,13 @@
 import { apiClient } from './client';
 
+export interface ShortletRate {
+  id: string;
+  label: string;
+  durationValue: number;
+  durationUnit: 'hour' | 'day' | 'week' | 'month';
+  price: number;
+}
+
 export interface Listing {
   _id: string;
   id: string;
@@ -45,6 +53,7 @@ export interface Listing {
     weekly?: number;
     monthly?: number;
   };
+  shortletRates?: ShortletRate[];
   rules?: string[];
   additionalNotes?: string;
   inspectionAvailability?: {

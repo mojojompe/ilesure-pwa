@@ -1,7 +1,27 @@
 import { apiClient } from './client';
+import type { ShortletRate } from './listingService';
 
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+
+export interface RentPeriod {
+  index: number;
+  label: string;
+  dueDate: string;
+  amount: number;
+  status: 'upcoming' | 'due' | 'overdue' | 'paid';
+  paidAt?: string;
+}
+
+export interface NextRentDue {
+  index: number;
+  label: string;
+  dueDate: string;
+  amount: number;
+  status: 'due' | 'overdue' | 'upcoming';
+  payable: boolean;
+  daysUntilDue: number;
+}
 
 export interface Booking {
   id: string;
@@ -42,6 +62,10 @@ export interface Booking {
   installmentsPaid?: number;
   totalInstallments?: number;
   nextDueDate?: string;
+  rentPeriods?: RentPeriod[];
+  nextRentDue?: NextRentDue | null;
+  leaseStartDate?: string;
+  leaseEndDate?: string;
   timelineStep?: number;
   inspectionDate?: string;
   inspectionTime?: string;
@@ -58,6 +82,8 @@ export interface CreateBookingRequest {
   requiresRoommate?: boolean;
   durationQuantity?: number;
   durationUnit?: 'hour' | 'day' | 'week' | 'month';
+  rateId?: string;
+  rateQuantity?: number;
 }
 
 export interface BookingSummaryResponse {
@@ -79,6 +105,9 @@ export interface BookingSummaryResponse {
     isShareable: boolean;
     wantsRoommate: boolean;
     durationLabel?: string;
+    selectedRate?: ShortletRate;
+    rateQuantity?: number;
+    shortletRates?: ShortletRate[];
   };
 }
 
@@ -131,7 +160,7 @@ export const bookingService = {
   },
 
   /** Get booking fee summary (no DB write) */
-  async getBookingSummary(data: { listingId: string; durationQuantity?: number; durationUnit?: string; requiresRoommate?: boolean }): Promise<BookingSummaryResponse> {
+  async getBookingSummary(data: { listingId: string; durationQuantity?: number; durationUnit?: string; requiresRoommate?: boolean; rateId?: string; rateQuantity?: number }): Promise<BookingSummaryResponse> {
     const response = await apiClient.post<BookingSummaryResponse>('/bookings/summary', data);
     return response.data;
   },
@@ -169,6 +198,33 @@ export const bookingService = {
       };
       message: string;
     }>(`/bookings/${id}/pay`, {
+      callbackUrl: window.location.origin + '/payment/callback'
+    });
+    return response.data;
+  },
+
+  /** Initiate Paystack payment for a yearly rent renewal period */
+  async payForPeriod(bookingId: string, periodIndex: number): Promise<{
+    success: boolean;
+    data: {
+      authorizationUrl: string;
+      reference: string;
+      amount: number;
+      periodIndex: number;
+    };
+    message: string;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: {
+        authorizationUrl: string;
+        reference: string;
+        amount: number;
+        periodIndex: number;
+      };
+      message: string;
+    }>(`/bookings/${bookingId}/pay-period`, {
+      periodIndex,
       callbackUrl: window.location.origin + '/payment/callback'
     });
     return response.data;

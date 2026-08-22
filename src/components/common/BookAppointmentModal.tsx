@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, Add01Icon, Remove01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
 
+interface ShortletRate {
+  id: string;
+  label: string;
+  durationValue: number;
+  durationUnit: 'hour' | 'day' | 'week' | 'month';
+  price: number;
+}
+
 interface BookAppointmentModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (data: { requiresRoommate: boolean; durationQuantity?: number; durationUnit?: 'hour' | 'day' | 'week' | 'month' }) => void;
+  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number }) => void;
   listing: {
     title: string;
     rentAnnual: number;
@@ -15,6 +23,7 @@ interface BookAppointmentModalProps {
     needsRoommate?: boolean;
     shareable?: boolean;
     propertyType?: string;
+    shortletRates?: ShortletRate[];
     shortletPricing?: {
       hourly?: number;
       daily?: number;
@@ -24,12 +33,8 @@ interface BookAppointmentModalProps {
   };
 }
 
-const DURATION_UNITS = [
-  { value: 'hour', label: 'Hours' },
-  { value: 'day', label: 'Days' },
-  { value: 'week', label: 'Weeks' },
-  { value: 'month', label: 'Months' },
-] as const;
+const formatDuration = (rate: ShortletRate) =>
+  `${rate.durationValue} ${rate.durationValue === 1 ? rate.durationUnit : `${rate.durationUnit}s`}`;
 
 export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   visible,
@@ -39,21 +44,37 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 }) => {
   const [includeRoommate, setIncludeRoommate] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [durationQty, setDurationQty] = useState(1);
-  const [durationUnit, setDurationUnit] = useState<'hour' | 'day' | 'week' | 'month'>('day');
+  const [rateQuantity, setRateQuantity] = useState(1);
+  const [selectedRateId, setSelectedRateId] = useState<string>('');
 
   const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
-  const pricing = listing?.shortletPricing || {};
 
-  const rateMap: Record<string, number> = {
-    hour: pricing.hourly || 0,
-    day: pricing.daily || 0,
-    week: pricing.weekly || 0,
-    month: pricing.monthly || 0,
-  };
-  const unitRate = rateMap[durationUnit] || 0;
+  // Build the tier list from shortletRates, falling back to legacy shortletPricing.
+  const shortletTiers = useMemo<ShortletRate[]>(() => {
+    if (listing?.shortletRates && listing.shortletRates.length > 0) {
+      return listing.shortletRates;
+    }
+    const pricing = listing?.shortletPricing || {};
+    const legacy: ShortletRate[] = [];
+    if (pricing.hourly) legacy.push({ id: 'legacy-hour', label: 'Hourly', durationValue: 1, durationUnit: 'hour', price: pricing.hourly });
+    if (pricing.daily) legacy.push({ id: 'legacy-day', label: 'Daily', durationValue: 1, durationUnit: 'day', price: pricing.daily });
+    if (pricing.weekly) legacy.push({ id: 'legacy-week', label: 'Weekly', durationValue: 1, durationUnit: 'week', price: pricing.weekly });
+    if (pricing.monthly) legacy.push({ id: 'legacy-month', label: 'Monthly', durationValue: 1, durationUnit: 'month', price: pricing.monthly });
+    return legacy;
+  }, [listing?.shortletRates, listing?.shortletPricing]);
 
-  const rentAmount = isShortlet ? unitRate * durationQty : (listing?.rentAnnual || 0);
+  // Ensure a valid tier is always selected once tiers are available.
+  useEffect(() => {
+    if (isShortlet && shortletTiers.length > 0 && !shortletTiers.some(t => t.id === selectedRateId)) {
+      setSelectedRateId(shortletTiers[0].id);
+    }
+  }, [isShortlet, shortletTiers, selectedRateId]);
+
+  const selectedTier = shortletTiers.find(t => t.id === selectedRateId) || null;
+
+  const rentAmount = isShortlet
+    ? (selectedTier ? selectedTier.price * rateQuantity : 0)
+    : (listing?.rentAnnual || 0);
   const cautionFee = listing?.cautionFee || 0;
   const agencyFee = listing?.agencyFee || 0;
   
@@ -71,7 +92,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
   const handleConfirm = () => {
     if (isShortlet) {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, durationQuantity: durationQty, durationUnit });
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity });
     } else {
       onConfirm({ requiresRoommate: isShareable && includeRoommate });
     }
@@ -116,47 +137,59 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
               {isShortlet && (
                 <>
-                  <h4 className="text-base font-semibold text-textPrimary mb-3">Booking Duration</h4>
+                  <h4 className="text-base font-semibold text-textPrimary mb-3">Booking Rate</h4>
                   <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm">
-                    <div className="flex flex-row items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => setDurationQty(Math.max(1, durationQty - 1))}
-                          className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
-                        >
-                          <Remove01Icon size={20} className={durationQty === 1 ? 'text-textTertiary' : 'text-primary'} />
-                        </button>
-                        <span className="text-xl font-bold text-textPrimary min-w-[30px] text-center">
-                          {durationQty}
-                        </span>
-                        <button 
-                          onClick={() => setDurationQty(durationQty + 1)}
-                          className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
-                        >
-                          <Add01Icon size={18} />
-                        </button>
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col gap-1">
-                        {DURATION_UNITS.map(u => (
-                          <button
-                            key={u.value}
-                            onClick={() => setDurationUnit(u.value)}
-                            className={`py-1.5 px-3 rounded-lg text-xs font-semibold text-center transition-colors ${
-                              durationUnit === u.value 
-                                ? 'bg-primary text-white' 
-                                : 'bg-transparent text-textSecondary hover:bg-surfaceLight'
-                            }`}
-                          >
-                            {u.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {unitRate > 0 && (
-                      <p className="text-xs text-textSecondary mt-3 text-center font-medium">
-                        ₦{unitRate.toLocaleString()} / {durationUnit}
-                      </p>
+                    {shortletTiers.length > 0 ? (
+                      <>
+                        <div className="flex flex-col gap-2">
+                          {shortletTiers.map(tier => (
+                            <button
+                              key={tier.id}
+                              onClick={() => setSelectedRateId(tier.id)}
+                              className={`flex items-center justify-between py-3 px-4 rounded-lg border text-left transition-colors ${
+                                selectedRateId === tier.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-borderLight bg-transparent hover:bg-surfaceLight'
+                              }`}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-sm font-semibold text-textPrimary">{tier.label}</span>
+                                <span className="text-xs text-textSecondary">{formatDuration(tier)}</span>
+                              </div>
+                              <span className="text-sm font-bold text-primary">₦{tier.price.toLocaleString()}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4">
+                          <span className="text-sm font-medium text-textPrimary">Quantity</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setRateQuantity(Math.max(1, rateQuantity - 1))}
+                              className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
+                            >
+                              <Remove01Icon size={20} className={rateQuantity === 1 ? 'text-textTertiary' : 'text-primary'} />
+                            </button>
+                            <span className="text-xl font-bold text-textPrimary min-w-[30px] text-center">
+                              {rateQuantity}
+                            </span>
+                            <button
+                              onClick={() => setRateQuantity(rateQuantity + 1)}
+                              className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
+                            >
+                              <Add01Icon size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {selectedTier && (
+                          <p className="text-xs text-textSecondary mt-3 text-center font-medium">
+                            ₦{selectedTier.price.toLocaleString()} × {rateQuantity} = ₦{rentAmount.toLocaleString()}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-textSecondary text-center">No pricing available for this shortlet.</p>
                     )}
                   </div>
                 </>
@@ -251,12 +284,12 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                   exit={{ opacity: 0, height: 0 }}
                   className="p-6 border-t border-borderLight shrink-0 bg-background rounded-b-[24px]"
                 >
-                  <Button 
+                  <Button
                     fullWidth
-                    disabled={isShortlet && unitRate === 0}
+                    disabled={isShortlet && (shortletTiers.length === 0 || !selectedTier)}
                     onClick={handleConfirm}
                   >
-                    {isShortlet && unitRate === 0 ? 'No pricing available' : 'Confirm Booking'}
+                    {isShortlet && shortletTiers.length === 0 ? 'No pricing available' : 'Confirm Booking'}
                   </Button>
                 </motion.div>
               )}

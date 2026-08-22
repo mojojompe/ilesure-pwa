@@ -9,6 +9,7 @@ import {
   Chatting01Icon
 } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
+import { RentRenewal } from '../../components/ui/RentRenewal';
 
 export function MyApartments() {
   const navigate = useNavigate();
@@ -109,7 +110,10 @@ export function MyApartments() {
     const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
     const shortletPricingUsed = item.shortletPricingUsed;
     const durationUnit = item.durationUnit as string;
-    
+    // Prefer the flexible tier snapshot; fall back to the legacy per-unit pricing.
+    const selectedRate = item.selectedRate;
+    const rateQuantity = item.rateQuantity || 1;
+
     const unitToPriceKey: Record<string, string> = { hour: 'hourly', day: 'daily', week: 'weekly', month: 'monthly' };
     const priceKey = durationUnit ? unitToPriceKey[durationUnit] : null;
     const listingRent = listing?.rentAnnual;
@@ -163,7 +167,12 @@ export function MyApartments() {
           
           <div className="flex flex-row justify-between items-center mt-4">
             <div className="flex-1">
-              {isShortlet && shortletPricingUsed && priceKey ? (
+              {isShortlet && selectedRate ? (
+                <p className="text-lg font-extrabold text-primary">
+                  ₦{((selectedRate.price || 0) * rateQuantity).toLocaleString()}
+                  <span className="text-xs font-medium text-textSecondary"> · {selectedRate.label}{rateQuantity > 1 ? ` ×${rateQuantity}` : ''}</span>
+                </p>
+              ) : isShortlet && shortletPricingUsed && priceKey ? (
                 <p className="text-lg font-extrabold text-primary">
                   ₦{shortletPricingUsed[priceKey]?.toLocaleString() ?? '—'}/{durationUnit === 'hour' ? 'hr' : durationUnit === 'day' ? 'day' : durationUnit === 'week' ? 'wk' : 'mo'}
                 </p>
@@ -200,8 +209,14 @@ export function MyApartments() {
             </div>
           )}
 
+          {!isShortlet && item.nextRentDue && (
+            <div className="mt-4">
+              <RentRenewal bookingId={item._id} nextRentDue={item.nextRentDue} />
+            </div>
+          )}
+
           {(item.status === 'pending' || item.status === 'confirmed') && (
-            <button 
+            <button
               onClick={(e) => { e.stopPropagation(); handleCancelBooking(item._id); }}
               className="mt-4 w-full py-2.5 rounded-xl bg-[#FEE2E2] active:bg-[#FCA5A5] transition-colors"
             >
