@@ -49,6 +49,8 @@ import { PWAInstallModal } from './components/common/PWAInstallModal';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { CallProvider } from './contexts/CallContext';
 import { CallOverlay } from './components/call/CallOverlay';
+import { socketService } from './api/socketService';
+import { useAuthStore } from './stores/authStore';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
@@ -56,6 +58,25 @@ export default function App() {
   useEffect(() => {
     // Hide splash screen or initialization logic here
   }, []);
+
+  /**
+   * Hold a socket open for the whole session, not just while a chat screen is
+   * mounted.
+   *
+   * `socketService.connect()` existed but nothing ever called it, so the socket
+   * was never established: presence never registered (the user showed offline
+   * to everyone), incoming calls could not arrive, and placing one failed with
+   * "You appear to be offline".
+   */
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      socketService.disconnect();
+      return;
+    }
+    socketService.connect();
+    return () => { socketService.disconnect(); };
+  }, [isAuthenticated]);
 
   return (
     <CallProvider>

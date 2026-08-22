@@ -27,6 +27,7 @@ import { getSocket } from '../../api/socketService';
 interface ChatInfo {
   name: string;
   isOnline: boolean;
+  avatar?: string;
   phone?: string;
   propertyTitle?: string;
   type?: 'agent' | 'student';
@@ -45,7 +46,8 @@ export function ChatScreen() {
   
   const [chatInfo, setChatInfo] = useState<ChatInfo>({
     name: 'Loading...',
-    isOnline: false
+    isOnline: false,
+    avatar: undefined
   });
   
   const [partnerTyping, setPartnerTyping] = useState(false);
@@ -115,6 +117,8 @@ export function ChatScreen() {
       await call.startCall(id, callType, {
         id: callAvailability.peerId,
         fullName: chatInfo.name,
+        // So the call card and the ended state can show their picture.
+        avatar: chatInfo.avatar,
       });
     } catch (error: any) {
       // Denied or missing media is handled inside the engine (it sets mediaError
@@ -146,6 +150,7 @@ export function ChatScreen() {
                 name: chat.participant?.fullName || 'User',
                 // Real presence from the API, kept current by presence:changed below.
                 isOnline: Boolean(chat.participant?.isOnline),
+                avatar: chat.participant?.avatar,
                 propertyTitle: chat.listingId?.title,
                 type: chat.participant?.role as 'agent' | 'student'
               });
