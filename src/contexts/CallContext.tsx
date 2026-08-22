@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useCallEngine } from '../hooks/useCallEngine';
+import { useAuthStore } from '../stores/authStore';
 
 /**
  * Call state lives above the router, not inside the chat screen.
@@ -13,7 +14,11 @@ type CallContextValue = ReturnType<typeof useCallEngine>;
 const CallContext = createContext<CallContextValue | null>(null);
 
 export function CallProvider({ children }: { children: ReactNode }) {
-  const engine = useCallEngine();
+  // The provider sits above the router, so it also wraps the public auth
+  // screens. Calling is meaningless there and its ICE request 401s, so the
+  // engine stays dormant until there is a session.
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const engine = useCallEngine(isAuthenticated);
   return <CallContext.Provider value={engine}>{children}</CallContext.Provider>;
 }
 

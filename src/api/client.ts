@@ -37,6 +37,16 @@ class ApiClient {
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
+          // A 401 on a request made with no token means "not signed in yet",
+          // not "session expired". There is nothing to refresh and nowhere to
+          // send them — they are already on a public screen. Attempting the
+          // redirect here is what made the sign-in page reload in a loop:
+          // /calls/ice fired on mount, 401'd, and the handler navigated to
+          // /login while already on /login, which is a full page reload.
+          if (!this.getToken()) {
+            return Promise.reject(error);
+          }
+
           try {
             const refreshed = await this.handleRefreshToken();
             if (refreshed) {
@@ -48,12 +58,12 @@ class ApiClient {
             }
           } catch (refreshError) {
             this.clearTokens();
-            window.location.href = '/login';
+            this.redirectToLogin();
             return Promise.reject(refreshError);
           }
 
           this.clearTokens();
-          window.location.href = '/login';
+          this.redirectToLogin();
           return Promise.reject(error);
         }
 
@@ -82,6 +92,23 @@ class ApiClient {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Sends an expired session back to sign-in without ever reloading the page.
+   *
+   * `window.location.href = '/login'` is a full page load, and when the user is
+   * already on an auth screen it is a reload — which, paired with a request
+   * that 401s on mount, loops forever. Public auth routes are left alone.
+   */
+  private redirectToLogin(): void {
+    const path = window.location.pathname;
+    const isOnAuthScreen = path === '/login'
+      || path === '/register'
+      || path.startsWith('/auth');
+    if (isOnAuthScreen) return;
+
+    window.location.assign('/login');
   }
 
   private async handleRefreshToken(): Promise<boolean> {

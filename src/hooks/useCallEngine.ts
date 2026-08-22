@@ -84,7 +84,12 @@ const trace = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.info('[call]', ...args);
 };
 
-export function useCallEngine() {
+/**
+ * @param enabled  whether the engine should do anything at all. Calling is
+ *   meaningless before sign-in, and running it there was actively harmful: the
+ *   ICE fetch 401'd on the login screen and the socket poll ticked forever.
+ */
+export function useCallEngine(enabled: boolean = true) {
   const [state, setState] = useState<CallState>(IDLE);
 
   /**
@@ -115,18 +120,24 @@ export function useCallEngine() {
   const endedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     if (getSocket()) return;
     const poll = setInterval(() => {
       if (getSocket()) setSocketEpoch((e) => e + 1);
     }, 500);
     return () => clearInterval(poll);
-  }, [socketEpoch]);
+  }, [socketEpoch, enabled]);
 
   /* ---------------------------------------------------------------------- */
   /* ICE configuration                                                      */
   /* ---------------------------------------------------------------------- */
 
   useEffect(() => {
+    // /calls/ice requires a session. Fetching it while signed out returned 401,
+    // which sent the client's interceptor to /login — reloading the very screen
+    // the user was already on, over and over.
+    if (!enabled) return;
+
     let cancelled = false;
     callService.getIceConfig().then((config) => {
       if (cancelled || !config?.iceServers?.length) return;
@@ -136,7 +147,7 @@ export function useCallEngine() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   /* ---------------------------------------------------------------------- */
   /* Teardown                                                               */
@@ -418,6 +429,7 @@ export function useCallEngine() {
   /* ---------------------------------------------------------------------- */
 
   useEffect(() => {
+    if (!enabled) return;
     const socket = getSocket();
     if (!socket) return;
 
