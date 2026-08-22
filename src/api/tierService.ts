@@ -9,6 +9,10 @@ export interface Tier {
   price: number;
   priceDisplay: string;
   billingCycle: string;
+  /** Price for one month, in naira. */
+  priceMonthly?: number;
+  /** Price for one year, in naira — set per tier, not derived from the monthly price. */
+  priceYearly?: number;
   features: {
     maxListings: number;
     analytics: string;
