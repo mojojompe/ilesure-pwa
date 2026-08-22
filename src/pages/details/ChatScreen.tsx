@@ -20,6 +20,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { customAlert } from '../../stores/alertStore';
 
 // Mocking chat info that would usually come from the chat service or route state
 interface ChatInfo {
@@ -76,12 +77,38 @@ export function ChatScreen() {
 
   const canPlaceCall = Boolean(id && callAvailability?.canCall && !callAvailability.peerBusy);
 
-  const placeCall = (callType: 'audio' | 'video') => {
-    if (!id || !callAvailability?.peerId) return;
-    call.startCall(id, callType, {
-      id: callAvailability.peerId,
-      fullName: chatInfo.name,
-    });
+  /** Why calling is unavailable, for a tap that would otherwise do nothing. */
+  const callBlockedReason = (): string => {
+    if (!callAvailability) return 'Could not check whether this person can be called. Check your connection and try again.';
+    if (callAvailability.peerBusy) return 'They are already on another call.';
+    if (!callAvailability.canCall) return 'This conversation has no one to call.';
+    return 'Calling is unavailable right now.';
+  };
+
+  const placeCall = async (callType: 'audio' | 'video') => {
+    // The buttons used to be disabled outright, so a tap produced no response at
+    // all and no explanation — the title tooltip never shows on a phone.
+    if (!canPlaceCall || !id || !callAvailability?.peerId) {
+      customAlert(callBlockedReason(), 'Cannot place call', 'info');
+      return;
+    }
+
+    try {
+      await call.startCall(id, callType, {
+        id: callAvailability.peerId,
+        fullName: chatInfo.name,
+      });
+    } catch (error: any) {
+      // Denied or missing media is handled inside the engine (it sets mediaError
+      // and the overlay explains it). This is the safety net for anything else:
+      // previously startCall's rejection was unhandled and the screen just sat
+      // there with no indication that the tap had failed.
+      customAlert(
+        error?.message || 'Could not start the call. Please try again.',
+        'Call failed',
+        'error'
+      );
+    }
   };
 
   useEffect(() => {
@@ -194,7 +221,6 @@ export function ChatScreen() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => placeCall('audio')}
-              disabled={!canPlaceCall}
               aria-label="Start voice call"
               title={callAvailability?.peerBusy ? 'They are on another call' : 'Voice call'}
               className={clsx(
@@ -206,7 +232,6 @@ export function ChatScreen() {
             </button>
             <button
               onClick={() => placeCall('video')}
-              disabled={!canPlaceCall}
               aria-label="Start video call"
               title={callAvailability?.peerBusy ? 'They are on another call' : 'Video call'}
               className={clsx(
