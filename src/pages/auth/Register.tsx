@@ -99,6 +99,7 @@ export function Register() {
   const { setUser, setTokens } = useAuthStore();
 
   const [step, setStep] = useState(0);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [direction, setDirection] = useState(1);
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,6 +156,11 @@ export function Register() {
       }
       goToStep(2);
     } else if (step === 2) {
+      if (!acceptedTerms) {
+        setErrors({ acceptedTerms: 'Please accept the Terms of Service and Privacy Policy to continue.' });
+        return;
+      }
+      setErrors({});
       setIsLoading(true);
       try {
         await authService.register({
@@ -359,6 +365,30 @@ export function Register() {
 
                     {step === 2 && (
                       <>
+                        {/* Consent sits at the top of the final step, so it is
+                            read before the account is created rather than
+                            buried under optional bank fields. */}
+                        <label className="flex items-start gap-3 rounded-2xl border border-borderLight bg-surface p-4 mb-4 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={acceptedTerms}
+                            onChange={e => setAcceptedTerms(e.target.checked)}
+                            className="mt-0.5 h-5 w-5 shrink-0 accent-accent cursor-pointer"
+                          />
+                          <span className="text-sm leading-5 text-textSecondary">
+                            I agree to the{' '}
+                            <a href="https://ilesure.com/terms-of-service" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                              Terms of Service
+                            </a>{' '}
+                            and{' '}
+                            <a href="https://ilesure.com/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                              Privacy Policy
+                            </a>.
+                          </span>
+                        </label>
+                        {errors.acceptedTerms && (
+                          <p className="-mt-2 mb-4 text-xs text-error">{errors.acceptedTerms}</p>
+                        )}
                         {(initialRole === 'agent' || initialRole === 'company') ? (
                           <>
                             <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
@@ -396,7 +426,7 @@ export function Register() {
                 <Button
                   onClick={handleNext}
                   className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm"
-                  disabled={isLoading}
+                  disabled={isLoading || (step === TOTAL_STEPS - 1 && !acceptedTerms)}
                 >
                   {isLoading ? 'Processing...' : step === TOTAL_STEPS - 1 ? 'Create Account' : 'Next'}
                 </Button>
