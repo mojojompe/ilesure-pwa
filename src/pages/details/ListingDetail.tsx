@@ -34,6 +34,7 @@ import { InspectionBookingModal } from '../../components/common/InspectionBookin
 import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
 import { customAlert } from '../../stores/alertStore';
+import { labelFor } from '../../constants/listingVocabulary';
 
 type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
 
@@ -341,9 +342,9 @@ export function ListingDetail() {
 
             {/* Tags Row */}
             <div className="flex flex-wrap justify-center gap-2 mb-6">
-              {listing.propertyType && <Tag label={listing.propertyType.replace('_', ' ')} />}
-              {listing.furnishing && <Tag label={listing.furnishing.replace('_', ' ')} />}
-              {listing.genderRestriction && <Tag label={listing.genderRestriction.replace('_', ' ')} />}
+              {listing.propertyType && <Tag label={labelFor(listing.propertyType)} />}
+              {listing.furnishing && <Tag label={labelFor(listing.furnishing)} />}
+              {listing.genderRestriction && <Tag label={labelFor(listing.genderRestriction)} />}
             </div>
 
             {/* Tab Navigation */}
@@ -432,7 +433,7 @@ export function ListingDetail() {
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
                       <Building03Icon size={20} className="text-primary mb-1" />
                       <span className="text-[10px] text-textSecondary mb-0.5">Type</span>
-                      <span className="text-xs font-bold text-textPrimary truncate w-full">{listing.propertyType?.replace('_', ' ') || 'N/A'}</span>
+                      <span className="text-xs font-bold text-textPrimary truncate w-full">{labelFor(listing.propertyType) || 'N/A'}</span>
                     </div>
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
                       <InformationCircleIcon size={20} className="text-primary mb-1" />
@@ -442,7 +443,7 @@ export function ListingDetail() {
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
                       <Location01Icon size={20} className="text-primary mb-1" />
                       <span className="text-[10px] text-textSecondary mb-0.5">Distance</span>
-                      <span className="text-xs font-bold text-textPrimary truncate w-full">{listing.distanceBucket || 'N/A'}</span>
+                      <span className="text-xs font-bold text-textPrimary truncate w-full">{labelFor(listing.distanceBucket) || 'N/A'}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -518,19 +519,19 @@ export function ListingDetail() {
                   <div className="space-y-4 mb-8">
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Property Type</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{listing.propertyType?.replace('_', ' ') || 'N/A'}</span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.propertyType) || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Furnishing</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{listing.furnishing?.replace('_', ' ') || 'N/A'}</span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.furnishing) || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Power Supply</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{listing.power || 'N/A'}</span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.power) || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Gender Preference</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{listing.genderRestriction?.replace('_', ' ') || 'Any'}</span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.genderRestriction) || 'Any'}</span>
                     </div>
                     {listing.additionalNotes && (
                       <div className="flex flex-col items-start pb-3 border-b border-borderLight">

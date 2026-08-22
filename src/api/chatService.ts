@@ -35,7 +35,14 @@ export interface ChatMessage {
     avatar?: string;
   };
   text: string;
-  type: 'text' | 'image' | 'location' | 'file' | 'video' | 'audio';
+  type: 'text' | 'image' | 'location' | 'file' | 'video' | 'audio' | 'call';
+  /** Present on type: 'call' — the transcript record of a voice/video call. */
+  call?: {
+    callId: string;
+    callType: 'audio' | 'video';
+    status: 'ended' | 'declined' | 'missed' | 'failed';
+    durationSeconds: number;
+  };
   fileUrl?: string;
   fileName?: string;
   replyTo?: string;

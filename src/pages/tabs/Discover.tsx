@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
@@ -13,7 +13,8 @@ import {
   Chatting01Icon,
   UserCircleIcon
 } from '@hugeicons/react';
-import { listingService, Listing } from '../../api/listingService';
+import { listingService, Listing, ListingFilter } from '../../api/listingService';
+import { CHIP_PROPERTY_TYPES } from '../../constants/listingVocabulary';
 import { useAuthStore } from '../../stores/authStore';
 import { chatService } from '../../api/chatService';
 import { AdsCarousel } from '../../components/common/AdsCarousel';
@@ -33,20 +34,42 @@ export function Discover() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // Debounced mirror of searchQuery — the value the API is actually queried with.
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeChip, setActiveChip] = useState('all');
   const [savedListings, setSavedListings] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreServer, setHasMoreServer] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const ITEMS_PER_PAGE = 10;
-  
-  const fetchInitialData = async (page = 1, isRefresh = false) => {
+
+  /**
+   * Search and chips are query parameters now. They used to filter the array
+   * already in memory, which meant searching only ever looked at the 10 listings
+   * on the current page — anything further down the feed was unreachable.
+   */
+  const listingFilters = useMemo<ListingFilter>(() => {
+    const filters: ListingFilter = {};
+    if (searchTerm.trim()) filters.q = searchTerm.trim();
+    if (activeChip === 'shared') filters.shareable = true;
+    const chipTypes = CHIP_PROPERTY_TYPES[activeChip];
+    if (chipTypes) filters.propertyType = [...chipTypes];
+    return filters;
+  }, [searchTerm, activeChip]);
+
+  // Debounce keystrokes so typing a place name is one request, not one per letter.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchTerm(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchInitialData = useCallback(async (page = 1, isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
       else if (page === 1) setLoading(true);
-      
+
       const promises: any[] = [
-        listingService.getListings({}, page, ITEMS_PER_PAGE),
+        listingService.getListings(listingFilters, page, ITEMS_PER_PAGE),
         listingService.getSavedListings().catch(() => ({ data: { listings: [] } })),
         chatService.getConversations().catch(() => ({ data: { chats: [] } }))
       ];
@@ -78,11 +101,7 @@ export function Discover() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    fetchInitialData(1);
-  }, []);
+  }, [listingFilters]);
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
@@ -90,12 +109,11 @@ export function Discover() {
     fetchInitialData(nextPage);
   };
 
+  // A new search or chip is a new result set: reset to page 1 and re-query.
   useEffect(() => {
-    // If they change search or filter, we might want to reset to page 1?
-    // But since filtering is local right now, we don't re-fetch from server.
-    // We just reset the local visible page.
     setCurrentPage(1);
-  }, [searchQuery, activeChip]);
+    fetchInitialData(1);
+  }, [fetchInitialData]);
 
   const toggleSave = (id: string) => {
     setSavedListings(prev => 
@@ -103,27 +121,8 @@ export function Discover() {
     );
   };
 
-  const filteredListings = useMemo(() => {
-    return listings.filter((l: any) => {
-      const matchesSearch =
-        !searchQuery ||
-        l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.areaCluster?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesChip =
-        activeChip === 'all' ||
-        (activeChip === 'shared' && l.needsRoommate) ||
-        (activeChip === 'hostel' && l.propertyType?.toLowerCase().includes('hostel')) ||
-        (activeChip === 'apartment' && !['hostel', 'shortlet'].includes(l.propertyType?.toLowerCase())) ||
-        (activeChip === 'shortlet' && l.propertyType?.toLowerCase().includes('shortlet'));
-
-      return matchesSearch && matchesChip;
-    });
-  }, [listings, searchQuery, activeChip]);
-
-  const paginatedListings = filteredListings.slice(0, currentPage * ITEMS_PER_PAGE);
-  // Show Load More if there are hidden local items OR the server has more items
-  const hasMore = paginatedListings.length < filteredListings.length || hasMoreServer;
+  // The server has already applied the search and chip filters.
+  const hasMore = hasMoreServer;
 
   // Framer Motion staggered animation variants
   const containerVariants = {
@@ -207,7 +206,14 @@ export function Discover() {
               />
             </div>
             
-            <button className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
+            {/* TODO: this PWA has no filter sheet yet — the mobile app's
+                FilterSheet is the reference implementation. Disabled rather than
+                left as a button that silently does nothing when tapped. */}
+            <button
+              disabled
+              title="Filters are not available yet"
+              className="w-[52px] h-[52px] flex items-center justify-center transition-transform bg-transparent opacity-40 cursor-not-allowed"
+            >
               <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
             </button>
           </div>
@@ -261,14 +267,14 @@ export function Discover() {
               <ListingCardSkeleton />
               <ListingCardSkeleton />
             </div>
-          ) : filteredListings.length > 0 ? (
+          ) : listings.length > 0 ? (
             <motion.div 
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="pb-[20px]"
             >
-              {paginatedListings.map((listing: any) => (
+              {listings.map((listing: any) => (
                 <motion.div key={listing._id || listing.id} variants={itemVariants}>
                   <ListingCard 
                     listing={listing}
@@ -282,7 +288,7 @@ export function Discover() {
               {hasMore && (
                 <div className="px-5 mt-4 mb-8">
                   <button 
-                    onClick={paginatedListings.length < filteredListings.length ? () => setCurrentPage(p => p + 1) : handleLoadMore}
+                    onClick={handleLoadMore}
                     disabled={loading}
                     className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight flex items-center justify-center disabled:opacity-50"
                   >

@@ -1,4 +1,12 @@
 import { apiClient } from './client';
+import type {
+  PropertyType,
+  DistanceBucket,
+  Furnishing,
+  PowerSource,
+  WaterSource,
+  GenderRestriction,
+} from '../constants/listingVocabulary';
 
 export interface ShortletRate {
   id: string;
@@ -23,12 +31,12 @@ export interface Listing {
   areaCluster: string;
   distanceBucket: string;
   distance?: string;
-  furnishing: 'fully_furnished' | 'semi-furnished' | 'unfurnished' | 'furnished' | 'semifurnished';
-  power: 'constant' | 'gen-dependent' | 'solar-backed' | 'phcn' | 'generator' | 'solar' | 'hybrid';
+  furnishing: 'fully_furnished' | 'semi_furnished' | 'unfurnished';
+  power: 'constant' | 'gen_dependent' | 'solar_backed' | 'hybrid';
   water: 'borehole' | 'public' | 'tank';
   maxOccupants: number;
-  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed' | 'male' | 'female';
-  gender?: 'any' | 'male_only' | 'female_only' | 'mixed' | 'male' | 'female';
+  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed';
+  gender?: 'any' | 'male_only' | 'female_only' | 'mixed';
   status: 'pending_approval' | 'active' | 'needs_roommate' | 'fully_booked' | 'archived' | 'rejected';
   images: string[];
   address?: string;
@@ -70,16 +78,27 @@ export interface Listing {
   saves?: number;
 }
 
+/**
+ * Mirrors the query parameters `GET /listings` actually reads. The names used to
+ * be this client's own invention (`distance`, `apartmentType`) and were silently
+ * ignored by the server; they now match the API exactly. Enumerated fields take
+ * arrays of canonical values (see constants/listingVocabulary) and are sent
+ * comma-separated.
+ */
 export interface ListingFilter {
+  /** Free-text search across title, description, address, city, area, landmark. */
+  q?: string;
   priceMin?: number;
   priceMax?: number;
-  distance?: string[];
-  apartmentType?: string[];
-  roomSharing?: 'private' | 'shared' | 'any';
-  furnishing?: 'fully_furnished' | 'semi-furnished' | 'unfurnished' | 'furnished' | 'semifurnished' | 'any';
-  power?: 'constant' | 'gen-dependent' | 'solar-backed' | 'phcn' | 'generator' | 'solar' | 'hybrid';
-  water?: 'borehole' | 'public' | 'tank';
-  gender?: 'any' | 'male_only' | 'female_only' | 'mixed';
+  propertyType?: PropertyType[];
+  distanceBucket?: DistanceBucket[];
+  furnishing?: Furnishing[];
+  power?: PowerSource[];
+  water?: WaterSource[];
+  gender?: GenderRestriction[];
+  areaCluster?: string;
+  shareable?: boolean;
+  needsRoommate?: boolean;
   agentId?: string;
 }
 
@@ -133,13 +152,18 @@ export const listingService = {
     params.append('limit', limit.toString());
     
     if (filters) {
+      if (filters.q?.trim()) params.append('q', filters.q.trim());
       if (filters.priceMin) params.append('priceMin', filters.priceMin.toString());
       if (filters.priceMax) params.append('priceMax', filters.priceMax.toString());
-      if (filters.distance?.length) params.append('distance', filters.distance.join(','));
-      if (filters.apartmentType?.length) params.append('apartmentType', filters.apartmentType.join(','));
-      if (filters.furnishing) params.append('furnishing', filters.furnishing);
-      if (filters.power) params.append('power', filters.power);
-      if (filters.gender) params.append('gender', filters.gender);
+      if (filters.propertyType?.length) params.append('propertyType', filters.propertyType.join(','));
+      if (filters.distanceBucket?.length) params.append('distanceBucket', filters.distanceBucket.join(','));
+      if (filters.furnishing?.length) params.append('furnishing', filters.furnishing.join(','));
+      if (filters.power?.length) params.append('power', filters.power.join(','));
+      if (filters.water?.length) params.append('water', filters.water.join(','));
+      if (filters.gender?.length) params.append('gender', filters.gender.join(','));
+      if (filters.areaCluster) params.append('areaCluster', filters.areaCluster);
+      if (filters.shareable) params.append('shareable', 'true');
+      if (filters.needsRoommate) params.append('needsRoommate', 'true');
       if (filters.agentId) params.append('agentId', filters.agentId);
     }
 

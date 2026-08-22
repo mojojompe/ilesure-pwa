@@ -10,6 +10,7 @@ import {
 } from '@hugeicons/react';
 import { Tag } from '../ui/Tag';
 import { AmenityRow } from '../ui/AmenityIcon';
+import { labelFor } from '../../constants/listingVocabulary';
 
 export interface ListingCardProps {
   listing: any;
@@ -25,6 +26,16 @@ const PLACEHOLDER_IMAGES = [
   'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80',
   'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80',
 ];
+
+/**
+ * Renders the metres reported by a proximity search as a short distance.
+ * Only present when the feed was queried around a point or a landmark.
+ */
+function formatDistance(metres?: number): string | null {
+  if (typeof metres !== 'number' || !Number.isFinite(metres)) return null;
+  if (metres < 950) return `${Math.round(metres / 50) * 50}m away`;
+  return `${(metres / 1000).toFixed(1)}km away`;
+}
 
 export function ListingCard({
   listing,
@@ -62,7 +73,9 @@ export function ListingCard({
     : listing.rentAnnual ? `₦${listing.rentAnnual.toLocaleString()}` : '₦0';
 
   const powerStatus =
-    listing.power === 'constant' ? 'good' : listing.power === 'solar-backed' ? 'partial' : 'poor';
+    listing.power === 'constant' ? 'good'
+      : listing.power === 'solar_backed' || listing.power === 'hybrid' ? 'partial'
+      : 'poor';
   const waterStatus = listing.water === 'borehole' ? 'good' : 'partial';
   const isFullyBooked = listing.status === 'fully_booked';
 
@@ -163,9 +176,11 @@ export function ListingCard({
             <span className="text-white/85 text-sm truncate flex-1">
               {listing.areaCluster}
             </span>
-            {listing.distanceBucket && (
-              <span className="text-accent text-xs font-semibold">· {listing.distanceBucket}</span>
-            )}
+            {formatDistance((listing as any).distanceMeters) ? (
+              <span className="text-accent text-xs font-semibold">· {formatDistance((listing as any).distanceMeters)}</span>
+            ) : listing.distanceBucket ? (
+              <span className="text-accent text-xs font-semibold">· {labelFor(listing.distanceBucket)}</span>
+            ) : null}
           </div>
 
           {/* Agent/Company */}

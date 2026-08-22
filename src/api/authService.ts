@@ -139,6 +139,15 @@ export const authService = {
     return response.data;
   },
 
+  /**
+   * Verifies the password-reset code. Distinct from verifyOTP(), which the
+   * backend scopes to email-verification codes only and which issues a session.
+   */
+  async verifyResetOTP(otp: string, email: string): Promise<{ success: boolean; verified?: boolean; message?: string }> {
+    const response = await apiClient.post<{ success: boolean; verified?: boolean; message?: string }>('/auth/verify-reset-otp', { otp, email });
+    return response.data;
+  },
+
   async verifyOTP(otp: string, email: string): Promise<VerifyOTPResponse & { accessToken?: string; refreshToken?: string; user?: any }> {
     const response = await apiClient.post<VerifyOTPResponse & { accessToken?: string; refreshToken?: string; user?: any }>('/auth/verify-otp', { otp, email });
     return response.data;

@@ -74,11 +74,11 @@ export interface Listing {
   rentAnnual: number;
   areaCluster: string;
   distanceBucket: string;
-  furnishing: 'fully_furnished' | 'semi-furnished' | 'unfurnished' | 'furnished' | 'semifurnished';
-  power: 'constant' | 'gen-dependent' | 'solar-backed' | 'phcn' | 'generator' | 'solar' | 'hybrid';
+  furnishing: 'fully_furnished' | 'semi_furnished' | 'unfurnished';
+  power: 'constant' | 'gen_dependent' | 'solar_backed' | 'hybrid';
   water: 'borehole' | 'public' | 'tank';
   maxOccupants: number;
-  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed' | 'male' | 'female';
+  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed';
   status: 'pending_approval' | 'active' | 'needs_roommate' | 'fully_booked' | 'archived' | 'rejected';
   images: string[];
   createdAt: string;
