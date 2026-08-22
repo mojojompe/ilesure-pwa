@@ -148,6 +148,12 @@ export function ForgotPassword() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="email@example.com"
                       type="email"
+                      name="email"
+                      autoComplete="username"
+                      inputMode="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       error={error}
                     />
                   </div>
@@ -192,6 +198,8 @@ export function ForgotPassword() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="8+ chars, upper, lower & number"
                       type="password"
+                      name="new-password"
+                      autoComplete="new-password"
                       error={error}
                     />
                   </div>
@@ -202,6 +210,8 @@ export function ForgotPassword() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repeat your password"
                       type="password"
+                      name="confirm-password"
+                      autoComplete="new-password"
                     />
                   </div>
                   <Button

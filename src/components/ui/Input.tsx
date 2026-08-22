@@ -17,12 +17,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   className,
   containerClassName,
   disabled,
+  id,
+  name,
   ...props
 }, ref) => {
+  // The label must point at the input for iOS to identify the field. Without an
+  // association, Safari falls back to guessing from surrounding text, which is
+  // part of why the AutoFill/iCloud Keychain sheet kept re-presenting itself on
+  // the sign-in screen.
+  const inputId = id || name;
+
   return (
     <div className={clsx('flex flex-col w-full', containerClassName)}>
       {label && (
-        <label className="mb-1.5 text-sm font-semibold text-text-primary">
+        <label htmlFor={inputId} className="mb-1.5 text-sm font-semibold text-text-primary">
           {label}
         </label>
       )}
@@ -35,6 +43,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         
         <input
           ref={ref}
+          id={inputId}
+          name={name}
           className={clsx(
             'w-full bg-soft-surface border border-border-light rounded-2xl px-4 py-3.5 text-sm text-text-primary transition-colors outline-none focus:border-primary focus:bg-white',
             leftIcon ? 'pl-11' : '',

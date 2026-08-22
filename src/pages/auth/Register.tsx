@@ -298,6 +298,12 @@ export function Register() {
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="email@example.com"
                           type="email"
+                          name="email"
+                          autoComplete="username"
+                          inputMode="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           error={errors.email}
                         />
                         <Input
@@ -306,6 +312,8 @@ export function Register() {
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Create a password (min 6, 1 uppercase)"
                           type="password"
+                          name="new-password"
+                          autoComplete="new-password"
                           error={errors.password}
                         />
                         <PasswordStrengthMeter password={password} />
@@ -315,6 +323,8 @@ export function Register() {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Repeat your password"
                           type="password"
+                          name="confirm-password"
+                          autoComplete="new-password"
                           error={errors.confirmPassword}
                         />
                       </>
@@ -328,6 +338,9 @@ export function Register() {
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+234 800 000 0000"
                           type="tel"
+                          name="tel"
+                          autoComplete="tel"
+                          inputMode="tel"
                           error={errors.phone}
                         />
                         {initialRole === 'student' && (

@@ -131,6 +131,12 @@ export function OTP() {
                   onKeyDown={e => handleKeyDown(e, i)}
                   inputMode="numeric"
                   maxLength={1}
+                  // Only the first box advertises one-time-code; iOS fills the
+                  // whole code from it. Marking every box makes the AutoFill
+                  // suggestion re-present itself on each one.
+                  autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                  name={`otp-${i}`}
+                  aria-label={`Digit ${i + 1} of the verification code`}
                 />
               </div>
             ))}

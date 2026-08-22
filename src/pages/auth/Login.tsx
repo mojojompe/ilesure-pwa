@@ -125,6 +125,12 @@ export function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@example.com"
                   type="email"
+                  name="email"
+                  autoComplete="username"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   error={errors.email}
                 />
                 <Input
@@ -133,6 +139,8 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Your password"
                   type="password"
+                  name="password"
+                  autoComplete="current-password"
                   error={errors.password}
                 />
 
