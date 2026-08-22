@@ -21,6 +21,7 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { customAlert } from '../../stores/alertStore';
+import { getSocket } from '../../api/socketService';
 
 // Mocking chat info that would usually come from the chat service or route state
 interface ChatInfo {
@@ -75,6 +76,23 @@ export function ChatScreen() {
     return () => { cancelled = true; };
   }, [id]);
 
+  // The server emits presence:changed to everyone the user shares a chat with,
+  // so the indicator does not go stale while this screen sits open.
+  useEffect(() => {
+    const socket = getSocket();
+    const peerId = callAvailability?.peerId;
+    if (!socket || !peerId) return;
+
+    const onPresence = (data: { userId: string; isOnline: boolean }) => {
+      if (data?.userId === peerId) {
+        setChatInfo((info) => ({ ...info, isOnline: Boolean(data.isOnline) }));
+      }
+    };
+
+    socket.on('presence:changed', onPresence);
+    return () => { socket.off('presence:changed', onPresence); };
+  }, [callAvailability?.peerId]);
+
   const canPlaceCall = Boolean(id && callAvailability?.canCall && !callAvailability.peerBusy);
 
   /** Why calling is unavailable, for a tap that would otherwise do nothing. */
@@ -126,7 +144,8 @@ export function ChatScreen() {
             if (chat) {
               setChatInfo({
                 name: chat.participant?.fullName || 'User',
-                isOnline: Math.random() > 0.5, // Mock online status for now
+                // Real presence from the API, kept current by presence:changed below.
+                isOnline: Boolean(chat.participant?.isOnline),
                 propertyTitle: chat.listingId?.title,
                 type: chat.participant?.role as 'agent' | 'student'
               });

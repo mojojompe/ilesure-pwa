@@ -7,6 +7,8 @@ export interface ChatParticipant {
   fullName: string;
   avatar?: string;
   role: string;
+  /** Live socket presence, reported by the conversations endpoint. */
+  isOnline?: boolean;
 }
 
 export interface ChatListingPreview {

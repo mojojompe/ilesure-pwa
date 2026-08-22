@@ -32,7 +32,7 @@ export function ChatsList() {
           lastMessage: chat.lastMessage || 'No messages yet',
           timestamp: chat.lastMessageAt ? format(new Date(chat.lastMessageAt), 'h:mm a') : '',
           unreadCount: chat.unreadCount || 0,
-          isOnline: false, // We'd get this from sockets in a full impl
+          isOnline: Boolean(chat.participant?.isOnline),
           type: chat.participant?.role || 'user',
           propertyTitle: chat.listingId?.title,
           listingId: chat.listingId?._id,
