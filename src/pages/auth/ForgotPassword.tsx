@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
@@ -14,7 +14,8 @@ export function ForgotPassword() {
   const [step, setStep] = useState<Step>('request');
   
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -41,13 +42,33 @@ export function ForgotPassword() {
     }
   };
 
+  const handleDigitChange = (text: string, index: number) => {
+    const digit = text.replace(/\D/g, '').slice(-1);
+    const newOtp = [...otp];
+    newOtp[index] = digit;
+    setOtp(newOtp);
+    if (digit && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const newOtp = [...otp];
+      newOtp[index - 1] = '';
+      setOtp(newOtp);
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleVerifyOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (otp.length < 4) { setError('Enter the code sent to your email'); return; }
+    const code = otp.join('');
+    if (code.length < 6) { setError('Enter the 6-digit code sent to your email'); return; }
     setError('');
     setIsLoading(true);
     try {
-      await authService.verifyResetOTP(otp, email);
+      await authService.verifyResetOTP(code, email);
       setStep('newPassword');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Invalid or expired code');
@@ -66,7 +87,7 @@ export function ForgotPassword() {
     setError('');
     setIsLoading(true);
     try {
-      await authService.resetPassword(email, otp, newPassword);
+      await authService.resetPassword(email, otp.join(''), newPassword);
       setStep('success');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to reset password');
@@ -169,15 +190,33 @@ export function ForgotPassword() {
 
               {step === 'otp' && (
                 <form onSubmit={handleVerifyOtp} className="flex-1 flex flex-col pt-4">
-                  <div className="mb-4">
-                    <Input
-                      label="Reset Code"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter 6-digit code"
-                      type="text"
-                      error={error}
-                    />
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-textSecondary mb-2">Reset Code</label>
+                    <div className="flex flex-row justify-between gap-2 w-full">
+                      {otp.map((digit, i) => (
+                        <div
+                          key={i}
+                          onClick={() => inputRefs.current[i]?.focus()}
+                          className={`w-[45px] h-[55px] rounded-xl flex items-center justify-center border-[1.5px] transition-all cursor-text
+                            ${digit ? 'bg-[#FFF8E1] border-accent' : 'bg-surfaceLight border-borderLight'}
+                            ${i === otp.findIndex(d => !d) ? 'border-accent bg-[#FFFDF5] shadow-sm' : ''}
+                          `}
+                        >
+                          <input
+                            ref={el => inputRefs.current[i] = el}
+                            className="w-full h-full bg-transparent text-center text-xl font-black text-textPrimary focus:outline-none"
+                            value={digit}
+                            onChange={e => handleDigitChange(e.target.value, i)}
+                            onKeyDown={e => handleKeyDown(e, i)}
+                            inputMode="numeric"
+                            maxLength={1}
+                            autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                            name={`otp-${i}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {error && <p className="text-error text-sm mt-2">{error}</p>}
                   </div>
                   <Button
                     type="submit"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Button } from '../../components/ui/Button';
 import { Tag } from '../../components/ui/Tag';
@@ -52,10 +52,12 @@ const TABS: { id: TabId; label: string }[] = [
 export function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialListing = location.state?.listing || null;
+
   const { user } = useAuthStore();
-  
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [listing, setListing] = useState<Listing | null>(initialListing);
+  const [loading, setLoading] = useState(!initialListing);
   const [isSaved, setIsSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [inquiries, setInquiries] = useState<any[]>([]);
@@ -79,7 +81,8 @@ export function ListingDetail() {
     const fetchData = async () => {
       try {
         if (!id) return;
-        setLoading(true);
+        // Don't set loading to true if we already have initial data
+        if (!initialListing) setLoading(true);
         const [listingData, savedData] = await Promise.all([
           listingService.getListingById(id),
           listingService.getSavedListings().catch(() => ({ data: { listings: [] } }))

@@ -21,6 +21,7 @@ import {
   PropertyType,
 } from '../../constants/listingVocabulary';
 import { useAuthStore } from '../../stores/authStore';
+import { useListingStore } from '../../stores/listingStore';
 import { chatService } from '../../api/chatService';
 import { AdsCarousel } from '../../components/common/AdsCarousel';
 import {
@@ -141,11 +142,14 @@ export function Discover() {
       
       if (page === 1) {
         setListings(listingsData.listings);
+        useListingStore.getState().setListings(listingsData.listings);
       } else {
         setListings(prev => {
           const newIds = new Set(listingsData.listings.map((l: any) => l.id || l._id));
           const filteredPrev = prev.filter(l => !newIds.has(l.id || l._id));
-          return [...filteredPrev, ...listingsData.listings];
+          const newList = [...filteredPrev, ...listingsData.listings];
+          useListingStore.getState().setListings(newList);
+          return newList;
         });
       }
       
@@ -335,7 +339,7 @@ export function Discover() {
                 <motion.div key={listing._id || listing.id} variants={itemVariants}>
                   <ListingCard 
                     listing={listing}
-                    onPress={() => navigate(`/listing/${listing._id || listing.id}`)}
+                    onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
                     isSaved={savedListings.includes(listing._id || listing.id)}
                     onSave={() => toggleSave(listing._id || listing.id)}
                   />

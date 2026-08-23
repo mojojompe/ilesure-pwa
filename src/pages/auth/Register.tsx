@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
+import { customAlert } from '../../stores/alertStore';
 
 const TOTAL_STEPS = 3;
 
@@ -171,7 +172,9 @@ export function Register() {
         });
         navigate('/auth/otp', { state: { email, role: initialRole, fullName } }); 
       } catch (error: any) {
-        setErrors({ general: error.response?.data?.error?.message || 'Please try again later' });
+        const msg = error.response?.data?.error?.message || 'Please try again later';
+        setErrors({ general: msg });
+        customAlert(msg, 'Registration Failed', 'error');
       } finally {
         setIsLoading(false);
       }
