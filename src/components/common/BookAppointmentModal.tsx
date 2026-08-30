@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, Add01Icon, Remove01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
+import { calculatePlatformFee, calculateRoommateMatchingFee, PLATFORM_FEE_LABEL } from '../../constants/fees';
 
 interface ShortletRate {
   id: string;
@@ -75,12 +76,14 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const rentAmount = isShortlet
     ? (selectedTier ? selectedTier.price * rateQuantity : 0)
     : (listing?.rentAnnual || 0);
-  const cautionFee = listing?.cautionFee || 0;
-  const agencyFee = listing?.agencyFee || 0;
+  // Shortlets are charged on the tier price alone — the server excludes
+  // caution/agency for them, so including here would over-quote the total.
+  const cautionFee = isShortlet ? 0 : (listing?.cautionFee || 0);
+  const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
   
   const subTotal = rentAmount + cautionFee + agencyFee;
-  const platformFee = subTotal > 0 ? Math.round(subTotal * 0.05) : 0;
-  const roommateMatchingFee = subTotal > 0 ? Math.round(subTotal * 0.01) : 0;
+  const platformFee = calculatePlatformFee(subTotal);
+  const roommateMatchingFee = calculateRoommateMatchingFee(subTotal);
   
   const totalWithoutRoommate = subTotal + platformFee;
   
@@ -215,7 +218,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                 )}
                 {subTotal > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-textSecondary">Platform Fee (5%)</span>
+                    <span className="text-sm text-textSecondary">{PLATFORM_FEE_LABEL}</span>
                     <span className="text-sm font-semibold text-textPrimary">₦{platformFee.toLocaleString()}</span>
                   </div>
                 )}
