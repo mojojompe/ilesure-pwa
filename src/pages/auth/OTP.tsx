@@ -6,21 +6,30 @@ import { authService } from '../../api/authService';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
 
+/** Email of an account that registered but has not yet verified its OTP. */
+export const PENDING_EMAIL_KEY = 'ilesure_pwa_pending_email';
+
 const OTP_LENGTH = 6;
 
 export function OTP() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser, setTokens } = useAuthStore();
-  
-  const email = location.state?.email || 'your email';
-  const role = location.state?.role || 'student';
-  const fullName = location.state?.fullName || 'User';
+  const { setUser, setTokens, user } = useAuthStore();
+
+  // QA-AGT-003 / QA-CO-002 (PWA variant): the email used to come only from router state, so a
+  // refresh or PWA restore on this screen sent the literal text "your email" to the API.
+  // Fall back to the pending-signup marker written by Register, then the signed-in user.
+  const email: string =
+    location.state?.email ||
+    sessionStorage.getItem(PENDING_EMAIL_KEY) ||
+    user?.email ||
+    '';
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [resending, setResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -59,13 +68,21 @@ export function OTP() {
   const handleVerify = async () => {
     const code = otp.join('');
     if (code.length < OTP_LENGTH) return;
+    if (!email) {
+      customAlert('We could not find the email you signed up with. Please register or log in again.', 'Error', 'error');
+      return;
+    }
 
     setLoading(true);
     try {
       const response = await authService.verifyOTP(code, email);
-      
-      if (response.accessToken && response.refreshToken) {
-        setTokens(response.accessToken, response.refreshToken);
+
+      if (response.accessToken) {
+        // Store the verified user as well as the tokens — without it the app had a session
+        // but no user object, and the route guard could not pick a shell.
+        if (response.user) setUser(response.user);
+        setTokens(response.accessToken, response.refreshToken || null);
+        sessionStorage.removeItem(PENDING_EMAIL_KEY);
         navigate('/');
       } else {
         customAlert(response.message || 'Verification failed', 'Error', 'error');
@@ -78,16 +95,28 @@ export function OTP() {
   };
 
   const handleResend = async () => {
-    setOtp(Array(OTP_LENGTH).fill(''));
-    setTimer(60);
-    setCanResend(false);
-    inputRefs.current[0]?.focus();
-    
+    if (!email) {
+      customAlert('We could not find the email you signed up with. Please register or log in again.', 'Error', 'error');
+      return;
+    }
+    // QA-CO-003: only restart the countdown once the backend confirms a new code was sent.
+    setResending(true);
     try {
-      await authService.resendOTP(email);
-      customAlert('OTP has been resent to your email.', 'Success', 'success');
+      const res: any = await authService.resendOTP(email);
+      if (res?.alreadyVerified) {
+        sessionStorage.removeItem(PENDING_EMAIL_KEY);
+        customAlert('This email is already verified. You can log in.', 'Info', 'info');
+        return;
+      }
+      setOtp(Array(OTP_LENGTH).fill(''));
+      setTimer(60);
+      setCanResend(false);
+      inputRefs.current[0]?.focus();
+      customAlert('A new code has been sent to your email.', 'Success', 'success');
     } catch (error: any) {
-      customAlert(error.message || 'Failed to resend OTP', 'Error', 'error');
+      customAlert(error.response?.data?.error?.message || error.message || 'Failed to resend OTP', 'Error', 'error');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -108,7 +137,9 @@ export function OTP() {
           
           <h1 className="text-[32px] font-black text-white tracking-tight mb-2">Verify Code</h1>
           <p className="text-white/80 text-base leading-relaxed font-medium max-w-[280px]">
-            We've sent a secure PIN to <span className="font-bold text-white">{email}</span>.
+            {email ? (<>We've sent a secure PIN to <span className="font-bold text-white">{email}</span>.</>) : (
+              <>We couldn't find your email. <button onClick={() => navigate('/auth/choice')} className="underline font-bold text-white">Sign up or log in again</button>.</>
+            )}
           </p>
         </div>
 
@@ -144,8 +175,8 @@ export function OTP() {
 
           <div className="mb-10 text-center">
             {canResend ? (
-              <button onClick={handleResend} className="text-primary font-bold underline active:opacity-70">
-                Resend code
+              <button onClick={handleResend} disabled={resending || !email} className="text-primary font-bold underline active:opacity-70 disabled:opacity-50">
+                {resending ? 'Sending…' : 'Resend code'}
               </button>
             ) : (
               <p className="text-textSecondary">
@@ -159,7 +190,7 @@ export function OTP() {
               className="w-full shadow-lg"
               size="lg"
               onClick={handleVerify}
-              disabled={!isComplete || loading}
+              disabled={!isComplete || loading || !email}
             >
               {loading ? 'Verifying...' : 'Verify'}
             </Button>

@@ -164,7 +164,9 @@ export const authService = {
   },
 
   async updateProfile(data: Partial<UserProfile>): Promise<{ success: boolean; data: UserProfile }> {
-    const response = await apiClient.patch<{ success: boolean; data: UserProfile }>('/users/me', data);
+    // QA-AGT-004 (PWA variant): the backend routes PUT for this resource; PATCH returned 404,
+    // so profile edits were never saved.
+    const response = await apiClient.put<{ success: boolean; data: UserProfile }>('/users/me', data);
     return response.data;
   },
 };
