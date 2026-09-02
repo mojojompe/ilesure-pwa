@@ -49,10 +49,12 @@ export function KYC() {
         setBvnVerifiedAt(res.data.bvnVerifiedAt || null);
         // Keep the (UI-only) persisted store in sync with SERVER truth, never a timer.
         if (user) {
+          const vStatus = (res.data.ninVerified && (!isKYCRequired || res.data.bvnVerified)) ? 'verified' : 'pending';
           setUser({
             ...user,
             ninVerified: !!res.data.ninVerified,
             bvnVerified: !!res.data.bvnVerified,
+            verificationStatus: vStatus
           } as any);
         }
       }

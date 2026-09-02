@@ -32,15 +32,35 @@ export function Skeleton({ className, variant = 'rounded', width, height }: Skel
   );
 }
 
-// A common skeleton layout for a listing card
 export function ListingCardSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-3 shadow-sm border border-borderLight flex flex-col gap-3">
-      <Skeleton height={180} className="w-full rounded-2xl" />
-      <div className="px-1">
-        <Skeleton variant="text" width="40%" height={20} className="mb-2" />
-        <Skeleton variant="text" width="80%" height={24} className="mb-3" />
-        <Skeleton variant="text" width="60%" height={16} />
+    <div className="bg-surface rounded-[24px] overflow-hidden mb-5 border border-borderLight shadow-sm relative">
+      <div className="relative w-full h-[380px]">
+        <Skeleton variant="rectangular" width="100%" height="100%" />
+        
+        <div className="absolute bottom-0 left-0 right-0 pt-8 pb-4 px-4 bg-gradient-to-t from-[#3E1F0A] via-[#3E1F0A]/70 to-transparent z-10">
+          <div className="flex flex-row justify-between items-start mb-2">
+            <Skeleton variant="text" width="60%" height={24} className="bg-white/30" />
+            <Skeleton variant="text" width="20%" height={24} className="bg-white/30" />
+          </div>
+          
+          <div className="flex flex-row items-center gap-2 mb-1.5 mt-2">
+            <Skeleton variant="circular" width={14} height={14} className="bg-white/30" />
+            <Skeleton variant="text" width="40%" height={16} className="bg-white/30" />
+          </div>
+          
+          <div className="flex flex-row items-center gap-2 mb-2 mt-2">
+            <Skeleton variant="circular" width={14} height={14} className="bg-white/30" />
+            <Skeleton variant="text" width="30%" height={16} className="bg-white/30" />
+          </div>
+          
+          <div className="mt-4 flex gap-2">
+             <Skeleton variant="rounded" width={40} height={40} className="bg-white/30 rounded-full" />
+             <Skeleton variant="rounded" width={40} height={40} className="bg-white/30 rounded-full" />
+             <Skeleton variant="rounded" width={40} height={40} className="bg-white/30 rounded-full" />
+             <Skeleton variant="rounded" width={40} height={40} className="bg-white/30 rounded-full" />
+          </div>
+        </div>
       </div>
     </div>
   );

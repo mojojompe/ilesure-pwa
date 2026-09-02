@@ -43,7 +43,7 @@ export function RoleSelection() {
 
   return (
     <div className="min-h-screen bg-[#FFF5E1] flex flex-col font-sans">
-      <div className="flex-1 flex flex-col overflow-y-auto px-4 pb-8 pt-safe-top">
+      <div className="flex-1 flex flex-col overflow-y-auto px-4 pb-[130px] pt-safe-top">
         
         {/* Header */}
         <motion.div 
@@ -137,13 +137,12 @@ export function RoleSelection() {
             })}
           </AnimatePresence>
         </div>
-        
-        <div className="h-12" />
       </div>
 
       {/* Footer */}
       <motion.div 
-        className="px-4 pb-8 pt-2 flex flex-col gap-2 bg-[#FFF5E1]"
+        className="fixed bottom-0 left-0 right-0 px-4 pb-safe-bottom pt-4 flex flex-col gap-2 bg-[#FFF5E1] z-50 shadow-[0_-10px_20px_rgba(255,245,225,0.9)]"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 32px)' }}
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}

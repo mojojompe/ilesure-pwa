@@ -95,7 +95,7 @@ export function SchoolSelection() {
     <div className="min-h-screen bg-[#FFF5E1] flex flex-col font-sans relative">
       <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAF9] to-[#F5E6D3] opacity-50 z-0" />
       
-      <div className="flex-1 flex flex-col overflow-y-auto px-4 pb-4 pt-safe-top z-10" ref={scrollRef}>
+      <div className="flex-1 flex flex-col overflow-y-auto px-4 pb-[130px] pt-safe-top z-10" ref={scrollRef}>
         
         {/* Header */}
         <motion.div 
@@ -128,25 +128,27 @@ export function SchoolSelection() {
         </motion.div>
 
         {/* School List */}
-        <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col gap-3 mb-6">
           <AnimatePresence>
             {isReady && SCHOOLS.map((school, index) => {
               const isSelected = selectedSchool === school.id;
               return (
                 <motion.div
                   key={school.id}
-                  initial={{ y: 80, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{
-                    type: 'spring',
-                    delay: index * 0.08
-                  }}
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ type: 'spring', delay: 0.1 + index * 0.1 }}
                 >
                   <button
-                    onClick={() => setSelectedSchool(school.id)}
-                    className={`w-full bg-white rounded-3xl border-2 px-4 py-5 flex flex-row items-center gap-4 text-left transition-all duration-300 ${
+                    onClick={() => {
+                      setSelectedSchool(school.id);
+                      if (school.id === 'others') {
+                        setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
+                      }
+                    }}
+                    className={`w-full bg-white rounded-2xl p-4 flex flex-row items-center gap-4 text-left transition-all duration-300 border-2 ${
                       isSelected 
-                        ? 'border-transparent shadow-[0_12px_35px_rgba(0,0,0,0.08)] scale-[1.02] -translate-y-1' 
+                        ? 'border-accent shadow-[0_8px_16px_rgba(225,173,1,0.15)] scale-[1.02] bg-[#FFFdf5]' 
                         : 'border-transparent opacity-65'
                     }`}
                   >
@@ -258,7 +260,8 @@ export function SchoolSelection() {
 
       {/* Footer */}
       <motion.div 
-        className="px-4 pb-8 pt-4 bg-transparent z-10"
+        className="fixed bottom-0 left-0 right-0 px-4 pb-safe-bottom pt-4 flex flex-col gap-2 bg-[#FFF5E1] z-50 shadow-[0_-10px_20px_rgba(255,245,225,0.9)]"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 32px)' }}
         initial={{ y: 50, opacity: 0 }}
         animate={isReady ? { y: 0, opacity: 1 } : {}}
         transition={{ delay: 0.5 }}

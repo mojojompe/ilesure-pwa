@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Cancel01Icon, Add01Icon, Remove01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
 
@@ -263,17 +264,17 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                 </>
               )}
 
-              <button 
-                onClick={() => setAgreeTerms(!agreeTerms)}
-                className="flex items-center gap-3 mb-2 w-full text-left"
-              >
-                <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${agreeTerms ? 'bg-primary border-primary' : 'bg-transparent border-borderLight'}`}>
+              <div className="flex items-center gap-3 mb-2 w-full text-left">
+                <button 
+                  onClick={() => setAgreeTerms(!agreeTerms)}
+                  className={`shrink-0 w-5 h-5 rounded flex items-center justify-center border transition-colors ${agreeTerms ? 'bg-primary border-primary' : 'bg-transparent border-borderLight'}`}
+                >
                   {agreeTerms && <CheckmarkCircle02Icon size={14} className="text-white" variant="solid" />}
-                </div>
+                </button>
                 <span className="text-xs text-textSecondary flex-1">
-                  I agree to the booking terms and cancellation policy
+                  I agree to the <Link to="/terms" className="text-accent underline">booking terms and cancellation policy</Link>
                 </span>
-              </button>
+              </div>
             </div>
 
             <AnimatePresence>

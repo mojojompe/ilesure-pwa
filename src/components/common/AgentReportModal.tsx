@@ -31,7 +31,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
     
     try {
       const { userService } = await import('../../api/userService');
-      await userService.reportAgent(targetId, reason, description);
+      await userService.reportAgent(targetId, reason, description || reason);
       customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
       onClose();
     } catch (error: any) {

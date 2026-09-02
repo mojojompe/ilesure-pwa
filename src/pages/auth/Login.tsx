@@ -37,6 +37,11 @@ export function Login() {
     try {
       const response = await authService.login({ email, password });
       if (response.success && response.user) {
+        if (response.user.role !== 'student' && response.user.role !== 'individual') {
+          customAlert('This app is for Students/Renters. Please use the ileSure Web App.', 'Access Denied', 'error');
+          return;
+        }
+        
         const userWithMeta = { ...response.user, createdAt: new Date().toISOString() } as any;
         setUser(userWithMeta);
         setTokens(response.accessToken, response.refreshToken);

@@ -42,8 +42,9 @@ const CHIPS = [
 export function Discover() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialListings = useListingStore(state => state.listings);
+  const [listings, setListings] = useState<Listing[]>(initialListings || []);
+  const [loading, setLoading] = useState(initialListings && initialListings.length > 0 ? false : true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   // Debounced mirror of searchQuery — the value the API is actually queried with.
@@ -288,7 +289,7 @@ export function Discover() {
         >
           <AdsCarousel 
             heroTitle="Find Your Perfect Space" 
-            heroImage="/assets/backgrounds/hero_student.png" 
+            heroImage="/images/find_space_vector.jpg" 
           />
         </motion.div>
 

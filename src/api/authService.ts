@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 
-export type UserRole = 'student' | 'landlord' | 'agent' | 'company' | 'company_admin' | 'sub_agent';
+export type UserRole = 'student' | 'individual' | 'landlord' | 'agent' | 'company' | 'company_admin' | 'sub_agent';
 
 export interface LoginRequest {
   email: string;

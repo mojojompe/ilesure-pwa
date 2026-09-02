@@ -14,6 +14,7 @@ import {
   InformationCircleIcon
 } from '@hugeicons/react';
 import { notificationService } from '../../api/notificationService';
+import { socketService } from '../../api/socketService';
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string }> = {
   match: { icon: UserMultipleIcon, color: '#E1AD01', bg: '#FEF3C7' },
@@ -47,8 +48,6 @@ export function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
-
-    const { socketService } = require('../../api/socketService');
     
     socketService.onNewNotification((notifData: any) => {
       setNotifications(prev => {

@@ -278,8 +278,12 @@ export function AgentProfile() {
             if (reviewsRes.success && reviewsRes.data?.reviews) {
               setReviews(reviewsRes.data.reviews);
             }
-          } catch (error) {
-            customAlert('Failed to submit review', 'Error', 'error');
+          } catch (error: any) {
+            if (error.code === 'FORBIDDEN') {
+              customAlert(error.message || 'You can only review agents you have successfully booked with.', 'Error', 'error');
+            } else {
+              customAlert('Failed to submit review', 'Error', 'error');
+            }
           }
         }}
       />
