@@ -10,10 +10,11 @@ interface BookingTimelineModalProps {
   booking: any;
   loading?: boolean;
   onScheduleInspection?: () => void;
+  onVerifyInspection?: () => void;
   onMakePayment?: () => void;
 }
 
-export function BookingTimelineModal({ visible, onClose, booking, loading, onScheduleInspection, onMakePayment }: BookingTimelineModalProps) {
+export function BookingTimelineModal({ visible, onClose, booking, loading, onScheduleInspection, onVerifyInspection, onMakePayment }: BookingTimelineModalProps) {
   if (!visible) return null;
 
   const currentStep = booking?.timelineStep || 1;
@@ -165,9 +166,29 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                             </Button>
                           </div>
                         )}
+                        {/* Once the viewing is booked the tenant — not the agent — confirms the
+                            apartment matched the listing, and that confirmation unlocks payment.
+                            It belongs on step 2: `timelineStep` only becomes 3 once verified, so a
+                            control rendered on step 3 would never be reachable. */}
                         {isActive && step.id === 2 && booking?.inspectionStatus === 'scheduled' && (
-                          <div className="mt-3 p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
-                            Inspection scheduled for {booking?.inspectionDate} at {booking?.inspectionTime}. Waiting for verification.
+                          <div className="mt-3">
+                            <div className="p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
+                              Inspection scheduled for {booking?.inspectionDate} at {booking?.inspectionTime}.
+                            </div>
+                            {onVerifyInspection && !booking?.isVerified && (
+                              <div className="mt-3">
+                                <p className="text-xs text-textSecondary mb-2">
+                                  Seen the apartment? Confirm it matches the listing to continue.
+                                </p>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => { e.stopPropagation(); onClose(); onVerifyInspection(); }}
+                                  className="text-xs py-2 px-4 shadow-sm"
+                                >
+                                  Confirm Inspection
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         )}
                         {isActive && step.id === 4 && onMakePayment && (

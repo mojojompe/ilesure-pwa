@@ -10,6 +10,7 @@ import { RentRenewal } from '../../components/ui/RentRenewal';
 import { chatService } from '../../api/chatService';
 import { clsx } from 'clsx';
 import { customAlert, customConfirm } from '../../stores/alertStore';
+import { getBookingShortletSummary } from '../../utils/shortlet';
 
 export function BookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -104,10 +105,9 @@ export function BookingDetail() {
   const payFreq = listing?.paymentFrequency;
   const customPlan = listing?.customPaymentPlan;
   const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
-  const shortletPricingUsed = booking.shortletPricingUsed;
-  const durationUnit = booking.durationUnit;
-  const unitToPriceKey: Record<string, string> = { hour: 'hourly', day: 'daily', week: 'weekly', month: 'monthly' };
-  const priceKey = durationUnit ? unitToPriceKey[durationUnit] : null;
+  // Prefers the tier snapshotted at booking time (selectedRate) — which is what the backend
+  // actually charges — over the legacy shortletPricingUsed map.
+  const shortletSummary = isShortlet ? getBookingShortletSummary(booking) : null;
   
   const paidCount = booking.installmentsPaid || 0;
   const totalInstallments = booking.totalInstallments || 1;
@@ -201,11 +201,16 @@ export function BookingDetail() {
             
             <DetailRow label="Status" value={booking.status} />
             
-            {isShortlet && shortletPricingUsed && priceKey ? (
-              <DetailRow 
-                label={durationUnit === 'hour' ? 'Hourly' : durationUnit === 'day' ? 'Daily' : durationUnit === 'week' ? 'Weekly' : 'Monthly'} 
-                value={`₦${shortletPricingUsed[priceKey]?.toLocaleString() ?? '—'}`} 
-              />
+            {shortletSummary ? (
+              <>
+                <DetailRow
+                  label={shortletSummary.label}
+                  value={`₦${shortletSummary.unitPrice.toLocaleString()}${shortletSummary.quantity > 1 ? ` × ${shortletSummary.quantity}` : ''}`}
+                />
+                {shortletSummary.quantity > 1 && (
+                  <DetailRow label="Total" value={`₦${shortletSummary.total.toLocaleString()}`} />
+                )}
+              </>
             ) : (
               <DetailRow label="Rent" value={`₦${listing?.rentAnnual?.toLocaleString() || '—'}`} />
             )}
