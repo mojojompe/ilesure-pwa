@@ -11,6 +11,7 @@ import {
 import { Tag } from '../ui/Tag';
 import { AmenityRow } from '../ui/AmenityIcon';
 import { labelFor } from '../../constants/listingVocabulary';
+import { getListingShortletTiers, formatShortletTier } from '../../utils/shortlet';
 
 export interface ListingCardProps {
   listing: any;
@@ -60,16 +61,10 @@ export function ListingCard({
 
   const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
 
+  // Reads shortletRates first, falling back to the deprecated shortletPricing map — listings
+  // priced with the flexible tiers used to render an empty price here.
   const formattedPrice = isShortlet
-    ? (() => {
-        const p = listing.shortletPricing;
-        const parts = [];
-        if (p?.hourly) parts.push(`₦${p.hourly.toLocaleString()}/hr`);
-        if (p?.daily) parts.push(`₦${p.daily.toLocaleString()}/day`);
-        if (p?.weekly) parts.push(`₦${p.weekly.toLocaleString()}/wk`);
-        if (p?.monthly) parts.push(`₦${p.monthly.toLocaleString()}/mo`);
-        return parts.join(' · ');
-      })()
+    ? getListingShortletTiers(listing).map(formatShortletTier).join(' · ')
     : listing.rentAnnual ? `₦${listing.rentAnnual.toLocaleString()}` : '₦0';
 
   const powerStatus =

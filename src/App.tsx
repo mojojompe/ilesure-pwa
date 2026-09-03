@@ -51,12 +51,19 @@ import { CallProvider } from './contexts/CallContext';
 import { CallOverlay } from './components/call/CallOverlay';
 import { socketService } from './api/socketService';
 import { useAuthStore } from './stores/authStore';
+import { authService } from './api/authService';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
 export default function App() {
   useEffect(() => {
-    // Hide splash screen or initialization logic here
+    // Refresh the cached user from the server on launch so profile edits made elsewhere
+    // (or fields the cached copy never had) are reflected instead of a stale localStorage blob.
+    const { isAuthenticated, token, setUser } = useAuthStore.getState();
+    if (!isAuthenticated || !token) return;
+    authService.getProfile()
+      .then((res) => { if (res?.success && res.data) setUser({ ...useAuthStore.getState().user, ...res.data } as any); })
+      .catch(() => { /* offline or expired session — the API client handles 401s */ });
   }, []);
 
   /**

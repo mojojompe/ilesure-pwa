@@ -74,6 +74,35 @@ export const CHIP_PROPERTY_TYPES: Record<string, PropertyType[]> = {
   shortlet: ['shortlet'],
 };
 
+
+/**
+ * Amenity vocabulary — mirrors `AMENITIES` / `AMENITY_LABELS` in the backend's
+ * listingVocabulary. The backend canonicalises whatever a client sends, so these tokens are
+ * what comes back on every listing and what the create forms should submit.
+ */
+export const AMENITY_OPTIONS = [
+  { value: 'wifi', label: 'WiFi' },
+  { value: 'air_conditioning', label: 'Air Conditioning' },
+  { value: 'kitchen', label: 'Kitchen' },
+  { value: 'water_heater', label: 'Water Heater' },
+  { value: 'tv', label: 'TV' },
+  { value: 'washing_machine', label: 'Washing Machine' },
+  { value: 'refrigerator', label: 'Refrigerator' },
+  { value: 'workspace', label: 'Workspace / Desk' },
+  { value: 'parking', label: 'Parking Space' },
+  { value: 'security', label: '24/7 Security' },
+  { value: 'cctv', label: 'CCTV' },
+  { value: 'gated_estate', label: 'Gated Estate' },
+  { value: 'balcony', label: 'Balcony' },
+  { value: 'swimming_pool', label: 'Swimming Pool' },
+  { value: 'gym', label: 'Gym' },
+  { value: 'elevator', label: 'Elevator' },
+  { value: 'prepaid_meter', label: 'Prepaid Meter' },
+  { value: 'wardrobe', label: 'Wardrobe' },
+  { value: 'ensuite_bathroom', label: 'En-suite Bathroom' },
+  { value: 'generator', label: 'Generator' },
+] as const;
+
 const LABELS: Record<string, string> = {
   self_con: 'Self-con',
   '1_bed': '1-Bedroom',

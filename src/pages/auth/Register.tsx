@@ -5,6 +5,7 @@ import { ArrowLeft01Icon, CheckmarkCircle02Icon, CircleIcon } from '@hugeicons/r
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
+import { PENDING_EMAIL_KEY } from './OTP';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
@@ -114,10 +115,6 @@ export function Register() {
   const [phone, setPhone] = useState('');
   const [school, setSchool] = useState('');
   
-  // Bank Data (Simplified for UI matching)
-  const [acctNumber, setAcctNumber] = useState('');
-  const [acctName, setAcctName] = useState('');
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -170,7 +167,9 @@ export function Register() {
           selectedSchool: initialRole === 'student' ? school : undefined,
           companyName: initialRole === 'company' ? companyName : undefined,
         });
-        navigate('/auth/otp', { state: { email, role: initialRole, fullName } }); 
+        // Survives a refresh on the OTP screen (see OTP.tsx).
+        sessionStorage.setItem(PENDING_EMAIL_KEY, email.trim().toLowerCase());
+        navigate('/auth/otp', { state: { email: email.trim().toLowerCase(), role: initialRole, fullName } });
       } catch (error: any) {
         const msg = error.response?.data?.error?.message || 'Please try again later';
         setErrors({ general: msg });
@@ -259,7 +258,7 @@ export function Register() {
                   {step === 0 ? 'Account Details' : step === 1 ? 'Your Details' : 'Bank Account'}
                 </h2>
                 <p className="text-base text-text-secondary mt-1 mb-6">
-                  {step === 0 ? 'Secure your ideal living space.' : step === 1 ? 'Tell us a bit more about you.' : 'Link your bank for automatic rent payouts.'}
+                  {step === 0 ? 'Secure your ideal living space.' : step === 1 ? 'Tell us a bit more about you.' : initialRole === 'student' ? 'Almost done.' : 'Link your bank for automatic rent payouts.'}
                 </p>
               </div>
 
@@ -411,16 +410,10 @@ export function Register() {
                               BANK ACCOUNT (RECOMMENDED)
                             </span>
                             <p className="text-sm text-text-secondary mb-4">
-                              Link your bank to receive rent payments automatically with instant split settlements.
+                              {/* The PWA is the renter app; payout accounts are managed on the agent/company
+                                  web portal. The previous inputs here were not wired to anything. */}
+                              Bank account setup for rent payouts is done on the web portal at app.ilesure.com after you verify your email.
                             </p>
-                            
-                            {/* Simplified UI for PWA - just inputs for now, actual implementation would need react-select */}
-                            <Input label="Bank Name" placeholder="e.g. Access Bank" />
-                            <Input label="Account Number" placeholder="Enter 10 digit number" maxLength={10} />
-                            
-                            <Button variant="outline" className="w-full mt-2" onClick={() => {}}>
-                              Verify Account
-                            </Button>
                           </>
                         ) : (
                           <>

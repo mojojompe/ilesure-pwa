@@ -7,6 +7,7 @@ import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { Calendar01Icon, Tick01Icon } from '@hugeicons/react';
 import { bookingService, BookingSummaryResponse } from '../../api/bookingService';
 import { clsx } from 'clsx';
+import { PLATFORM_FEE_LABEL } from '../../constants/fees';
 
 export function Checkout() {
   const { id } = useParams<{ id: string }>();
@@ -136,7 +137,7 @@ export function Checkout() {
             
             {!summary.isShortlet && <Row label="Caution Fee" value={summary.cautionFee} />}
             {!summary.isShortlet && <Row label="Agency Fee" value={summary.agencyFee} />}
-            <Row label="Platform Fee (5%)" value={summary.platformFee} />
+            <Row label={PLATFORM_FEE_LABEL} value={summary.platformFee} />
             
             {summary.roommateMatchingFee > 0 && (
               <Row label="Roommate Matching Fee (1%)" value={summary.roommateMatchingFee} />

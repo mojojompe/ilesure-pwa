@@ -32,6 +32,7 @@ import { clsx } from 'clsx';
 import { BookAppointmentModal } from '../../components/common/BookAppointmentModal';
 import { PrePaymentModal } from '../../components/common/PrePaymentModal';
 import { InspectionBookingModal } from '../../components/common/InspectionBookingModal';
+import { InspectionVerificationModal } from '../../components/common/InspectionVerificationModal';
 import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
 import { FullscreenImageCarousel } from '../../components/common/FullscreenImageCarousel';
@@ -69,6 +70,8 @@ export function ListingDetail() {
   const [showBookModal, setShowBookModal] = useState(false);
   const [showPrePaymentModal, setShowPrePaymentModal] = useState(false);
   const [showInspectionBooking, setShowInspectionBooking] = useState(false);
+  const [showInspectionVerify, setShowInspectionVerify] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showCarousel, setShowCarousel] = useState(false);
@@ -208,6 +211,30 @@ export function ListingDetail() {
     } catch (err) {
       console.error(err);
       customAlert('Failed to schedule inspection', 'Error', 'error');
+    }
+  };
+
+  const handleVerifyInspection = async (isVerified: boolean) => {
+    if (!existingBooking?._id) return;
+    try {
+      setVerifyLoading(true);
+      const res = await bookingService.verifyInspection(existingBooking._id, isVerified);
+      if (res.success) {
+        setExistingBooking(res.data);
+        setShowInspectionVerify(false);
+        customAlert(
+          isVerified
+            ? 'Inspection confirmed. You can now proceed to payment.'
+            : 'Thanks — we have recorded that the apartment did not match the listing.',
+          isVerified ? 'Success' : 'Recorded',
+          isVerified ? 'success' : 'error',
+        );
+      }
+    } catch (err: any) {
+      console.error(err);
+      customAlert(err?.message || 'Failed to confirm inspection', 'Error', 'error');
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -477,7 +504,10 @@ export function ListingDetail() {
                   <h3 className="text-sm font-bold text-textPrimary mb-3">Amenities</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {(listing.amenities && listing.amenities.length > 0) ? listing.amenities.map((amenity: string, idx: number) => {
-                      const lower = amenity.toLowerCase();
+                      // Stored values are canonical tokens ('air_conditioning'); labelFor turns
+                      // those into readable text and leaves free-text wording alone.
+                      const label = labelFor(amenity);
+                      const lower = `${amenity} ${label}`.toLowerCase();
                       let Icon = CheckmarkBadge01Icon;
                       if (lower.includes('wifi') || lower.includes('internet')) Icon = Wifi01Icon;
                       else if (lower.includes('park') || lower.includes('garage')) Icon = CheckmarkBadge01Icon;
@@ -492,7 +522,7 @@ export function ListingDetail() {
                       return (
                         <div key={idx} className="flex items-center gap-2 bg-surface p-3 rounded-xl border border-borderLight">
                           <Icon size={16} className="text-accent shrink-0" variant={Icon === CheckmarkBadge01Icon ? "solid" : "stroke"} />
-                          <span className="text-sm font-medium text-textPrimary capitalize truncate">{amenity}</span>
+                          <span className="text-sm font-medium text-textPrimary truncate">{label}</span>
                         </div>
                       );
                     }) : (
@@ -687,12 +717,20 @@ export function ListingDetail() {
         targetId={listing._id}
       />
 
+      <InspectionVerificationModal
+        visible={showInspectionVerify}
+        onClose={() => setShowInspectionVerify(false)}
+        onSubmit={handleVerifyInspection}
+        loading={verifyLoading}
+      />
+
       <BookingTimelineModal 
         visible={showTimelineModal}
         onClose={() => setShowTimelineModal(false)}
         booking={existingBooking}
         loading={paymentLoading}
         onScheduleInspection={() => setShowInspectionBooking(true)}
+        onVerifyInspection={() => setShowInspectionVerify(true)}
         onMakePayment={() => setShowPrePaymentModal(true)}
       />
 
