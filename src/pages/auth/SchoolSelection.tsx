@@ -9,7 +9,7 @@ const SCHOOLS = [
     id: 'lcu',
     name: 'Lead City University',
     shortName: 'LCU',
-    location: 'Toll Gate / Oba Otudeko, Ibadan',
+    location: 'Toll Gate / Soka / Felele, Ibadan',
     logo: '/images/schools/lcu.png', // Fallback handled
     isDefault: true,
   },
