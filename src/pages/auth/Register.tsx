@@ -231,10 +231,10 @@ export function Register() {
 
               <div className="pr-[90px] mb-[34px]">
                 <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
-                  Create Account
+                  Create your Account
                 </h1>
                 <p className="text-base text-white/85 leading-[22px] font-medium">
-                  Join IleSure to find your sure home.
+                  Join iléSure to find your sure home.
                 </p>
               </div>
             </motion.div>
