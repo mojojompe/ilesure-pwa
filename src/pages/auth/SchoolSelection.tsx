@@ -32,7 +32,7 @@ const SCHOOLS = [
   {
     id: 'polyibadan',
     name: 'Polytechnic Ibadan',
-    shortName: 'POLY',
+    shortName: 'Ibadan POLY',
     location: 'Ibadan, Oyo State',
     logo: '/images/schools/poly.png',
     isDefault: false,
@@ -165,11 +165,7 @@ export function SchoolSelection() {
                         <span className={`text-[18px] font-extrabold ${isSelected ? 'text-accent' : 'text-text-primary'}`}>
                           {school.name}
                         </span>
-                        {school.isDefault && (
-                          <div className="bg-[#FFF8E1] border border-accent rounded-full px-2 py-0.5">
-                            <span className="text-xs font-bold text-accent">Recommended</span>
-                          </div>
-                        )}
+                        {school.isDefault}
                       </div>
                       <span className="text-sm font-semibold text-text-secondary mt-0.5">{school.shortName}</span>
                       
