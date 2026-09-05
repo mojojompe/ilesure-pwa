@@ -383,9 +383,31 @@ export function ListingDetail() {
               <p className="text-xs font-medium text-textTertiary mb-3">Listed by {agentName}</p>
               
               <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
+                {/* BUGFIX (QA-PWAJ2-006): a shortlet stores rentAnnual 0 and keeps its real
+                    prices in shortletRates[], so the screen a renter books FROM showed
+                    "₦0/yr" for a property actually priced ₦50,000 a day. Show the real rate
+                    and the right unit. */}
                 <p className="text-xl font-black text-primary text-center">
-                  ₦{(listing.price || listing.rentAnnual).toLocaleString()}
-                  <span className="text-xs font-semibold text-primary/70">/yr</span>
+                  {(() => {
+                    const rates = ((listing as any).shortletRates || [])
+                      .map((r: any) => Number(r.price)).filter((n: number) => n > 0);
+                    const annual = Number(listing.price || listing.rentAnnual);
+                    if (!annual && rates.length) {
+                      const lo = Math.min(...rates), hi = Math.max(...rates);
+                      return (
+                        <>
+                          {lo === hi ? `₦${lo.toLocaleString()}` : `₦${lo.toLocaleString()}–₦${hi.toLocaleString()}`}
+                          <span className="text-xs font-semibold text-primary/70">/stay</span>
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        ₦{(annual || 0).toLocaleString()}
+                        <span className="text-xs font-semibold text-primary/70">/yr</span>
+                      </>
+                    );
+                  })()}
                 </p>
               </div>
             </div>
