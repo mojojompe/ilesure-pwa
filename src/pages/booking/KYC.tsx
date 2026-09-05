@@ -30,6 +30,8 @@ export function KYC() {
   const [bvnVerifiedAt, setBvnVerifiedAt] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<'nin' | 'bvn' | null>(null);
   const [syncing, setSyncing] = useState(false);
+  // QA-PWAJ2-009: kept so a renter whose popup was blocked still has a way through.
+  const [blockedWidgetUrl, setBlockedWidgetUrl] = useState<string | null>(null);
   const [showRefInput, setShowRefInput] = useState(false);
   const [manualRefId, setManualRefId] = useState('');
 
@@ -80,14 +82,36 @@ export function KYC() {
       // completion event, call kycService.verify(res.data.referenceId, type). The Dojah
       // SDK is not yet bundled in the PWA, so we open the hosted widget and rely on the
       // backend to record the result. Verified flags are NEVER set on the client.
-      if (widgetUrl) {
-        window.open(widgetUrl, '_blank', 'noopener,noreferrer');
+      // BUGFIX (QA-PWAJ2-009): the widget is opened with window.open, and the modal below
+      // then told the renter verification had "started" whether or not anything opened. A
+      // popup is blocked by default in plenty of mobile browsers and in an installed PWA, so
+      // the renter saw a confident message over a window that never appeared — and KYC is
+      // the gate that stands between them and every booking.
+      //
+      // window.open returns null when the popup is blocked. Say so, and give them the link.
+      const opened = widgetUrl ? window.open(widgetUrl, '_blank', 'noopener,noreferrer') : null;
+
+      if (!widgetUrl) {
+        customAlert(
+          'Verification is not available right now. Please try again shortly.',
+          'Unavailable',
+          'error'
+        );
+      } else if (!opened) {
+        setBlockedWidgetUrl(widgetUrl);
+        customAlert(
+          'Your browser blocked the verification window. Use the "Open verification" link below, ' +
+            'then tap "Sync with Dojah" when you are done.',
+          'Popup blocked',
+          'error'
+        );
+      } else {
+        customAlert(
+          'Complete the verification in the Dojah window, then tap "Sync with Dojah" to refresh your status.',
+          'Verification started',
+          'info'
+        );
       }
-      customAlert(
-        'Complete the verification in the Dojah widget, then tap "Sync with Dojah" to refresh your status.',
-        'Verification started',
-        'info'
-      );
       // Refresh from the server (in case verification already completed server-side).
       await fetchStatus();
     } catch {
@@ -102,11 +126,41 @@ export function KYC() {
     try {
       const ref = manualRefId.trim() || undefined;
       // Pull the latest Dojah results server-side, then read authoritative status.
-      await kycService.sync(undefined, ref);
+      const res: any = await kycService.sync(undefined, ref);
       await fetchStatus();
       setShowRefInput(false);
       setManualRefId('');
-      customAlert('Sync complete!', 'Success', 'success');
+
+      // BUGFIX (QA-PWAJ2-010): this showed a green tick and "Sync complete! / Success"
+      // whenever the REQUEST did not throw. The endpoint answers 200 with
+      // { success: true, results: { nin: { checked: false, reason: "Dojah API error: 404" } } }
+      // when nothing was verified — which is the normal case for a renter who has not
+      // finished the widget. So the screen told them verification had succeeded while the
+      // server had verified nothing, and the gate then refused their booking with no
+      // explanation they could connect to this.
+      //
+      // Report what the server actually said.
+      const results = res?.data?.results ?? {};
+      const checks = Object.entries(results) as Array<[string, any]>;
+      const verified = checks.filter(([, r]) => r?.checked && r?.verified !== false);
+      const notChecked = checks.filter(([, r]) => !r?.checked);
+
+      if (verified.length > 0) {
+        customAlert(
+          `Verified: ${verified.map(([k]) => k.toUpperCase()).join(', ')}.`,
+          'Sync complete',
+          'success'
+        );
+      } else {
+        const reason = notChecked.find(([, r]) => r?.reason)?.[1]?.reason;
+        customAlert(
+          reason
+            ? `Nothing to sync yet — ${reason} Finish the verification in the Dojah window, then sync again.`
+            : 'Nothing to sync yet. Finish the verification in the Dojah window, then sync again.',
+          'Not verified',
+          'info'
+        );
+      }
     } catch {
       customAlert('Sync failed. Please try again.', 'Error', 'error');
     } finally {
@@ -264,6 +318,22 @@ export function KYC() {
                     </>
                   )}
                 </button>
+
+                {/* BUGFIX (QA-PWAJ2-009): if the browser blocked the verification popup, the
+                    renter previously had no route forward at all — the modal claimed
+                    verification had started and nothing had opened. A plain link works where
+                    window.open does not, because it is a direct user gesture on an anchor. */}
+                {blockedWidgetUrl && (
+                  <a
+                    href={blockedWidgetUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setBlockedWidgetUrl(null)}
+                    className="flex items-center py-2 px-4 rounded-lg bg-primary text-white text-sm font-semibold"
+                  >
+                    Open verification
+                  </a>
+                )}
                 
                 <button 
                   onClick={() => setShowRefInput(!showRefInput)}
