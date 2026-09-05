@@ -38,7 +38,7 @@ export interface SharedBooking {
   };
   totalRequired: number;
   totalPaid: number;
-  status: 'pending_payment' | 'partially_paid' | 'fully_paid' | 'confirmed' | 'expired' | 'refunded';
+  status: 'pending_payment' | 'partially_paid' | 'fully_paid' | 'confirmed' | 'expired' | 'refunded' | 'cancelled';
   participants: SharedBookingParticipant[];
   paymentDeadline: string;
   confirmedAt?: string;

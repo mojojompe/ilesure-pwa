@@ -24,6 +24,9 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; 
   confirmed: { color: '#2E7D32', bg: '#2E7D3215', label: 'Confirmed', icon: CheckmarkBadge01Icon },
   expired: { color: '#C62828', bg: '#C6282815', label: 'Expired', icon: CancelCircleIcon },
   refunded: { color: '#757575', bg: '#75757515', label: 'Refunded', icon: CancelCircleIcon },
+  // BUGFIX (QA-PAY-022): a cancellation whose refund failed is 'cancelled', not 'refunded' —
+  // telling a renter their money is back when it is not is the worst thing this screen can do.
+  cancelled: { color: '#C62828', bg: '#C6282815', label: 'Cancelled', icon: CancelCircleIcon },
 };
 
 export function SharedBookingDetail() {

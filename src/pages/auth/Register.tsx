@@ -263,10 +263,17 @@ export function Register() {
               
               <div className="text-center mb-1">
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-[-0.5px]">
-                  {step === 0 ? 'Account Details' : step === 1 ? 'Your Details' : 'Bank Account'}
+                  {/* BUGFIX: the final step was titled "Bank Account" for everyone, including
+                      students, who never provide one. For a renter this screen is the terms
+                      confirmation and nothing else, so it says so. */}
+                  {step === 0 ? 'Account Details' : step === 1 ? 'Your Details'
+                    : (initialRole === 'agent' || initialRole === 'company') ? 'Bank Account' : 'Confirm & Create'}
                 </h2>
                 <p className="text-base text-text-secondary mt-1 mb-6">
-                  {step === 0 ? 'Secure your ideal living space.' : step === 1 ? 'Tell us a bit more about you.' : initialRole === 'student' ? 'Almost done.' : 'Link your bank for automatic rent payouts.'}
+                  {step === 0 ? 'Secure your ideal living space.'
+                    : step === 1 ? 'Tell us a bit more about you.'
+                    : (initialRole === 'agent' || initialRole === 'company') ? 'Link your bank for automatic rent payouts.'
+                    : 'Just accept the terms and you are in.'}
                 </p>
               </div>
 
@@ -412,7 +419,13 @@ export function Register() {
                         {errors.acceptedTerms && (
                           <p className="-mt-2 mb-4 text-xs text-error">{errors.acceptedTerms}</p>
                         )}
-                        {(initialRole === 'agent' || initialRole === 'company') ? (
+                        {/* BUGFIX: a student was shown a "BANK ACCOUNT" heading whose entire content
+                            was "Bank account setup is not required for student accounts." — a section
+                            that existed only to announce it did not apply, on the last screen before
+                            the account is created. A renter never provides a payout account, so there
+                            is nothing to tell them. Rendered for agents and companies only, who do
+                            need to know where payouts are configured. */}
+                        {(initialRole === 'agent' || initialRole === 'company') && (
                           <>
                             <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
                               BANK ACCOUNT (RECOMMENDED)
@@ -421,15 +434,6 @@ export function Register() {
                               {/* The PWA is the renter app; payout accounts are managed on the agent/company
                                   web portal. The previous inputs here were not wired to anything. */}
                               Bank account setup for rent payouts is done on the web portal at app.ilesure.com after you verify your email.
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
-                              BANK ACCOUNT
-                            </span>
-                            <p className="text-sm text-text-secondary mb-4">
-                              Bank account setup is not required for student accounts.
                             </p>
                           </>
                         )}
