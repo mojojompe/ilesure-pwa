@@ -48,8 +48,17 @@ export function BookingDetail() {
     }
   };
 
+  /**
+   * BUGFIX (QA-PWA-209): this went straight to `/booking/payment/:id`, skipping both
+   * the fee breakdown and the tenancy agreement. Nothing in the app navigated to
+   * `/booking/checkout/:id` at all, so the Checkout and Signature screens were dead
+   * code and NO booking made through the product had an executed contract — the
+   * renter paid without ever seeing the total or signing anything.
+   *
+   * The flow is now booking -> checkout (breakdown + consent) -> signature -> payment.
+   */
   const handlePay = () => {
-    navigate(`/booking/payment/${id}`);
+    navigate(`/booking/checkout/${id}`);
   };
 
   const handleChat = async () => {
