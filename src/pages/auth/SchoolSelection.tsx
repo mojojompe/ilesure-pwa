@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft01Icon, Location01Icon, UniversityIcon, SentIcon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../../components/ui/Button';
 
-const SCHOOLS = [
+import { apiClient } from '../../api/client';
+export const SCHOOLS = [
   {
     id: 'lcu',
     name: 'Lead City University',
@@ -66,6 +67,8 @@ export function SchoolSelection() {
   
   const [selectedSchool, setSelectedSchool] = useState('lcu');
   const [suggestionText, setSuggestionText] = useState('');
+  const [sendingSuggestion, setSendingSuggestion] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestionSent, setSuggestionSent] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -78,13 +81,36 @@ export function SchoolSelection() {
     uni.toLowerCase().includes(suggestionText.toLowerCase())
   ).slice(0, 5);
 
-  const handleSendSuggestion = () => {
-    if (!suggestionText.trim()) return;
-    setSuggestionSent(true);
-    setTimeout(() => {
-      setSuggestionSent(false);
-      setSuggestionText('');
-    }, 3000);
+  /**
+   * BUGFIX (QA-PWA-006): this used to be `setSuggestionSent(true)` and nothing else.
+   * The green banner claimed "Your suggestion has been sent to admin" while ZERO
+   * network requests were made and nothing was stored anywhere — the same
+   * success-without-persistence pattern the prior audit flagged as its dominant theme.
+   * It now posts to the existing unauthenticated support endpoint, which persists a
+   * ticket server-side, so the confirmation is true.
+   */
+  const handleSendSuggestion = async () => {
+    if (!suggestionText.trim() || sendingSuggestion) return;
+    setSendingSuggestion(true);
+    setSuggestionError(null);
+    try {
+      await apiClient.post('/support/chat', {
+        name: 'School suggestion (signup)',
+        email: 'noreply@ilesure.com',
+        subject: 'School suggestion from signup',
+        message: suggestionText.trim(),
+      });
+      setSuggestionSent(true);
+      setTimeout(() => {
+        setSuggestionSent(false);
+        setSuggestionText('');
+      }, 3000);
+    } catch (err) {
+      console.error('School suggestion failed', err);
+      setSuggestionError('We could not send that just now. Please select "Others" and continue.');
+    } finally {
+      setSendingSuggestion(false);
+    }
   };
 
   const handleContinue = () => {
@@ -211,6 +237,9 @@ export function SchoolSelection() {
             </div>
           ) : (
             <div>
+              {suggestionError && (
+                <p className="mb-2 text-xs text-red-600">{suggestionError}</p>
+              )}
               <div className="flex flex-row gap-2 items-center">
                 <input
                   type="text"

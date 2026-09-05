@@ -9,6 +9,7 @@ import { PENDING_EMAIL_KEY } from './OTP';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
+import { SCHOOLS } from './SchoolSelection';
 const TOTAL_STEPS = 3;
 
 function PasswordStrengthMeter({ password }: { password: string }) {
@@ -98,6 +99,11 @@ export function Register() {
   const navigate = useNavigate();
   const location = useLocation();
   const initialRole = location.state?.role || 'student';
+  // BUGFIX (QA-PWA-005): SchoolSelection navigates here with
+  // `{ role, school }` in router state, but only `role` was ever read. The school the
+  // user picked was silently dropped, the field below started empty, and the register
+  // payload sent `selectedSchool: ''`.
+  const preselectedSchool: string = location.state?.school || '';
   const { setUser, setTokens } = useAuthStore();
 
   const [step, setStep] = useState(0);
@@ -113,7 +119,9 @@ export function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [school, setSchool] = useState('');
+  const [school, setSchool] = useState(
+    () => SCHOOLS.find(s => s.id === preselectedSchool)?.name || ''
+  );
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 

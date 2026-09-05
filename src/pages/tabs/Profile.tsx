@@ -90,13 +90,26 @@ export function Profile() {
   const handleLogout = async () => {
     const isConfirmed = await customConfirm('Are you sure you want to log out?', 'Logout', 'warning');
     if (!isConfirmed) return;
+    // BUGFIX (QA-PWA-008): the server call was swallowed by an empty catch, so if
+    // revocation failed the app still cleared local state and navigated away as though
+    // logout had succeeded — while the token stayed valid server-side for its full
+    // 7-day life. The API does support revocation, so a failure here is worth surfacing.
+    let revoked = true;
     try {
       await authService.logout();
     } catch (e) {
-      // Ignore
+      revoked = false;
+      console.error('[logout] server-side revocation failed', e);
     } finally {
       clearAuth();
       navigate('/auth/choice', { replace: true });
+    }
+    if (!revoked) {
+      await customAlert(
+        'You have been signed out on this device, but we could not reach the server to end the session everywhere. If this was not your own device, please change your password.',
+        'Signed out',
+        'warning'
+      );
     }
   };
 
