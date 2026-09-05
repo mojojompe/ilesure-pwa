@@ -135,6 +135,9 @@ export function ListingCard({
 
         {/* Floating Save Button (Top Right) */}
         <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label={saved ? 'Remove from saved' : 'Save this listing'}
+          aria-pressed={saved}
           onClick={handleSave}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center transition-transform active:scale-90"
         >

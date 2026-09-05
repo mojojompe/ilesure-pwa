@@ -304,6 +304,8 @@ export function ListingDetail() {
         {/* Floating Header Actions */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-6 flex justify-between items-center pointer-events-none">
           <button 
+            /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+            aria-label="Go back"
             onClick={() => navigate(-1)} 
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform pointer-events-auto"
           >
@@ -311,6 +313,9 @@ export function ListingDetail() {
           </button>
           <div className="flex gap-2 pointer-events-auto">
             <button 
+              /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+              aria-label={isSaved ? 'Remove from saved' : 'Save this listing'}
+              aria-pressed={isSaved}
               onClick={handleSave}
               className={clsx(
                 "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all active:scale-95",

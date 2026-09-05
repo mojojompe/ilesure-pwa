@@ -47,7 +47,9 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-0 bottom-[90px] mx-4 p-4 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-borderLight z-50 animate-in slide-in-from-bottom-5 fade-in duration-500">
-      <button 
+      <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Dismiss" 
         onClick={handleDismiss}
         className="absolute top-3 right-3 p-1 rounded-full bg-surfaceLight text-textSecondary hover:bg-borderLight transition-colors"
       >

@@ -257,6 +257,8 @@ export function SchoolSelection() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 />
                 <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Submit"
                   onClick={handleSendSuggestion}
                   disabled={!suggestionText.trim()}
                   className={`w-12 h-12 rounded-lg flex items-center justify-center ${suggestionText.trim() ? 'bg-accent' : 'bg-[#ccc]'}`}

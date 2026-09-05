@@ -21,7 +21,9 @@ export function MobileHeader({ title, onBack, rightAction }: MobileHeaderProps) 
 
   return (
     <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-borderLight shadow-sm">
-      <button 
+      <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Go back" 
         onClick={handleBack}
         className="p-2 -ml-2 rounded-full hover:bg-surfaceLight transition-colors text-textPrimary"
       >

@@ -128,7 +128,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
             
             <div className="flex justify-between items-center px-6 py-4 border-b border-borderLight shrink-0">
               <h2 className="text-xl font-bold text-textPrimary">Book Appointment</h2>
-              <button onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
+              <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Close" onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
                 <Cancel01Icon size={20} />
               </button>
             </div>

@@ -22,7 +22,11 @@ const config: Config = {
         
         'text-primary':  '#2D1B12',
         'text-secondary':'#6B4F3A',
-        'text-tertiary': '#A08070',
+        /* A11Y-FIX (QA-A11Y-003): #A08070 is 3.61:1 on white — the figure axe measured
+           across five 11px nodes on the register screen. #8A6A5A is 4.90:1.
+           text-disabled and text-muted are deliberately left alone: disabled controls are
+           exempt from the contrast minimum, and lifting them would misrepresent state. */
+        'text-tertiary': '#8A6A5A',
         'text-inverse':  '#FFFFFF',
         'text-disabled': '#C4B5A5',
         'text-muted':    '#BCA99A',
