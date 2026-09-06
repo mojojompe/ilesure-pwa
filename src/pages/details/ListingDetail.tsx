@@ -179,7 +179,7 @@ export function ListingDetail() {
         : '1 year';
       const result = await bookingService.createBooking({
         listingId: listing._id,
-        moveInDate: new Date().toISOString(),
+        moveInDate: data.moveInDate ? new Date(data.moveInDate).toISOString() : new Date().toISOString(),
         duration,
         message: 'Booking request from app',
         requiresRoommate: data.requiresRoommate,
@@ -246,9 +246,19 @@ export function ListingDetail() {
       if (result.data?.authorizationUrl) {
         window.location.href = result.data.authorizationUrl;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      customAlert('Failed to initiate payment', 'Error', 'error');
+      const apiCode = err?.response?.data?.error?.code || err?.code;
+      const apiMsg = err?.response?.data?.error?.message || err?.message;
+      if (apiCode === 'INSPECTION_NOT_VERIFIED' || (typeof apiMsg === 'string' && apiMsg.toLowerCase().includes('inspection'))) {
+        customAlert(
+          'An inspection must be conducted and confirmed before payment can be completed. Please schedule or complete your inspection in the booking timeline.',
+          'Inspection Required',
+          'warning'
+        );
+      } else {
+        customAlert(apiMsg || 'Failed to initiate payment', 'Error', 'error');
+      }
     } finally {
       setPaymentLoading(false);
     }

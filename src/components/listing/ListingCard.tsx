@@ -118,7 +118,7 @@ export function ListingCard({
         <div className="absolute top-3 left-3 flex flex-col items-start gap-2 z-10">
           <div className="flex flex-row flex-wrap gap-2">
             {listing.propertyType && (
-              <Tag label={listing.propertyType} variant="mustard" className="shadow-md" />
+              <Tag label={labelFor(listing.propertyType)} variant="mustard" className="shadow-md" />
             )}
             {listing.needsRoommate && (
               <Tag label="Needs Roommate" variant="brown" className="shadow-md" />

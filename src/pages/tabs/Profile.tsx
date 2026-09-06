@@ -186,11 +186,11 @@ export function Profile() {
               </div>
             )}
             
-            {user?.role !== 'individual' && (
+            {user?.role !== 'individual' && !!(user as any)?.university && (
               <div className="flex flex-row items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
                 <Mortarboard01Icon size={12} className="text-primary" />
                 <span className="text-[11px] font-bold text-primary">
-                  {(user as any)?.university || 'Lead City University'}
+                  {(user as any)?.university}
                 </span>
               </div>
             )}
