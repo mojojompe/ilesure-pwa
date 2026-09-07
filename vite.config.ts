@@ -6,6 +6,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 // builds so any residual credential/user-data logging cannot leak in prod. Applied only
 // for `vite build` (command === 'build') so console output is preserved during dev.
 export default defineConfig(({ command }) => ({
+  // Pinned so the backend can name a real origin in CORS_ORIGIN and
+  // OAUTH_ALLOWED_ORIGINS. Vite otherwise takes 5173 and counts upward, so which app
+  // got which port depended on the order they were started in — which meant Google
+  // sign-in worked or failed by luck. strictPort fails loudly instead of drifting.
+  server: { port: 5273, strictPort: true },
+
   ...(command === 'build' ? { esbuild: { drop: ['console', 'debugger'] as ('console' | 'debugger')[] } } : {}),
   build: {
     rollupOptions: {

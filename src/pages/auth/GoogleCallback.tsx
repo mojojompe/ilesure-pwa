@@ -11,16 +11,12 @@ import { authService } from '../../api/authService';
  *   GET {API}/auth/google/login?redirect=<this page>
  *     -> Google
  *     -> GET {API}/auth/google/callback
- *     -> 302 to <this page>?accessToken=...&refreshToken=...
+ *     -> 302 to <this page>?code=<single-use code>, traded for the session over POST
  *
- * SECURITY NOTE — not fixed here, and worth fixing: the server delivers the session in the
- * QUERY STRING. `authController.googleCallback` carries its own TODO saying as much ("replace
- * token-in-URL delivery with a one-time code exchanged over POST (PKCE)"). A token in a URL is
- * written to browser history, and can reach referrer headers and any intermediary that logs
- * URLs. Changing that is a backend change and a protocol change for every client.
- *
- * What this page can do — and does, first thing — is stop the tokens persisting in the address
- * bar and in history, via replaceState. That narrows the exposure; it does not remove it.
+ * The redirect used to carry the tokens themselves, which put credentials into browser
+ * history and anywhere else URLs are recorded. It now carries a single-use code that expires
+ * in two minutes and dies on first redemption, so a URL recovered from history later is spent.
+ * The code is still stripped from the address bar via replaceState.
  */
 export function GoogleCallback() {
   const navigate = useNavigate();
@@ -34,8 +30,7 @@ export function GoogleCallback() {
     handled.current = true;
 
     const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get('accessToken');
-    const refreshToken = params.get('refreshToken');
+    const code = params.get('code');
     const serverError = params.get('error');
 
     // Strip the credentials from the URL before anything else — before any await, so they are
@@ -53,32 +48,37 @@ export function GoogleCallback() {
       return;
     }
 
-    if (!accessToken || !refreshToken) {
-      // Reached without tokens and without a reason: the user cancelled at Google, or the
-      // server declined to redirect because this origin is not allowlisted
-      // (OAUTH_ALLOWED_ORIGINS) and answered with JSON instead.
+    if (!code) {
+      // No code and no reason: the user cancelled at Google, or the server declined to
+      // redirect because this origin is not allowlisted (OAUTH_ALLOWED_ORIGINS) and answered
+      // with JSON instead.
       setError('Google sign-in did not complete. Please try again, or sign in with your email.');
       return;
     }
 
     (async () => {
       try {
-        setTokens(accessToken, refreshToken);
-
-        // The redirect carries no profile, so ask for it with the session we were just given.
-        const profile = await authService.getProfile();
-        const user: any = profile?.data;
-        if (!profile?.success || !user) throw new Error('profile unavailable');
+        // The redirect carries a single-use code, not a session. Trade it over POST.
+        const result = await authService.exchangeGoogleCode(code);
+        const user: any = result?.user;
+        if (!result?.success || !user || !result.accessToken) {
+          setError(
+            result?.error?.code === 'INVALID_CODE'
+              ? 'That sign-in link has expired or was already used. Please try again.'
+              : result?.error?.message || 'We could not complete your sign-in. Please try again.'
+          );
+          return;
+        }
 
         // Same gate the password path applies: this app is for renters. The server refuses
         // other roles during the callback, but a role could change between the two requests.
+        // Gate before storing anything: a non-renter never gets a session written here.
         if (user.role !== 'student' && user.role !== 'individual') {
-          setTokens(null, null);
-          setUser(null);
           setError('This app is for Students and Renters. Please use the iléSure Web App.');
           return;
         }
 
+        setTokens(result.accessToken, result.refreshToken ?? null);
         setUser({ ...user, createdAt: user.createdAt || new Date().toISOString() });
         navigate('/', { replace: true });
       } catch {

@@ -159,6 +159,25 @@ export const authService = {
     return response.data;
   },
 
+  /**
+   * Redeem the single-use code from a Google redirect for a session.
+   * The redirect no longer carries tokens — see authController.exchangeGoogleCode.
+   */
+  async exchangeGoogleCode(code: string): Promise<{
+    success: boolean;
+    user?: any;
+    accessToken?: string;
+    refreshToken?: string;
+    error?: { code?: string; message?: string };
+  }> {
+    try {
+      const response = await apiClient.post<any>('/auth/google/exchange', { code });
+      return response.data;
+    } catch (error: any) {
+      return { success: false, error: error?.response?.data?.error || { message: 'Sign-in failed' } };
+    }
+  },
+
   async getProfile(): Promise<{ success: boolean; data: UserProfile }> {
     const response = await apiClient.get<{ success: boolean; data: UserProfile }>('/users/me');
     return response.data;
