@@ -49,7 +49,9 @@ export function Modal({ isOpen, onClose, title, children, hideCloseButton }: Mod
             <div />
           )}
           {!hideCloseButton && (
-            <button 
+            <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Close" 
               onClick={onClose}
               className="p-2 rounded-full hover:bg-surfaceLight transition-colors text-textSecondary"
             >

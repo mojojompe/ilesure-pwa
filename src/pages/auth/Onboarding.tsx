@@ -5,23 +5,28 @@ import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/react';
 import { useAuthStore } from '../../stores/authStore';
 import { BrandSplash } from '../../components/splash/BrandSplash';
 
+// BUGFIX: all three onboarding slides were written for LANDLORDS — "Expand Your Reach",
+// "Build your reputation... to earn the trust of premium renters", "Track listings,
+// manage inquiries... analyze your performance". This is the renter PWA, and these are
+// the first three screens a student sees. The image filenames (renters_*) show which
+// audience was intended. Rewritten for the person actually reading them.
 const SLIDES = [
   {
     id: 1,
-    title: 'Expand Your Reach',
-    subtitle: 'Connect directly with thousands of verified students and professionals looking for properties in your area.',
+    title: 'Find Your Place',
+    subtitle: 'Browse verified off-campus rooms and flats near your campus, with the real distance and the real price up front.',
     image: '/images/renters_reach.png'
   },
   {
     id: 2,
-    title: 'Trust & Verification',
-    subtitle: 'Build your reputation. Get verified on iléSure to earn the trust of premium renters.',
+    title: 'Rent With Confidence',
+    subtitle: 'Every landlord and agent on iléSure is verified, so you know who you are dealing with before you pay anyone.',
     image: '/images/renters_trust.png'
   },
   {
     id: 3,
-    title: 'Manage with Ease',
-    subtitle: 'Track listings, manage inquiries, chat with clients, and analyze your performance from a single dashboard.',
+    title: 'Everything In One Place',
+    subtitle: 'Book an inspection, find a roommate, sign your tenancy agreement and pay securely — all from your phone.',
     image: '/images/renters_manage.png'
   },
 ];

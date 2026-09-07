@@ -108,11 +108,12 @@ export const authService = {
     return response.data;
   },
 
-  async googleLogin(data: { token: string }): Promise<AuthResponse> {
-    // SECURITY-FIX: do not log the Google id_token.
-    const response = await apiClient.post<AuthResponse>('/auth/google-login', data);
-    return response.data;
-  },
+  // REMOVED: googleLogin(). It posted to POST /auth/google-login, which does not exist.
+  // The backend implements Google sign-in as a REDIRECT flow — GET /auth/google/login,
+  // returning via GET /auth/google/callback — so a POST of an id_token was never going
+  // to work. Nothing called this; the only reference was a comment on the Login screen
+  // describing an implementation that does not match the server. Removed so the next
+  // person builds against the endpoint that is actually there.
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
     // SECURITY-FIX: do not log registration PII or the token-bearing response.
@@ -156,6 +157,25 @@ export const authService = {
   async resendOTP(email: string): Promise<ResendOTPResponse> {
     const response = await apiClient.post<ResendOTPResponse>('/auth/resend-otp', { email });
     return response.data;
+  },
+
+  /**
+   * Redeem the single-use code from a Google redirect for a session.
+   * The redirect no longer carries tokens — see authController.exchangeGoogleCode.
+   */
+  async exchangeGoogleCode(code: string): Promise<{
+    success: boolean;
+    user?: any;
+    accessToken?: string;
+    refreshToken?: string;
+    error?: { code?: string; message?: string };
+  }> {
+    try {
+      const response = await apiClient.post<any>('/auth/google/exchange', { code });
+      return response.data;
+    } catch (error: any) {
+      return { success: false, error: error?.response?.data?.error || { message: 'Sign-in failed' } };
+    }
   },
 
   async getProfile(): Promise<{ success: boolean; data: UserProfile }> {

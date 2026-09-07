@@ -47,7 +47,9 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
             onClick={onClose}
           />
           
-          <button 
+          <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Close" 
             onClick={onClose} 
             className="absolute top-safe-top right-4 p-2 bg-black/50 rounded-full z-10 text-white active:scale-95"
           >
@@ -67,7 +69,9 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
             />
             
             {currentIndex > 0 && (
-              <button 
+              <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Previous photo" 
                 onClick={handlePrev}
                 className="absolute left-4 p-3 bg-black/50 text-white rounded-full active:scale-95"
               >
@@ -76,7 +80,9 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
             )}
             
             {currentIndex < images.length - 1 && (
-              <button 
+              <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Next photo" 
                 onClick={handleNext}
                 className="absolute right-4 p-3 bg-black/50 text-white rounded-full active:scale-95"
               >

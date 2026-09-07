@@ -105,7 +105,9 @@ export function PWAInstallModal() {
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="bg-background w-full max-w-sm rounded-3xl shadow-2xl relative z-10 p-6 flex flex-col items-center text-center"
           >
-            <button onClick={handleClose} className="absolute top-4 right-4 p-1.5 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
+            <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Close" onClick={handleClose} className="absolute top-4 right-4 p-1.5 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
               <Cancel01Icon size={20} />
             </button>
             

@@ -179,7 +179,7 @@ export function ListingDetail() {
         : '1 year';
       const result = await bookingService.createBooking({
         listingId: listing._id,
-        moveInDate: new Date().toISOString(),
+        moveInDate: data.moveInDate ? new Date(data.moveInDate).toISOString() : new Date().toISOString(),
         duration,
         message: 'Booking request from app',
         requiresRoommate: data.requiresRoommate,
@@ -246,9 +246,19 @@ export function ListingDetail() {
       if (result.data?.authorizationUrl) {
         window.location.href = result.data.authorizationUrl;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      customAlert('Failed to initiate payment', 'Error', 'error');
+      const apiCode = err?.response?.data?.error?.code || err?.code;
+      const apiMsg = err?.response?.data?.error?.message || err?.message;
+      if (apiCode === 'INSPECTION_NOT_VERIFIED' || (typeof apiMsg === 'string' && apiMsg.toLowerCase().includes('inspection'))) {
+        customAlert(
+          'An inspection must be conducted and confirmed before payment can be completed. Please schedule or complete your inspection in the booking timeline.',
+          'Inspection Required',
+          'warning'
+        );
+      } else {
+        customAlert(apiMsg || 'Failed to initiate payment', 'Error', 'error');
+      }
     } finally {
       setPaymentLoading(false);
     }
@@ -304,6 +314,8 @@ export function ListingDetail() {
         {/* Floating Header Actions */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-6 flex justify-between items-center pointer-events-none">
           <button 
+            /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+            aria-label="Go back"
             onClick={() => navigate(-1)} 
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform pointer-events-auto"
           >
@@ -311,6 +323,9 @@ export function ListingDetail() {
           </button>
           <div className="flex gap-2 pointer-events-auto">
             <button 
+              /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+              aria-label={isSaved ? 'Remove from saved' : 'Save this listing'}
+              aria-pressed={isSaved}
               onClick={handleSave}
               className={clsx(
                 "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all active:scale-95",
@@ -378,9 +393,44 @@ export function ListingDetail() {
               <p className="text-xs font-medium text-textTertiary mb-3">Listed by {agentName}</p>
               
               <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
+                {/* BUGFIX (QA-PWAJ2-006): a shortlet stores rentAnnual 0 and keeps its real
+                    prices in shortletRates[], so the screen a renter books FROM showed
+                    "₦0/yr" for a property actually priced ₦50,000 a day. Show the real rate
+                    and the right unit. */}
                 <p className="text-xl font-black text-primary text-center">
-                  ₦{(listing.price || listing.rentAnnual).toLocaleString()}
-                  <span className="text-xs font-semibold text-primary/70">/yr</span>
+                  {(() => {
+                    // BUGFIX (QA-API-335): this rendered a price range suffixed "/stay", so a
+                    // ₦50,000-per-day room read as ₦50,000 for the whole stay. A renter planning
+                    // five nights believed they were seeing the total and met a bill ten times
+                    // larger at checkout. "/stay" was never true of any tier — every rate is
+                    // priced per its own duration.
+                    //
+                    // A range cannot carry one honest unit either, because tiers can mix them
+                    // (a nightly rate beside a weekly one). So show the CHEAPEST tier with its
+                    // own duration, marked "from" when there is more than one.
+                    const tiers = ((listing as any).shortletRates || [])
+                      .filter((r: any) => Number(r.price) > 0);
+                    const annual = Number(listing.price || listing.rentAnnual);
+                    if (!annual && tiers.length) {
+                      const cheapest = tiers.reduce((a: any, b: any) => (Number(b.price) < Number(a.price) ? b : a));
+                      const qty = Number(cheapest.durationValue) || 1;
+                      const unit = String(cheapest.durationUnit || 'day');
+                      const unitLabel = qty > 1 ? `${qty} ${unit}s` : unit;
+                      return (
+                        <>
+                          {tiers.length > 1 && <span className="text-xs font-semibold text-primary/70">from </span>}
+                          {`₦${Number(cheapest.price).toLocaleString()}`}
+                          <span className="text-xs font-semibold text-primary/70">{`/${unitLabel}`}</span>
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        ₦{(annual || 0).toLocaleString()}
+                        <span className="text-xs font-semibold text-primary/70">/yr</span>
+                      </>
+                    );
+                  })()}
                 </p>
               </div>
             </div>

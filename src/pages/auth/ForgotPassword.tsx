@@ -53,12 +53,31 @@ export function ForgotPassword() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const newOtp = [...otp];
-      newOtp[index - 1] = '';
-      setOtp(newOtp);
-      inputRefs.current[index - 1]?.focus();
+    if (e.key === 'Backspace') {
+      if (otp[index]) {
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      } else if (index > 0) {
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+        inputRefs.current[index - 1]?.focus();
+      }
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newOtp = [...otp];
+    for (let i = 0; i < pasted.length; i++) {
+      newOtp[i] = pasted[i];
+    }
+    setOtp(newOtp);
+    const nextIdx = Math.min(pasted.length, 5);
+    inputRefs.current[nextIdx]?.focus();
   };
 
   const handleVerifyOtp = async (e?: React.FormEvent) => {
@@ -208,6 +227,8 @@ export function ForgotPassword() {
                             value={digit}
                             onChange={e => handleDigitChange(e.target.value, i)}
                             onKeyDown={e => handleKeyDown(e, i)}
+                            onPaste={handlePaste}
+                            onFocus={e => e.target.select()}
                             inputMode="numeric"
                             maxLength={1}
                             autoComplete={i === 0 ? 'one-time-code' : 'off'}

@@ -14,28 +14,56 @@ export function Checkout() {
   const navigate = useNavigate();
   const [summary, setSummary] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [booking, setBooking] = useState<any | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [agreedContract, setAgreedContract] = useState(false);
 
+  /**
+   * BUGFIX (QA-PWA-210): this route used to take a LISTING id — it called
+   * getBookingSummary({ listingId: id }) — and then handed that same listing id to
+   * `/booking/signature/:id`, which needs a BOOKING id. The signature screen therefore
+   * rendered "Agreement unavailable / Failed to generate agreement" even when reached
+   * manually. The route now takes the booking id, which is also what makes it
+   * reachable from BookingDetail (QA-PWA-209).
+   *
+   * BUGFIX (QA-PWA-208): the mock overrides below hard-coded `paymentFrequency:
+   * 'annually'`, `isShortlet: false` and `roommateMatchingFee: 0` ON TOP of the API
+   * response, so a shortlet was shown an annual-rent breakdown and any roommate
+   * matching fee was hidden from a total that nonetheless included it.
+   */
   useEffect(() => {
     const fetchSummary = async () => {
       try {
         if (!id) return;
         setLoading(true);
-        // Using mock structure similar to RN's BookingSummaryScreen for parity
-        const response = await bookingService.getBookingSummary({ listingId: id });
+        const bk: any = await bookingService.getBookingById(id);
+        const booking = bk?.data ?? bk;
+        setBooking(booking);
+
+        const listingId =
+          typeof booking?.listingId === 'string' ? booking.listingId : booking?.listingId?._id;
+        if (!listingId) {
+          setLoadError('We could not load this booking.');
+          return;
+        }
+
+        const response = await bookingService.getBookingSummary({
+          listingId,
+          requiresRoommate: booking?.requiresRoommate,
+          ...(booking?.selectedRate?.id
+            ? { rateId: booking.selectedRate.id, rateQuantity: booking.durationQuantity || 1 }
+            : {}),
+        });
         if (response.success) {
-          setSummary({
-            ...response.data,
-            // Add some mock fields for visual parity if API doesn't return them yet
-            paymentFrequency: 'annually',
-            isShortlet: false,
-            roommateMatchingFee: 0
-          });
+          setSummary(response.data);
+        } else {
+          setLoadError('We could not work out the amount for this booking.');
         }
       } catch (error) {
         console.error('Failed to fetch booking summary', error);
+        setLoadError('We could not load this booking. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -45,7 +73,6 @@ export function Checkout() {
 
   const handlePay = () => {
     if (!agreedTerms || !agreedContract) return;
-    // Equivalent to navigating to ContractSigning in RN
     navigate(`/booking/signature/${id}`);
   };
 
