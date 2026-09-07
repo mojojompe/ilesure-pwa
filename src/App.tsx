@@ -10,6 +10,7 @@ import { RoleSelection } from './pages/auth/RoleSelection';
 import { SchoolSelection } from './pages/auth/SchoolSelection';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { OTP } from './pages/auth/OTP';
+import { GoogleCallback } from './pages/auth/GoogleCallback';
 
 import { Discover } from './pages/tabs/Discover';
 import { Roommates } from './pages/tabs/Roommates';
@@ -98,6 +99,8 @@ export default function App() {
         <Route path="/auth/school" element={<SchoolSelection />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
         <Route path="/auth/otp" element={<OTP />} />
+        {/* Google sign-in returns here with the session in the query string (P-L1). */}
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
         
         {/* Protected Routes - Only for Students and Individuals on PWA */}
         <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
