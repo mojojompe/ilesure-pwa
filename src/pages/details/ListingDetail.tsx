@@ -399,15 +399,28 @@ export function ListingDetail() {
                     and the right unit. */}
                 <p className="text-xl font-black text-primary text-center">
                   {(() => {
-                    const rates = ((listing as any).shortletRates || [])
-                      .map((r: any) => Number(r.price)).filter((n: number) => n > 0);
+                    // BUGFIX (QA-API-335): this rendered a price range suffixed "/stay", so a
+                    // ₦50,000-per-day room read as ₦50,000 for the whole stay. A renter planning
+                    // five nights believed they were seeing the total and met a bill ten times
+                    // larger at checkout. "/stay" was never true of any tier — every rate is
+                    // priced per its own duration.
+                    //
+                    // A range cannot carry one honest unit either, because tiers can mix them
+                    // (a nightly rate beside a weekly one). So show the CHEAPEST tier with its
+                    // own duration, marked "from" when there is more than one.
+                    const tiers = ((listing as any).shortletRates || [])
+                      .filter((r: any) => Number(r.price) > 0);
                     const annual = Number(listing.price || listing.rentAnnual);
-                    if (!annual && rates.length) {
-                      const lo = Math.min(...rates), hi = Math.max(...rates);
+                    if (!annual && tiers.length) {
+                      const cheapest = tiers.reduce((a: any, b: any) => (Number(b.price) < Number(a.price) ? b : a));
+                      const qty = Number(cheapest.durationValue) || 1;
+                      const unit = String(cheapest.durationUnit || 'day');
+                      const unitLabel = qty > 1 ? `${qty} ${unit}s` : unit;
                       return (
                         <>
-                          {lo === hi ? `₦${lo.toLocaleString()}` : `₦${lo.toLocaleString()}–₦${hi.toLocaleString()}`}
-                          <span className="text-xs font-semibold text-primary/70">/stay</span>
+                          {tiers.length > 1 && <span className="text-xs font-semibold text-primary/70">from </span>}
+                          {`₦${Number(cheapest.price).toLocaleString()}`}
+                          <span className="text-xs font-semibold text-primary/70">{`/${unitLabel}`}</span>
                         </>
                       );
                     }

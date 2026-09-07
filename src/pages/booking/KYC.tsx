@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
@@ -34,6 +34,10 @@ export function KYC() {
   const [blockedWidgetUrl, setBlockedWidgetUrl] = useState<string | null>(null);
   const [showRefInput, setShowRefInput] = useState(false);
   const [manualRefId, setManualRefId] = useState('');
+  // QA-API-280: true while the server holds a verification reference this user has not
+  // completed the round-trip on. Drives the automatic sync when they come back to the tab.
+  const awaitingSync = useRef(false);
+  const autoSyncing = useRef(false);
 
   // SECURITY-FIX (P-C1): verification state is derived ONLY from the backend
   // (kycService.getKYCStatus). The previous implementation faked verification with a
@@ -45,6 +49,10 @@ export function KYC() {
     try {
       const res = await kycService.getKYCStatus();
       if (res?.success && res.data) {
+        // QA-API-280: the server now says whether a started verification is still waiting to
+        // be synced, so returning to this screen later (new session, different device) still
+        // knows to pick it up rather than depending on a flag set earlier in this tab.
+        awaitingSync.current = !!res.data.awaitingSync;
         setNinVerified(!!res.data.ninVerified);
         setBvnVerified(!!res.data.bvnVerified);
         setNinVerifiedAt(res.data.ninVerifiedAt || null);
@@ -90,6 +98,9 @@ export function KYC() {
       //
       // window.open returns null when the popup is blocked. Say so, and give them the link.
       const opened = widgetUrl ? window.open(widgetUrl, '_blank', 'noopener,noreferrer') : null;
+      // From here the verification happens somewhere this app cannot observe. Arm the
+      // return-to-tab sync so finishing in the widget is enough (QA-API-280).
+      if (widgetUrl) awaitingSync.current = true;
 
       if (!widgetUrl) {
         customAlert(
@@ -121,7 +132,14 @@ export function KYC() {
     }
   };
 
-  const handleSync = async () => {
+  /**
+   * `silent` is the automatic pass that runs when the user comes back from the Dojah tab
+   * (QA-API-280). It reports success the same way a tapped sync does, but says nothing when
+   * there is simply nothing to sync yet — an unprompted "Not verified" popup on every tab
+   * switch would be noise, and the screen already shows the real state.
+   */
+  const handleSync = async (opts?: { silent?: boolean }) => {
+    const silent = opts?.silent === true;
     setSyncing(true);
     try {
       const ref = manualRefId.trim() || undefined;
@@ -146,27 +164,70 @@ export function KYC() {
       const notChecked = checks.filter(([, r]) => !r?.checked);
 
       if (verified.length > 0) {
+        // Nothing left outstanding on the types that just came back verified.
+        awaitingSync.current = false;
         customAlert(
           `Verified: ${verified.map(([k]) => k.toUpperCase()).join(', ')}.`,
           'Sync complete',
           'success'
         );
-      } else {
-        const reason = notChecked.find(([, r]) => r?.reason)?.[1]?.reason;
-        customAlert(
-          reason
-            ? `Nothing to sync yet — ${reason} Finish the verification in the Dojah window, then sync again.`
-            : 'Nothing to sync yet. Finish the verification in the Dojah window, then sync again.',
-          'Not verified',
-          'info'
-        );
+        return;
       }
+
+      if (silent) return;
+
+      // BUGFIX (QA-API-281): this used to splice the server's `reason` straight into the
+      // sentence, and for the commonest case — modal opened, closed before finishing — that
+      // reason was the literal "Dojah API error: 404". The renter was shown a provider status
+      // code, run together with the next sentence for want of a separator. The server no
+      // longer sends codes, and the two sentences are now joined properly rather than by
+      // hoping the reason ends in punctuation.
+      const reason = notChecked.find(([, r]) => r?.reason)?.[1]?.reason;
+      const followUp = 'Finish the verification in the Dojah window, then sync again.';
+      customAlert(
+        reason ? `${reason} ${followUp}` : `Nothing to sync yet. ${followUp}`,
+        'Not verified',
+        'info'
+      );
     } catch {
-      customAlert('Sync failed. Please try again.', 'Error', 'error');
+      if (!silent) customAlert('Sync failed. Please try again.', 'Error', 'error');
     } finally {
       setSyncing(false);
     }
   };
+
+  /**
+   * BUGFIX (QA-API-280): the widget opens in a separate tab and reports back to Dojah, not to
+   * us. Until now the only thing that pulled the result across was a secondary "Sync with
+   * Dojah" button — so a renter who verified successfully and simply switched back to the app
+   * stayed unverified, and every booking was refused with nothing on screen explaining why.
+   *
+   * Returning to the tab is the signal that they are done, so that is what triggers the sync.
+   */
+  const syncOnReturn = useCallback(async () => {
+    if (document.visibilityState !== 'visible') return;
+    if (!awaitingSync.current || autoSyncing.current) return;
+    if (ninVerified && (!isKYCRequired || bvnVerified)) return;
+
+    autoSyncing.current = true;
+    try {
+      await handleSync({ silent: true });
+    } finally {
+      autoSyncing.current = false;
+    }
+    // handleSync is recreated each render; the guards above are what keep this from
+    // re-entering, so the callback deliberately depends only on the verified flags.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ninVerified, bvnVerified, isKYCRequired]);
+
+  useEffect(() => {
+    window.addEventListener('focus', syncOnReturn);
+    document.addEventListener('visibilitychange', syncOnReturn);
+    return () => {
+      window.removeEventListener('focus', syncOnReturn);
+      document.removeEventListener('visibilitychange', syncOnReturn);
+    };
+  }, [syncOnReturn]);
 
   const roleLabel = isKYCRequired ? 'Agent / Company' : 'Student / Individual';
   const requirements = isKYCRequired
@@ -358,7 +419,7 @@ export function KYC() {
                       className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                     />
                     <button 
-                      onClick={handleSync}
+                      onClick={() => handleSync()}
                       className="bg-primary text-white font-bold text-sm px-4 py-2 rounded-lg"
                     >
                       Go

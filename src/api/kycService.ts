@@ -40,13 +40,18 @@ export interface KYCStatusResponse {
     bvnVerifiedAt?: string;
     ninPhoto?: string;
     bvnPhoto?: string;
+    /** QA-API-280: references the server holds for this user, so the app can tell
+     *  "never started" from "finished in the widget, not yet synced". */
+    kycReferenceIds?: { nin: string | null; bvn: string | null };
+    pendingSync?: { nin: boolean; bvn: boolean };
+    awaitingSync?: boolean;
   };
 }
 
 export interface KYCSyncResponse {
   success: boolean;
   data: {
-    results: Record<string, { checked: boolean; synced?: boolean; status?: string; reason?: string }>;
+    results: Record<string, { checked: boolean; synced?: boolean; status?: string; reason?: string; code?: string }>;
     ninVerified: boolean;
     bvnVerified: boolean;
   };
