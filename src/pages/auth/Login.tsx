@@ -168,9 +168,14 @@ export function Login() {
               </Button>
 
               {/* SECURITY-FIX TODO (P-L1): this button is inert (onClick is a no-op).
-                  Wire it to Google OAuth via @react-oauth/google (e.g. useGoogleLogin)
-                  and pass the returned id_token to authService.googleLogin(). The backend
-                  must verify the id_token's aud/iss/signature/expiry before trusting it. */}
+                  UPDATED (flow audit): this used to say "pass the id_token to
+                  authService.googleLogin()". That method posted to /auth/google-login, which
+                  has never existed, so following this note would have produced a 404. It has
+                  been removed.
+                  The backend implements Google sign-in as a REDIRECT flow:
+                  GET /auth/google/login -> Google -> GET /auth/google/callback, which issues
+                  the session. Wiring this button means sending the browser to that first URL,
+                  not exchanging a token client-side. */}
               <Button
                 type="button"
                 variant="outline"

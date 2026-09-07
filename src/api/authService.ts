@@ -108,11 +108,12 @@ export const authService = {
     return response.data;
   },
 
-  async googleLogin(data: { token: string }): Promise<AuthResponse> {
-    // SECURITY-FIX: do not log the Google id_token.
-    const response = await apiClient.post<AuthResponse>('/auth/google-login', data);
-    return response.data;
-  },
+  // REMOVED: googleLogin(). It posted to POST /auth/google-login, which does not exist.
+  // The backend implements Google sign-in as a REDIRECT flow — GET /auth/google/login,
+  // returning via GET /auth/google/callback — so a POST of an id_token was never going
+  // to work. Nothing called this; the only reference was a comment on the Login screen
+  // describing an implementation that does not match the server. Removed so the next
+  // person builds against the endpoint that is actually there.
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
     // SECURITY-FIX: do not log registration PII or the token-bearing response.
