@@ -36,14 +36,27 @@ export function GoogleCallback() {
     const params = new URLSearchParams(window.location.search);
     const accessToken = params.get('accessToken');
     const refreshToken = params.get('refreshToken');
+    const serverError = params.get('error');
 
     // Strip the credentials from the URL before anything else — before any await, so they are
     // never left in the address bar or pushed into history.
     window.history.replaceState({}, document.title, window.location.pathname);
 
+    if (serverError) {
+      // The server redirected back with a reason rather than dropping the user on a bare page
+      // at the API's origin. Translate its codes; anything unrecognised falls back.
+      setError(
+        serverError === 'password_account'
+          ? 'This email is already registered with a password. Sign in with your email and password instead.'
+          : 'Google sign-in did not complete. Please try again, or sign in with your email.'
+      );
+      return;
+    }
+
     if (!accessToken || !refreshToken) {
-      // Reached without tokens: the user cancelled at Google, or the server declined to
-      // redirect because this origin is not in its allowlist (OAUTH_ALLOWED_ORIGINS).
+      // Reached without tokens and without a reason: the user cancelled at Google, or the
+      // server declined to redirect because this origin is not allowlisted
+      // (OAUTH_ALLOWED_ORIGINS) and answered with JSON instead.
       setError('Google sign-in did not complete. Please try again, or sign in with your email.');
       return;
     }
