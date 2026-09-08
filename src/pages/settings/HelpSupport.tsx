@@ -12,12 +12,15 @@ import {
   TwitterIcon,
   Linkedin01Icon,
   TiktokIcon,
-  WhatsappIcon
+  WhatsappIcon,
+  SparklesIcon
 } from '@hugeicons/react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RequestUpgradeModal } from '../../components/common/RequestUpgradeModal';
 
 const FAQ_ITEMS = [
+
   {
     q: 'How do I find apartments near my school?',
     a: 'Use the Discover tab to browse all available listings. You can filter by price, distance, property type, and more.',
@@ -60,6 +63,7 @@ const SOCIAL_CHANNELS = [
 export function HelpSupport() {
   const navigate = useNavigate();
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
     <AppShell hideTabBar>
@@ -75,8 +79,29 @@ export function HelpSupport() {
             </div>
             <h2 className="text-[22px] font-extrabold text-textPrimary text-center">How can we help?</h2>
             <p className="text-[15px] text-textSecondary text-center leading-snug mt-1">
-              Browse FAQs or reach out to our support team
+              Browse FAQs, reach out, or request new features
             </p>
+          </div>
+
+          {/* Feature Request Card */}
+          <div className="mb-6">
+            <button
+              onClick={() => setShowUpgradeModal(true)}
+              className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center gap-3.5 shadow-sm active:scale-[0.99] transition-transform text-left"
+            >
+              <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                <SparklesIcon size={24} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-[15px] font-extrabold text-amber-900 mb-0.5">
+                  Request an Upgrade / Feature
+                </h4>
+                <p className="text-xs text-amber-800/80">
+                  Suggest ideas for iléSure. Similar requests are automatically stacked!
+                </p>
+              </div>
+              <ArrowRight01Icon size={18} className="text-amber-700 shrink-0" />
+            </button>
           </div>
 
           {/* Contact channels */}
@@ -85,6 +110,7 @@ export function HelpSupport() {
           </h3>
           <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] mb-6">
             {CONTACT_CHANNELS.map((ch, idx) => {
+
               const Icon = ch.icon;
               return (
                 <a 
@@ -195,7 +221,13 @@ export function HelpSupport() {
           </div>
           
         </div>
+
+        <RequestUpgradeModal
+          visible={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+        />
       </div>
     </AppShell>
   );
 }
+
