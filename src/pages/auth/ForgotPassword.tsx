@@ -103,12 +103,11 @@ export function ForgotPassword() {
         <AnimatePresence>
           {isReady && (
             <motion.img
-              src="/images/bg_forgot_password_transparent.png"
-              className="absolute -right-5 -top-2.5 w-[240px] h-[240px] object-contain z-0"
+              src="/images/forgot_password_1788617216520.jpg"
+              className="absolute -right-[60px] top-[5%] w-[260px] h-[260px] object-cover rounded-l-[100px] shadow-xl z-0"
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: 'spring', delay: 0.15 }}
-              onError={(e: any) => e.target.style.display = 'none'}
             />
           )}
         </AnimatePresence>

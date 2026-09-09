@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Cancel01Icon, Add01Icon, Remove01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
+import { useAuthStore } from '../../stores/authStore';
 import { calculatePlatformFee, calculateRoommateMatchingFee, PLATFORM_FEE_LABEL } from '../../constants/fees';
 
 interface ShortletRate {
@@ -16,7 +17,7 @@ interface ShortletRate {
 interface BookAppointmentModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number }) => void;
+  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any }) => void;
   listing: {
     title: string;
     rentAnnual: number;
@@ -44,6 +45,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   onConfirm,
   listing,
 }) => {
+  const { user } = useAuthStore();
   const [includeRoommate, setIncludeRoommate] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [rateQuantity, setRateQuantity] = useState(1);
@@ -95,10 +97,17 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
     : totalWithoutRoommate;
 
   const handleConfirm = () => {
+    const userDetails = {
+      occupation: (user as any)?.occupation,
+      employer: (user as any)?.employer,
+      school: (user as any)?.university || (user as any)?.selectedSchool,
+      location: (user as any)?.location
+    };
+    
     if (isShortlet) {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity });
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, userDetails });
     } else {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate });
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, userDetails });
     }
   };
 
@@ -137,6 +146,36 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
               <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm">
                 <h3 className="text-lg font-bold text-textPrimary mb-1">{listing?.title}</h3>
                 <p className="text-sm text-textSecondary">Ibadan, Nigeria</p>
+              </div>
+
+              <h4 className="text-base font-semibold text-textPrimary mb-3">Your Details</h4>
+              <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-textSecondary">Name</span>
+                  <span className="text-sm font-semibold text-textPrimary">{user?.fullName}</span>
+                </div>
+                {user?.role === 'student' && ((user as any)?.university || (user as any)?.selectedSchool) && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-textSecondary">School</span>
+                    <span className="text-sm font-semibold text-textPrimary">{(user as any)?.university || (user as any)?.selectedSchool}</span>
+                  </div>
+                )}
+                {user?.role === 'individual' && (
+                  <>
+                    {(user as any)?.occupation && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-textSecondary">Occupation</span>
+                        <span className="text-sm font-semibold text-textPrimary">{(user as any)?.occupation}</span>
+                      </div>
+                    )}
+                    {(user as any)?.employer && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-textSecondary">Employer</span>
+                        <span className="text-sm font-semibold text-textPrimary">{(user as any)?.employer}</span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {isShortlet && (

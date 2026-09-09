@@ -183,6 +183,7 @@ export function ListingDetail() {
         duration,
         message: 'Booking request from app',
         requiresRoommate: data.requiresRoommate,
+        userDetails: data.userDetails,
         ...(isShortlet ? { rateId: data.rateId, rateQuantity } : {}),
       });
       setShowBookModal(false);
@@ -314,7 +315,7 @@ export function ListingDetail() {
               onClick={handleSave}
               className={clsx(
                 "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all active:scale-95",
-                isSaved ? "bg-error text-white" : "bg-black/30 text-white"
+                isSaved ? "bg-red-500 text-white" : "bg-black/30 text-white"
               )}
             >
               <FavouriteIcon size={20} variant={isSaved ? "solid" : "stroke"} />
@@ -584,6 +585,12 @@ export function ListingDetail() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-4">Property Details</h3>
                   <div className="space-y-4 mb-8">
+                    {listing.rentDuration && (
+                      <div className="flex justify-between items-start pb-3 border-b border-borderLight">
+                        <span className="text-sm text-textSecondary">Rent Duration</span>
+                        <span className="text-sm font-semibold text-textPrimary text-right">{listing.rentDuration}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Property Type</span>
                       <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.propertyType) || 'N/A'}</span>

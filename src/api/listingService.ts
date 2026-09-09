@@ -28,6 +28,7 @@ export interface Listing {
   title: string;
   description: string;
   rentAnnual: number;
+  rentDuration?: string;
   areaCluster: string;
   distanceBucket: string;
   distance?: string;

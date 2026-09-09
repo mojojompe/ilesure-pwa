@@ -126,8 +126,8 @@ export function OTP() {
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-[#3E1F0A] relative pb-safe">
         {/* Header Background */}
-        <div className="absolute top-0 right-0 w-[240px] h-[240px] opacity-20 pointer-events-none">
-          <img src="/assets/backgrounds/bg_otp_transparent.png" alt="Pattern" className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+        <div className="absolute top-[10%] -right-[60px] w-[260px] h-[260px] pointer-events-none z-0">
+          <img src="/images/otp_illustration_1788617227136.jpg" alt="OTP Illustration" className="w-full h-full object-cover rounded-l-[100px] shadow-xl" />
         </div>
 
         <div className="flex-none px-6 pt-12 pb-8 z-10">

@@ -20,10 +20,10 @@ export function AuthChoice() {
           {isReady && (
             <>
               <motion.img
-                src="/images/bg_fallback_transparent.png"
-                className="w-[280px] h-[280px] object-contain mb-8"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
+                src="/images/auth_choice_illustration_1788617107149.jpg"
+                className="absolute -right-[60px] top-[10%] w-[280px] h-[280px] object-cover rounded-l-[100px] shadow-xl z-0"
+                initial={{ x: 150, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
                 transition={{
                   type: 'spring',
                   opacity: { duration: 0.4 },
@@ -32,7 +32,7 @@ export function AuthChoice() {
               />
               
               <motion.div 
-                className="flex flex-col items-center -mt-5"
+                className="flex flex-col items-start w-full px-8 mt-[140px] z-10"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}

@@ -9,7 +9,7 @@ import { PENDING_EMAIL_KEY } from './OTP';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 2;
 
 function PasswordStrengthMeter({ password }: { password: string }) {
   const reqs = [
@@ -114,6 +114,9 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [school, setSchool] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [employer, setEmployer] = useState('');
+  const [locationStr, setLocationStr] = useState('');
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -152,8 +155,6 @@ export function Register() {
         setErrors({ phone: 'Phone number is required' });
         return;
       }
-      goToStep(2);
-    } else if (step === 2) {
       if (!acceptedTerms) {
         setErrors({ acceptedTerms: 'Please accept the Terms of Service and Privacy Policy to continue.' });
         return;
@@ -166,6 +167,9 @@ export function Register() {
           role: initialRole as any,
           selectedSchool: initialRole === 'student' ? school : undefined,
           companyName: initialRole === 'company' ? companyName : undefined,
+          occupation: initialRole === 'individual' ? occupation : undefined,
+          employer: initialRole === 'individual' ? employer : undefined,
+          location: initialRole === 'individual' ? locationStr : undefined,
         });
         // Survives a refresh on the OTP screen (see OTP.tsx).
         sessionStorage.setItem(PENDING_EMAIL_KEY, email.trim().toLowerCase());
@@ -205,8 +209,8 @@ export function Register() {
         <AnimatePresence>
           {isReady && (
             <motion.img
-              src="/images/bg_login_transparent.png"
-              className="absolute -right-5 -top-2.5 w-[240px] h-[240px] object-contain z-0"
+              src="/images/register_illustration_1788617130132.jpg"
+              className="absolute -right-[60px] top-[5%] w-[260px] h-[260px] object-cover rounded-l-[100px] shadow-xl z-0"
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: 'spring', delay: 0.15 }}
@@ -255,10 +259,10 @@ export function Register() {
               
               <div className="text-center mb-1">
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-[-0.5px]">
-                  {step === 0 ? 'Account Details' : step === 1 ? 'Your Details' : 'Bank Account'}
+                  {step === 0 ? 'Account Details' : 'Your Details'}
                 </h2>
                 <p className="text-base text-text-secondary mt-1 mb-6">
-                  {step === 0 ? 'Secure your ideal living space.' : step === 1 ? 'Tell us a bit more about you.' : initialRole === 'student' ? 'Almost done.' : 'Link your bank for automatic rent payouts.'}
+                  {step === 0 ? 'Secure your ideal living space.' : 'Tell us a bit more about you.'}
                 </p>
               </div>
 
@@ -355,6 +359,34 @@ export function Register() {
                             />
                           </div>
                         )}
+                        {initialRole === 'individual' && (
+                          <>
+                            <div className="mt-4">
+                              <Input
+                                label="Occupation (optional)"
+                                value={occupation}
+                                onChange={(e) => setOccupation(e.target.value)}
+                                placeholder="e.g. Software Engineer"
+                              />
+                            </div>
+                            <div className="mt-4">
+                              <Input
+                                label="Employer (optional)"
+                                value={employer}
+                                onChange={(e) => setEmployer(e.target.value)}
+                                placeholder="e.g. Google"
+                              />
+                            </div>
+                            <div className="mt-4">
+                              <Input
+                                label="Location (optional)"
+                                value={locationStr}
+                                onChange={(e) => setLocationStr(e.target.value)}
+                                placeholder="e.g. Lagos, Nigeria"
+                              />
+                            </div>
+                          </>
+                        )}
                         
                         <div className="mt-8">
                           <span className="text-xs font-bold text-text-secondary tracking-[0.8px] mb-2 block uppercase">
@@ -375,58 +407,34 @@ export function Register() {
                             </span>
                           </div>
                         </div>
+
+                        <div className="mt-8">
+                          <label className="flex items-start gap-3 rounded-2xl border border-borderLight bg-surface p-4 mb-4 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={acceptedTerms}
+                              onChange={e => setAcceptedTerms(e.target.checked)}
+                              className="mt-0.5 h-5 w-5 shrink-0 accent-accent cursor-pointer"
+                            />
+                            <span className="text-sm leading-5 text-textSecondary">
+                              I agree to the{' '}
+                              <a href="https://ilesure.com/terms-of-service" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                                Terms of Service
+                              </a>{' '}
+                              and{' '}
+                              <a href="https://ilesure.com/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                                Privacy Policy
+                              </a>.
+                            </span>
+                          </label>
+                          {errors.acceptedTerms && (
+                            <p className="-mt-2 mb-4 text-xs text-error">{errors.acceptedTerms}</p>
+                          )}
+                        </div>
                       </>
                     )}
 
-                    {step === 2 && (
-                      <>
-                        {/* Consent sits at the top of the final step, so it is
-                            read before the account is created rather than
-                            buried under optional bank fields. */}
-                        <label className="flex items-start gap-3 rounded-2xl border border-borderLight bg-surface p-4 mb-4 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={acceptedTerms}
-                            onChange={e => setAcceptedTerms(e.target.checked)}
-                            className="mt-0.5 h-5 w-5 shrink-0 accent-accent cursor-pointer"
-                          />
-                          <span className="text-sm leading-5 text-textSecondary">
-                            I agree to the{' '}
-                            <a href="https://ilesure.com/terms-of-service" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
-                              Terms of Service
-                            </a>{' '}
-                            and{' '}
-                            <a href="https://ilesure.com/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
-                              Privacy Policy
-                            </a>.
-                          </span>
-                        </label>
-                        {errors.acceptedTerms && (
-                          <p className="-mt-2 mb-4 text-xs text-error">{errors.acceptedTerms}</p>
-                        )}
-                        {(initialRole === 'agent' || initialRole === 'company') ? (
-                          <>
-                            <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
-                              BANK ACCOUNT (RECOMMENDED)
-                            </span>
-                            <p className="text-sm text-text-secondary mb-4">
-                              {/* The PWA is the renter app; payout accounts are managed on the agent/company
-                                  web portal. The previous inputs here were not wired to anything. */}
-                              Bank account setup for rent payouts is done on the web portal at app.ilesure.com after you verify your email.
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
-                              BANK ACCOUNT
-                            </span>
-                            <p className="text-sm text-text-secondary mb-4">
-                              Bank account setup is not required for student accounts.
-                            </p>
-                          </>
-                        )}
-                      </>
-                    )}
+
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -448,13 +456,7 @@ export function Register() {
                     </span>
                   </button>
                 )}
-                {step === 2 && (
-                  <button onClick={handleNext} className="flex justify-center mt-2">
-                    <span className="text-base font-medium text-text-tertiary underline">
-                      Skip — I'll do this later
-                    </span>
-                  </button>
-                )}
+
               </div>
             </div>
           </motion.div>

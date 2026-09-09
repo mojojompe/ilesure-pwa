@@ -11,14 +11,14 @@ const ROLES = [
     id: 'student' as Role,
     title: 'Student',
     subtitle: 'Browse apartments near campus, find roommates, and join waitlists.',
-    image: '/images/roles/student.png',
+    image: '/images/roles/role_student_1788617193529.jpg',
     accentColor: '#E1AD01', // Mustard
   },
   {
     id: 'student-non' as Role,
     title: 'Not a Student',
     subtitle: 'A regular tenant looking for housing. Browse and book without school filters.',
-    image: '/images/roles/non_student.png',
+    image: '/images/roles/role_individual_1788617204098.jpg',
     accentColor: '#3E1F0A', // Burnt Brown
   },
 ];

@@ -8,7 +8,7 @@ import {
   BubbleChatIcon, 
   Notification01Icon,
   UserCircleIcon,
-  Menu01Icon
+  MoreHorizontalIcon,
 } from '@hugeicons/react';
 import { Modal } from '../ui/Modal';
 import { useAuthStore } from '../../stores/authStore';
@@ -80,7 +80,7 @@ export function BottomTabBar() {
               'relative p-2 rounded-2xl transition-all duration-300',
               isMoreButtonActive ? 'bg-btn-primary/10 text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
             )}>
-              <Menu01Icon 
+              <MoreHorizontalIcon 
                 size={24} 
                 variant={isMoreButtonActive ? 'solid' : 'stroke'}
                 className={clsx('transition-transform duration-300', isMoreButtonActive && 'scale-110')}

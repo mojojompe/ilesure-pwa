@@ -289,7 +289,7 @@ export function Discover() {
         >
           <AdsCarousel 
             heroTitle="Find Your Perfect Space" 
-            heroImage="/images/find_space_vector.jpg" 
+            heroImage="/images/ads_carousel_1788617238802.jpg" 
           />
         </motion.div>
 

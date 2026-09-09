@@ -6,6 +6,7 @@ interface AlertOptions {
   type?: 'info' | 'success' | 'warning' | 'error';
   confirmText?: string;
   cancelText?: string;
+  confirmHref?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
 }

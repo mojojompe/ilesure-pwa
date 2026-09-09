@@ -85,7 +85,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-              <Button className="flex-1 bg-error border-none text-white shadow-none hover:bg-error/90" onClick={handleSubmit}>Submit Report</Button>
+              <Button className="flex-1 bg-primary border-none text-white shadow-none hover:bg-primary/90" onClick={handleSubmit}>Submit Report</Button>
             </div>
           </motion.div>
         </motion.div>

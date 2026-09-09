@@ -5,6 +5,7 @@ import { ArrowLeft01Icon, Alert01Icon, GoogleIcon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
+import { useAlertStore } from '../../stores/alertStore';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
@@ -38,7 +39,15 @@ export function Login() {
       const response = await authService.login({ email, password });
       if (response.success && response.user) {
         if (response.user.role !== 'student' && response.user.role !== 'individual') {
-          customAlert('This app is for Students/Renters. Please use the ileSure Web App.', 'Access Denied', 'error');
+          useAlertStore.getState().showAlert({
+            title: 'Access Denied',
+            message: 'This app is for Students/Renters. Please log in on the ileSure Web App.',
+            type: 'error',
+            confirmText: 'Go to Web App',
+            cancelText: 'Cancel',
+            confirmHref: 'https://app.ilesure.com'
+          });
+          setLoading(false);
           return;
         }
         
@@ -63,8 +72,8 @@ export function Login() {
         <AnimatePresence>
           {isReady && (
             <motion.img
-              src="/images/bg_login_transparent.png"
-              className="absolute -right-5 -top-2.5 w-[240px] h-[240px] object-contain z-0"
+              src="/images/login_illustration_1788617118204.jpg"
+              className="absolute -right-[60px] top-[10%] w-[260px] h-[260px] object-cover rounded-l-[100px] shadow-xl z-0"
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{
@@ -90,7 +99,7 @@ export function Login() {
                 <ArrowLeft01Icon size={24} className="text-white" />
               </button>
 
-              <div className="pr-[90px] mb-[34px]">
+              <div className="pr-[110px] mb-[34px] mt-auto">
                 <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
                   Welcome back !
                 </h1>

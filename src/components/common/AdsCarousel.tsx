@@ -78,11 +78,13 @@ export const AdsCarousel: React.FC<AdsCarouselProps> = ({ heroTitle, heroImage }
         {carouselItems.map((item: any) => {
           if (item.type === 'hero') {
             return (
-              <div key={item.id} className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#2a1406] relative overflow-hidden flex flex-col justify-end p-5 shadow-md">
-                <div className="absolute top-0 right-[-20px] w-48 h-48 pointer-events-none flex items-end justify-end">
-                  <img src={item.image} alt="" className="w-[120%] h-[120%] object-contain mb-[-10px] mr-4" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+              <div key={item.id} className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#2a1406] relative overflow-hidden flex flex-row items-center p-5 shadow-md">
+                <h2 className="text-[#E8DCC4] text-[22px] font-black tracking-tight leading-[28px] w-[50%] z-10">
+                  {item.title}
+                </h2>
+                <div className="absolute right-[-10px] top-[10%] w-[140px] h-[140px] flex items-center justify-center">
+                  <img src={item.image} alt="" className="w-full h-full object-cover rounded-l-full shadow-lg" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                 </div>
-                <h2 className="text-[#E8DCC4] text-[22px] font-black tracking-tight leading-[28px] w-[70%] z-10">{item.title}</h2>
               </div>
             );
           }

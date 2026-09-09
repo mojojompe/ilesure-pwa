@@ -17,6 +17,9 @@ export interface RegisterRequest {
   selectedSchool?: string;
   companyName?: string;
   cacNumber?: string;
+  occupation?: string;
+  employer?: string;
+  location?: string;
   pushToken?: string;
 }
 

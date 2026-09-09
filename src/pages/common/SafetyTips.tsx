@@ -119,7 +119,7 @@ export function SafetyTips() {
                       Cancel
                     </button>
                     <button 
-                      className="flex-1 py-3 rounded-xl font-bold text-white bg-error active:opacity-80 transition-opacity disabled:opacity-50"
+                      className="flex-1 py-3 rounded-xl font-bold text-white bg-primary active:opacity-80 transition-opacity disabled:opacity-50"
                       onClick={handleReportSubmit}
                       disabled={isSubmitting || !reportText.trim()}
                     >

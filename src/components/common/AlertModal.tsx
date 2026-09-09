@@ -55,9 +55,17 @@ export function AlertModal() {
                 {options.cancelText}
               </Button>
             )}
-            <Button className="flex-1 py-3" onClick={handleConfirm}>
-              {options.confirmText || 'OK'}
-            </Button>
+            {options.confirmHref ? (
+              <a href={options.confirmHref} className="flex-1 block w-full">
+                <Button className="w-full py-3 h-full" onClick={hideAlert}>
+                  {options.confirmText || 'OK'}
+                </Button>
+              </a>
+            ) : (
+              <Button className="flex-1 py-3" onClick={handleConfirm}>
+                {options.confirmText || 'OK'}
+              </Button>
+            )}
           </div>
         </motion.div>
       </div>

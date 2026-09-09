@@ -35,7 +35,7 @@ export function Modal({ isOpen, onClose, title, children, hideCloseButton }: Mod
       {/* Modal Content - Bottom Sheet on Mobile, Centered on Desktop */}
       <div className={clsx(
         'relative w-full max-w-md bg-white shadow-clay rounded-t-3xl sm:rounded-3xl flex flex-col',
-        'animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-200'
+        'animate-slide-up duration-200'
       )}>
         {/* Mobile drag handle */}
         <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">

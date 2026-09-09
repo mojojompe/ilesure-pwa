@@ -72,6 +72,7 @@ export interface Listing {
   title: string;
   description: string;
   rentAnnual: number;
+  rentDuration?: string;
   areaCluster: string;
   distanceBucket: string;
   furnishing: 'fully_furnished' | 'semi_furnished' | 'unfurnished';

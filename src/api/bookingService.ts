@@ -84,6 +84,12 @@ export interface CreateBookingRequest {
   durationUnit?: 'hour' | 'day' | 'week' | 'month';
   rateId?: string;
   rateQuantity?: number;
+  userDetails?: {
+    occupation?: string;
+    employer?: string;
+    school?: string;
+    location?: string;
+  };
 }
 
 export interface BookingSummaryResponse {
