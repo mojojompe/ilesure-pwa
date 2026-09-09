@@ -1,5 +1,5 @@
 /**
- * Canonical listing vocabulary — mirrors
+ * Canonical listing vocabulary, mirrors
  * `IleSure_Backend/src/constants/listingVocabulary.ts`.
  *
  * Store and send values, render labels. Keep in sync with the backend file.
@@ -30,7 +30,7 @@ export interface Option<T extends string> {
 
 /**
  * Filter options as { value, label } pairs. The value goes on the wire, the
- * label goes on the pill — the filter modal previously stored labels and
+ * label goes on the pill, the filter modal previously stored labels and
  * compared them against listings holding machine values, so nothing matched.
  */
 export const PROPERTY_TYPE_OPTIONS: Option<PropertyType>[] = [
@@ -76,7 +76,7 @@ export const CHIP_PROPERTY_TYPES: Record<string, PropertyType[]> = {
 
 
 /**
- * Amenity vocabulary — mirrors `AMENITIES` / `AMENITY_LABELS` in the backend's
+ * Amenity vocabulary, mirrors `AMENITIES` / `AMENITY_LABELS` in the backend's
  * listingVocabulary. The backend canonicalises whatever a client sends, so these tokens are
  * what comes back on every listing and what the create forms should submit.
  */

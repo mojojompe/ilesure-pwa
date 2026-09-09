@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FavouriteIcon, 
-  Location01Icon, 
+import {
+  FavouriteIcon,
+  Location01Icon,
   UserCircleIcon,
   Alert01Icon,
   FireIcon,
@@ -57,11 +57,11 @@ export function ListingCard({
     listing.images && listing.images.length > 0
       ? listing.images[0]
       : PLACEHOLDER_IMAGES[parseInt(listing._id || listing.id || '0', 10) % PLACEHOLDER_IMAGES.length] ||
-        PLACEHOLDER_IMAGES[0];
+      PLACEHOLDER_IMAGES[0];
 
   const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
 
-  // Reads shortletRates first, falling back to the deprecated shortletPricing map — listings
+  // Reads shortletRates first, falling back to the deprecated shortletPricing map, listings
   // priced with the flexible tiers used to render an empty price here.
   const formattedPrice = isShortlet
     ? getListingShortletTiers(listing).map(formatShortletTier).join(' · ')
@@ -70,17 +70,17 @@ export function ListingCard({
   const powerStatus =
     listing.power === 'constant' ? 'good'
       : listing.power === 'solar_backed' || listing.power === 'hybrid' ? 'partial'
-      : 'poor';
+        : 'poor';
   const waterStatus = listing.water === 'borehole' ? 'good' : 'partial';
   const isFullyBooked = listing.status === 'fully_booked';
 
   const displayRules = listing.rules?.length
     ? listing.rules
     : [
-        ...(listing.petsAllowed ? ['pets_allowed'] : []),
-        ...(listing.smokingAllowed ? ['smoking_allowed'] : []),
-        ...(listing.studentsOnly ? ['students_only'] : []),
-      ];
+      ...(listing.petsAllowed ? ['pets_allowed'] : []),
+      ...(listing.smokingAllowed ? ['smoking_allowed'] : []),
+      ...(listing.studentsOnly ? ['students_only'] : []),
+    ];
   const hasRules = displayRules.length > 0;
 
   const agentName = listing.companyId?.name || listing.agentId?.fullName || listing.landlordId?.fullName || listing.agentName || listing.companyName;
@@ -90,9 +90,8 @@ export function ListingCard({
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={!isFullyBooked ? onPress : undefined}
-      className={`mx-4 mb-4 relative rounded-3xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white cursor-pointer ${
-        isFullyBooked ? 'opacity-60' : ''
-      }`}
+      className={`mx-4 mb-4 relative rounded-3xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white cursor-pointer ${isFullyBooked ? 'opacity-60' : ''
+        }`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <div className="relative w-full h-[380px]">
@@ -141,10 +140,10 @@ export function ListingCard({
           onClick={handleSave}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center transition-transform active:scale-90"
         >
-          <FavouriteIcon 
-            size={20} 
-            className={saved ? "text-red-500" : "text-white"} 
-            variant={saved ? "solid" : "stroke"} 
+          <FavouriteIcon
+            size={20}
+            className={saved ? "text-red-500" : "text-white"}
+            variant={saved ? "solid" : "stroke"}
           />
         </button>
 

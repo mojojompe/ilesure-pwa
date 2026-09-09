@@ -6,9 +6,9 @@ import { ListingCard } from '../../components/listing/ListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { 
-  Search01Icon, 
-  FilterIcon, 
+import {
+  Search01Icon,
+  FilterIcon,
   Building03Icon,
   Chatting01Icon,
   UserCircleIcon
@@ -47,7 +47,7 @@ export function Discover() {
   const [loading, setLoading] = useState(initialListings && initialListings.length > 0 ? false : true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  // Debounced mirror of searchQuery — the value the API is actually queried with.
+  // Debounced mirror of searchQuery, the value the API is actually queried with.
   const [searchTerm, setSearchTerm] = useState('');
   const [activeChip, setActiveChip] = useState('all');
   const [savedListings, setSavedListings] = useState<string[]>([]);
@@ -63,7 +63,7 @@ export function Discover() {
    *
    * Search and filtering used to run over the array already in memory, so they
    * only ever saw the 10 listings on the current page, and the modal compared
-   * display labels ('2-Bedroom') against stored values ('2_bed') — which matched
+   * display labels ('2-Bedroom') against stored values ('2_bed'), which matched
    * nothing. Both now run on the server against canonical values.
    */
   const { listingFilters, hasContradictoryTypes } = useMemo(() => {
@@ -78,7 +78,7 @@ export function Discover() {
 
     if (activeFilters) {
       if (activeFilters.propertyTypes.length > 0) {
-        // A chip and the modal are both type filters — intersect them so the
+        // A chip and the modal are both type filters, intersect them so the
         // narrower wins rather than one silently replacing the other.
         const intersection = propertyTypes.length > 0
           ? propertyTypes.filter(t => activeFilters.propertyTypes.includes(t))
@@ -140,7 +140,7 @@ export function Discover() {
       ];
 
       const [listingsData, savedData, chatsData] = await Promise.all(promises);
-      
+
       if (page === 1) {
         setListings(listingsData.listings);
         useListingStore.getState().setListings(listingsData.listings);
@@ -153,7 +153,7 @@ export function Discover() {
           return newList;
         });
       }
-      
+
       // Sync saved listings
       const savedIds = savedData.data?.listings?.map((l: any) => l._id || l.id) || [];
       setSavedListings(savedIds);
@@ -161,7 +161,7 @@ export function Discover() {
       // Sync unread chats
       const unreadChats = chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
       setUnreadCount(unreadChats);
-      
+
       setHasMoreServer(listingsData.listings.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error('Failed to fetch data', error);
@@ -184,7 +184,7 @@ export function Discover() {
   }, [fetchInitialData]);
 
   const toggleSave = (id: string) => {
-    setSavedListings(prev => 
+    setSavedListings(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
   };
@@ -218,9 +218,9 @@ export function Discover() {
   return (
     <AppShell>
       <div className="flex flex-col min-h-full bg-background pt-safe-top pb-6 overflow-x-hidden">
-        
+
         {/* Header Section */}
-        <motion.div 
+        <motion.div
           initial="hidden"
           animate="show"
           variants={headerVariants}
@@ -237,7 +237,7 @@ export function Discover() {
             </div>
 
             <div className="flex flex-row items-center gap-3">
-              <button 
+              <button
                 onClick={() => navigate('/chats')}
                 className="w-11 h-11 rounded-full bg-surfaceLight flex items-center justify-center relative active:scale-95 transition-transform"
               >
@@ -248,8 +248,8 @@ export function Discover() {
                   </div>
                 )}
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => navigate('/profile')}
                 className="w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-transform border-2 border-primary overflow-hidden"
               >
@@ -266,15 +266,15 @@ export function Discover() {
           <div className="flex flex-row gap-3 mb-2">
             <div className="flex-1 h-[52px] bg-surfaceLight rounded-full flex flex-row items-center px-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-borderLight">
               <Search01Icon size={20} className="text-textTertiary mr-2" />
-              <input 
-                type="text" 
-                placeholder="Search locations or landmarks..." 
+              <input
+                type="text"
+                placeholder="Search locations or landmarks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 bg-transparent border-none outline-none text-base text-textPrimary placeholder:text-textMuted"
               />
             </div>
-            
+
             <button onClick={() => setShowFilters(true)} className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
               <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
             </button>
@@ -282,19 +282,19 @@ export function Discover() {
         </motion.div>
 
         {/* Ads Carousel & Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
         >
-          <AdsCarousel 
-            heroTitle="Find Your Perfect Space" 
-            heroImage="/images/ads_carousel_1788617238802.jpg" 
+          <AdsCarousel
+            heroTitle="Find Your Perfect Space"
+            heroImage="/images/ads_carousel_1788617238802.jpg"
           />
         </motion.div>
 
         {/* Chips Row */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -307,11 +307,10 @@ export function Discover() {
                 <button
                   key={chip.id}
                   onClick={() => setActiveChip(chip.id)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
-                    isActive 
-                      ? 'bg-accent text-white shadow-md' 
+                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${isActive
+                      ? 'bg-accent text-white shadow-md'
                       : 'bg-surfaceLight text-textSecondary hover:bg-surface'
-                  }`}
+                    }`}
                 >
                   {chip.label}
                 </button>
@@ -323,14 +322,14 @@ export function Discover() {
         {/* Content Area */}
         <div className="flex-1">
           <RefreshIndicator isRefreshing={refreshing} />
-          
+
           {loading && !refreshing && currentPage === 1 ? (
             <div className="px-4 space-y-4">
               <ListingCardSkeleton />
               <ListingCardSkeleton />
             </div>
           ) : listings.length > 0 ? (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
@@ -338,7 +337,7 @@ export function Discover() {
             >
               {listings.map((listing: any) => (
                 <motion.div key={listing._id || listing.id} variants={itemVariants}>
-                  <ListingCard 
+                  <ListingCard
                     listing={listing}
                     onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
                     isSaved={savedListings.includes(listing._id || listing.id)}
@@ -349,7 +348,7 @@ export function Discover() {
 
               {hasMore && (
                 <div className="px-5 mt-4 mb-8">
-                  <button 
+                  <button
                     onClick={handleLoadMore}
                     disabled={loading}
                     className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight flex items-center justify-center disabled:opacity-50"
@@ -360,12 +359,12 @@ export function Discover() {
               )}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="mt-12 px-5"
             >
-              <EmptyState 
+              <EmptyState
                 icon={<Building03Icon size={48} className="text-textMuted" />}
                 title="No properties found"
                 description="Try adjusting your filters or searching a different area."

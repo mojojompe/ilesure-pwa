@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { Button } from '../../components/ui/Button';
-import { 
+import {
   Home01Icon,
   CheckmarkCircle02Icon,
   CancelCircleIcon,
@@ -95,21 +95,21 @@ export function MatchProfile() {
   return (
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative pb-[90px]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 z-10 bg-background">
-          <button 
-            onClick={() => navigate(-1)} 
+          <button
+            onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full bg-surface shadow-sm border border-borderLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
           <span className="text-lg font-black text-textPrimary">Match Details</span>
           <div className="w-10" />
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-4">
-          
+
           {/* Overall Score */}
           <div className="flex flex-col items-center py-6">
             <span className="text-6xl font-black" style={{ color: recColor }}>{match.overallScore}%</span>
@@ -146,7 +146,7 @@ export function MatchProfile() {
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-textPrimary">{match.listing.title}</p>
                   <p className="text-sm text-textSecondary mt-0.5">
-                    {match.listing.areaCluster} — ₦{match.listing.rentAnnual?.toLocaleString()}/yr
+                    {match.listing.areaCluster}, ₦{match.listing.rentAnnual?.toLocaleString()}/yr
                   </p>
                 </div>
               </div>
@@ -173,12 +173,12 @@ export function MatchProfile() {
               <div key={i} className="flex items-center gap-2 mb-3 last:mb-0">
                 <span className="w-[90px] text-sm font-semibold text-textPrimary">{cat.label}</span>
                 <div className="flex-1 h-2 bg-softSurface rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full" 
-                    style={{ 
-                      width: `${cat.score}%`, 
-                      backgroundColor: cat.score >= 70 ? '#2E7D32' : cat.score >= 50 ? '#E29C45' : '#C62828' 
-                    }} 
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${cat.score}%`,
+                      backgroundColor: cat.score >= 70 ? '#2E7D32' : cat.score >= 50 ? '#E29C45' : '#C62828'
+                    }}
                   />
                 </div>
                 <span className="w-9 text-right text-sm font-bold text-textPrimary">{cat.score}%</span>

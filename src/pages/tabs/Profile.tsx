@@ -5,7 +5,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
 import { customConfirm, customAlert } from '../../stores/alertStore';
-import { 
+import {
   PencilEdit02Icon,
   FavouriteIcon,
   UserMultipleIcon,
@@ -74,7 +74,7 @@ export function Profile() {
       } catch (err) {
         // ignore
       }
-      
+
     } catch (error) {
       console.error('Failed to fetch profile data:', error);
     } finally {
@@ -92,7 +92,7 @@ export function Profile() {
     if (!isConfirmed) return;
     // BUGFIX (QA-PWA-008): the server call was swallowed by an empty catch, so if
     // revocation failed the app still cleared local state and navigated away as though
-    // logout had succeeded — while the token stayed valid server-side for its full
+    // logout had succeeded, while the token stayed valid server-side for its full
     // 7-day life. The API does support revocation, so a failure here is worth surfacing.
     let revoked = true;
     try {
@@ -136,7 +136,7 @@ export function Profile() {
 
         <RefreshIndicator isRefreshing={refreshing} />
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center pt-6 pb-6"
@@ -185,7 +185,7 @@ export function Profile() {
                 <span className="text-[11px] font-bold text-[#E65100]">Verification Pending</span>
               </div>
             )}
-            
+
             {user?.role !== 'individual' && !!(user as any)?.university && (
               <div className="flex flex-row items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
                 <Mortarboard01Icon size={12} className="text-primary" />
@@ -197,7 +197,7 @@ export function Profile() {
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -223,12 +223,11 @@ export function Profile() {
             {accountItems.map((item, idx) => {
               const Icon = item.icon;
               return (
-                <button 
+                <button
                   key={item.id}
                   onClick={() => navigate(item.path)}
-                  className={`flex flex-row items-center w-full px-4 py-4 bg-white active:bg-surfaceLight transition-colors ${
-                    idx < accountItems.length - 1 ? 'border-b border-borderLight' : ''
-                  }`}
+                  className={`flex flex-row items-center w-full px-4 py-4 bg-white active:bg-surfaceLight transition-colors ${idx < accountItems.length - 1 ? 'border-b border-borderLight' : ''
+                    }`}
                 >
                   <div className="w-8 flex items-center justify-center mr-3">
                     <Icon size={20} className="text-primary" />
@@ -255,12 +254,11 @@ export function Profile() {
             {settingsItems.map((item, idx) => {
               const Icon = item.icon;
               return (
-                <button 
+                <button
                   key={item.id}
                   onClick={() => item.path === '#' ? undefined : navigate(item.path)}
-                  className={`flex flex-row items-center w-full px-4 py-4 bg-white active:bg-surfaceLight transition-colors ${
-                    idx < settingsItems.length - 1 ? 'border-b border-borderLight' : ''
-                  }`}
+                  className={`flex flex-row items-center w-full px-4 py-4 bg-white active:bg-surfaceLight transition-colors ${idx < settingsItems.length - 1 ? 'border-b border-borderLight' : ''
+                    }`}
                 >
                   <div className="w-8 flex items-center justify-center mr-3">
                     <Icon size={20} className="text-primary" />
@@ -274,14 +272,14 @@ export function Profile() {
             })}
           </div>
 
-          <button 
+          <button
             onClick={handleLogout}
             className="flex flex-row items-center justify-center gap-2 py-4 w-full active:opacity-70 transition-opacity"
           >
             <Logout01Icon size={18} className="text-error" />
             <span className="text-[15px] font-bold text-error">Log Out</span>
           </button>
-          
+
           <div className="mt-8 pb-12 flex flex-col items-center">
             <span className="text-[13px] font-semibold text-textTertiary">
               Sponsored by Waltik Labs

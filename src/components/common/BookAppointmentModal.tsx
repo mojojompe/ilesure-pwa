@@ -17,11 +17,7 @@ interface ShortletRate {
 interface BookAppointmentModalProps {
   visible: boolean;
   onClose: () => void;
-<<<<<<< HEAD
-  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any }) => void;
-=======
-  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; moveInDate?: string }) => void;
->>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
+  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any; moveInDate?: string }) => void;
   listing: {
     title: string;
     rentAnnual: number;
@@ -91,19 +87,19 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const rentAmount = isShortlet
     ? (selectedTier ? selectedTier.price * rateQuantity : 0)
     : (listing?.rentAnnual || 0);
-  // Shortlets are charged on the tier price alone — the server excludes
+  // Shortlets are charged on the tier price alone, the server excludes
   // caution/agency for them, so including here would over-quote the total.
   const cautionFee = isShortlet ? 0 : (listing?.cautionFee || 0);
   const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
-  
+
   const subTotal = rentAmount + cautionFee + agencyFee;
   const platformFee = calculatePlatformFee(subTotal);
   const roommateMatchingFee = calculateRoommateMatchingFee(subTotal);
-  
+
   const totalWithoutRoommate = subTotal + platformFee;
-  
+
   const isShareable = listing?.shareable === true || listing?.needsRoommate === true || listing?.propertyType === 'shared_apartment';
-  
+
   const totalWithRoommate = (isShareable && includeRoommate)
     ? Math.round((subTotal + platformFee + roommateMatchingFee) / 2)
     : totalWithoutRoommate;
@@ -115,17 +111,11 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
       school: (user as any)?.university || (user as any)?.selectedSchool,
       location: (user as any)?.location
     };
-    
+
     if (isShortlet) {
-<<<<<<< HEAD
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, userDetails });
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, userDetails, moveInDate });
     } else {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, userDetails });
-=======
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, moveInDate });
-    } else {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, moveInDate });
->>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, userDetails, moveInDate });
     }
   };
 
@@ -154,12 +144,12 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
           >
             {/* Drag Handle (visual only) */}
             <div className="w-12 h-1.5 bg-borderLight rounded-full mx-auto my-3 sm:hidden" />
-            
+
             <div className="flex justify-between items-center px-6 py-4 border-b border-borderLight shrink-0">
               <h2 className="text-xl font-bold text-textPrimary">Book Appointment</h2>
               <button
-          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
-          aria-label="Close" onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
+                /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+                aria-label="Close" onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
                 <Cancel01Icon size={20} />
               </button>
             </div>
@@ -224,11 +214,10 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                             <button
                               key={tier.id}
                               onClick={() => setSelectedRateId(tier.id)}
-                              className={`flex items-center justify-between py-3 px-4 rounded-lg border text-left transition-colors ${
-                                selectedRateId === tier.id
+                              className={`flex items-center justify-between py-3 px-4 rounded-lg border text-left transition-colors ${selectedRateId === tier.id
                                   ? 'border-primary bg-primary/5'
                                   : 'border-borderLight bg-transparent hover:bg-surfaceLight'
-                              }`}
+                                }`}
                             >
                               <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-textPrimary">{tier.label}</span>
@@ -303,9 +292,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                     <span className="text-sm font-semibold text-textPrimary">₦{roommateMatchingFee.toLocaleString()}</span>
                   </div>
                 )}
-                
+
                 <div className="h-px bg-borderLight my-3" />
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-base font-semibold text-textPrimary">
                     Total to Pay {isShareable && includeRoommate ? '(Split 50%)' : ''}
@@ -323,9 +312,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-textPrimary">Share with roommate</span>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          className="sr-only peer" 
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
                           checked={includeRoommate}
                           onChange={(e) => setIncludeRoommate(e.target.checked)}
                         />
@@ -342,7 +331,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
               )}
 
               <div className="flex items-center gap-3 mb-2 w-full text-left">
-                <button 
+                <button
                   onClick={() => setAgreeTerms(!agreeTerms)}
                   className={`shrink-0 w-5 h-5 rounded flex items-center justify-center border transition-colors ${agreeTerms ? 'bg-primary border-primary' : 'bg-transparent border-borderLight'}`}
                 >
@@ -356,9 +345,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
             <AnimatePresence>
               {agreeTerms && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }} 
-                  animate={{ opacity: 1, height: 'auto' }} 
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="p-6 pb-safe border-t border-borderLight shrink-0 bg-background rounded-b-[24px]"
                 >

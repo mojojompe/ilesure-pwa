@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Cancel01Icon, 
+import {
+  Cancel01Icon,
   FavouriteIcon,
   Home01Icon,
   Search01Icon,
@@ -48,7 +48,7 @@ export function MatchCard({
   };
 
   return (
-    <motion.div 
+    <motion.div
       whileTap={{ scale: 0.98 }}
       onClick={onPress}
       className="bg-surface rounded-[24px] p-4 mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-borderLight cursor-pointer relative overflow-hidden"
@@ -73,7 +73,7 @@ export function MatchCard({
           </div>
         </div>
 
-        <div 
+        <div
           className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center bg-surfaceLight shrink-0 ml-2 ${getScoreColorClass(item.overallScore)}`}
         >
           <span className="text-base font-extrabold">{item.overallScore}%</span>
@@ -85,7 +85,7 @@ export function MatchCard({
         <div className="flex flex-row items-center gap-2 bg-surfaceLight rounded-xl px-3 py-2 mb-3">
           <Home01Icon size={16} className="text-primary shrink-0" />
           <p className="text-xs text-textSecondary truncate flex-1">
-            Wants to share: {item.listing.title} — ₦{item.listing.rentAnnual?.toLocaleString()}/yr
+            Wants to share: {item.listing.title}, ₦{item.listing.rentAnnual?.toLocaleString()}/yr
           </p>
         </div>
       ) : item.profile?.lookingFor && item.profile.lookingFor !== 'any' ? (
@@ -115,17 +115,16 @@ export function MatchCard({
 
       {/* Actions */}
       <div className="flex flex-row gap-4 mt-2">
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); onPass?.(); }}
           className="flex-1 h-12 flex items-center justify-center rounded-[16px] bg-surfaceLight border border-borderLight active:scale-95 transition-transform"
         >
           <Cancel01Icon size={22} className="text-textSecondary" />
         </button>
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); if (!item.isInterested) onInterest?.(); }}
-          className={`flex-[2] h-12 flex flex-row items-center justify-center gap-2 rounded-[16px] active:scale-95 transition-all ${
-            item.isInterested ? 'bg-accent' : 'bg-primary'
-          }`}
+          className={`flex-[2] h-12 flex flex-row items-center justify-center gap-2 rounded-[16px] active:scale-95 transition-all ${item.isInterested ? 'bg-accent' : 'bg-primary'
+            }`}
         >
           {item.isInterested ? (
             <Tick02Icon size={20} className="text-white" />

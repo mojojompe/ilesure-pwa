@@ -5,7 +5,7 @@ import { apiClient } from './client';
  *
  * Seeded landmarks come from our own collection (curated, with their own search
  * radius, and free); Google autocomplete only fills the gaps. Both are proxied
- * through the backend, which is authenticated and rate-limited — debounce input
+ * through the backend, which is authenticated and rate-limited, debounce input
  * rather than calling per keystroke.
  */
 

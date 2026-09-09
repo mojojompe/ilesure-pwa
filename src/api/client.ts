@@ -11,7 +11,7 @@ class ApiClient {
       timeout: 30000,
       // SECURITY-FIX: send credentials so the backend-set httpOnly refresh-token cookie
       // is included on requests (notably /auth/refresh). The refresh token is no longer
-      // read from JS-accessible storage — the cookie is the source of truth.
+      // read from JS-accessible storage, the cookie is the source of truth.
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ class ApiClient {
 
           // A 401 on a request made with no token means "not signed in yet",
           // not "session expired". There is nothing to refresh and nowhere to
-          // send them — they are already on a public screen. Attempting the
+          // send them, they are already on a public screen. Attempting the
           // redirect here is what made the sign-in page reload in a loop:
           // /calls/ice fired on mount, 401'd, and the handler navigated to
           // /login while already on /login, which is a full page reload.
@@ -98,7 +98,7 @@ class ApiClient {
    * Sends an expired session back to sign-in without ever reloading the page.
    *
    * `window.location.href = '/login'` is a full page load, and when the user is
-   * already on an auth screen it is a reload — which, paired with a request
+   * already on an auth screen it is a reload, which, paired with a request
    * that 401s on mount, loops forever. Public auth routes are left alone.
    */
   private redirectToLogin(): void {

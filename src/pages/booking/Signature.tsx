@@ -50,7 +50,7 @@ export function Signature() {
         if (cancelled) return;
         setLoadError(
           err?.response?.data?.error?.message ||
-            'We could not load your tenancy agreement. Please try again.'
+          'We could not load your tenancy agreement. Please try again.'
         );
       } finally {
         if (!cancelled) setLoading(false);
@@ -88,7 +88,7 @@ export function Signature() {
 
     // SECURITY-FIX (P-M4): the signature is now actually sent to the backend and we only
     // advance to payment on a successful server response. Previously handleSign never
-    // read the canvas or called the contract service — a setTimeout simply navigated on,
+    // read the canvas or called the contract service, a setTimeout simply navigated on,
     // so no legal artifact was ever recorded. The backend must bind this signature to the
     // authenticated tenant + bookingId and store the executed agreement.
     setSigning(true);
@@ -112,7 +112,7 @@ export function Signature() {
     } catch (err: any) {
       customAlert(
         err?.response?.data?.error?.message ||
-          'Could not record your signature. Please try again.',
+        'Could not record your signature. Please try again.',
         'Error',
         'error'
       );
@@ -135,7 +135,7 @@ export function Signature() {
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative overflow-hidden">
         <MobileHeader title={contractTitle} onBack={() => navigate(-1)} />
-        
+
         {/* Source banner - tells the tenant whose terms these are */}
         <div className="px-4 py-3 bg-surfaceLight border-b border-border">
           <p className="text-[13px] text-textSecondary">
@@ -205,18 +205,18 @@ export function Signature() {
         {/* Signature Section */}
         <div className="bg-surface border-t border-border p-4 z-30">
           <h3 className="text-[15px] font-bold text-textPrimary mb-2">Your Signature</h3>
-          
-          <div 
+
+          <div
             className="h-[180px] bg-background rounded-xl mb-4 overflow-hidden border border-[#E2E8F0]"
             onMouseEnter={() => setScrollEnabled(false)}
             onMouseLeave={() => setScrollEnabled(true)}
             onTouchStart={() => setScrollEnabled(false)}
             onTouchEnd={() => setScrollEnabled(true)}
           >
-            <SignatureCanvas 
-              ref={sigCanvas} 
+            <SignatureCanvas
+              ref={sigCanvas}
               penColor="#000000"
-              canvasProps={{ className: 'w-full h-full cursor-crosshair' }} 
+              canvasProps={{ className: 'w-full h-full cursor-crosshair' }}
             />
           </div>
 

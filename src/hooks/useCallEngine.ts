@@ -13,7 +13,7 @@ import {
  * One-to-one voice and video calling.
  *
  * Three properties matter, and each of them is a bug that is invisible when you get it
- * wrong — the call simply sits there showing nothing, with no error anywhere:
+ * wrong, the call simply sits there showing nothing, with no error anywhere:
  *
  * 1. **A connection carries the tracks it had when it was created.** `getUserMedia` is
  *    asynchronous, so signalling that arrives before the camera resolves has to be queued
@@ -53,7 +53,7 @@ export interface CallState {
   micEnabled: boolean;
   cameraEnabled: boolean;
   mediaError: MediaError;
-  /** False when the server has no TURN configured — relay-dependent peers will fail. */
+  /** False when the server has no TURN configured, relay-dependent peers will fail. */
   relayAvailable: boolean;
   /** Human-readable reason the last call ended, shown briefly before the UI closes. */
   endedReason: string | null;
@@ -138,7 +138,7 @@ export function useCallEngine(enabled: boolean = true) {
    * Fetches the ICE configuration the first time a call actually needs it.
    *
    * This used to run on mount. Two problems with that: it fired an
-   * authenticated request during app start — so a stale token in storage
+   * authenticated request during app start, so a stale token in storage
    * produced a 401 on /calls/ice before the user had done anything, and it was
    * that background request which discovered the dead session. And TURN
    * credentials are time-limited (12-24h), so a long-lived session could reach
@@ -267,7 +267,7 @@ export function useCallEngine(enabled: boolean = true) {
 
       const stream = localStreamRef.current;
       if (stream) {
-        // Tracks must be attached before negotiation — see note 1 at the top of this file.
+        // Tracks must be attached before negotiation, see note 1 at the top of this file.
         stream.getTracks().forEach((track) => connection.addTrack(track, stream));
       }
 
@@ -373,8 +373,8 @@ export function useCallEngine(enabled: boolean = true) {
       });
       isCallerRef.current = true;
 
-      // Acquire media before dialling. The alternative — ringing first and asking for the
-      // camera afterwards — means the permission prompt lands while the other side is
+      // Acquire media before dialling. The alternative, ringing first and asking for the
+      // camera afterwards, means the permission prompt lands while the other side is
       // already picking up.
       await acquireMedia(callType);
 
@@ -403,7 +403,7 @@ export function useCallEngine(enabled: boolean = true) {
     if (!callId) return;
 
     setState((s) => ({ ...s, phase: 'connecting' }));
-    // Only now — asking for the camera while the phone is still ringing would prompt a
+    // Only now, asking for the camera while the phone is still ringing would prompt a
     // user who has not yet decided to answer.
     await acquireMedia(state.callType);
     callService.accept(callId);
@@ -484,7 +484,7 @@ export function useCallEngine(enabled: boolean = true) {
     const onAccepted = async (payload: { callId: string }) => {
       if (payload.callId !== callIdRef.current) return;
       setState((s) => (s.phase === 'outgoing' ? { ...s, phase: 'connecting' } : s));
-      // Only the caller offers — see note 3 at the top of this file.
+      // Only the caller offers, see note 3 at the top of this file.
       if (isCallerRef.current) await sendOffer(payload.callId);
     };
 

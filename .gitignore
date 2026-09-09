@@ -28,6 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# vite-plugin-pwa dev-mode service worker output — regenerated on every `npm run dev`,
+# vite-plugin-pwa dev-mode service worker output, regenerated on every `npm run dev`,
 # so it produced a spurious diff on every branch. Build output does not belong in git.
 dev-dist/

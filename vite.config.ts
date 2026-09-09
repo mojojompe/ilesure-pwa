@@ -8,7 +8,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ command }) => ({
   // Pinned so the backend can name a real origin in CORS_ORIGIN and
   // OAUTH_ALLOWED_ORIGINS. Vite otherwise takes 5173 and counts upward, so which app
-  // got which port depended on the order they were started in — which meant Google
+  // got which port depended on the order they were started in, which meant Google
   // sign-in worked or failed by luck. strictPort fails loudly instead of drifting.
   server: { port: 5273, strictPort: true },
 
@@ -20,7 +20,7 @@ export default defineConfig(({ command }) => ({
         // mobile connection that is the single largest first-load cost in the product.
         // PERF-FIX (QA-PERF-001): only LEAF packages are split out. Splitting react
         // itself created a `vendor -> vendor-react -> vendor` cycle, because other
-        // vendor code imports react — Rollup warns and chunk load order gets fragile.
+        // vendor code imports react, Rollup warns and chunk load order gets fragile.
         // Icon packs must be matched before anything containing "react", since they
         // live at @hugeicons/react and react-icons.
         manualChunks(id: string) {
@@ -43,7 +43,7 @@ export default defineConfig(({ command }) => ({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'iléSure — Your Sure Home',
+        name: 'iléSure, Your Sure Home',
         short_name: 'iléSure',
         description: 'Find your sure home anywhere. Verified student housing and roommate matching.',
         theme_color: '#FAFAF9',

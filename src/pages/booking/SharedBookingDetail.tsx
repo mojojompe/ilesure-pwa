@@ -4,9 +4,9 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
-import { 
-  Home01Icon, 
-  Time02Icon, 
+import {
+  Home01Icon,
+  Time02Icon,
   CheckmarkBadge01Icon,
   CancelCircleIcon,
   Alert01Icon,
@@ -24,7 +24,7 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; 
   confirmed: { color: '#2E7D32', bg: '#2E7D3215', label: 'Confirmed', icon: CheckmarkBadge01Icon },
   expired: { color: '#C62828', bg: '#C6282815', label: 'Expired', icon: CancelCircleIcon },
   refunded: { color: '#757575', bg: '#75757515', label: 'Refunded', icon: CancelCircleIcon },
-  // BUGFIX (QA-PAY-022): a cancellation whose refund failed is 'cancelled', not 'refunded' —
+  // BUGFIX (QA-PAY-022): a cancellation whose refund failed is 'cancelled', not 'refunded',
   // telling a renter their money is back when it is not is the worst thing this screen can do.
   cancelled: { color: '#C62828', bg: '#C6282815', label: 'Cancelled', icon: CancelCircleIcon },
 };
@@ -149,11 +149,11 @@ export function SharedBookingDetail() {
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative overflow-hidden">
         <MobileHeader title="Shared Booking" onBack={() => navigate(-1)} />
-        
+
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-[100px] space-y-4">
-          
+
           {/* Status Banner */}
-          <div 
+          <div
             className="flex items-center gap-3 p-4 rounded-2xl"
             style={{ backgroundColor: statusConfig.bg }}
           >
@@ -183,7 +183,7 @@ export function SharedBookingDetail() {
                 <div className="flex-1 overflow-hidden">
                   <h4 className="text-base font-bold text-textPrimary truncate">{booking.listingId.title}</h4>
                   <p className="text-sm text-textSecondary mt-0.5 truncate">
-                    {booking.listingId.areaCluster} — ₦{booking.listingId.rentAnnual?.toLocaleString()}/yr
+                    {booking.listingId.areaCluster}, ₦{booking.listingId.rentAnnual?.toLocaleString()}/yr
                   </p>
                 </div>
               </div>
@@ -199,9 +199,9 @@ export function SharedBookingDetail() {
               <span className="text-base font-medium text-textSecondary">₦{booking.totalRequired?.toLocaleString()}</span>
             </div>
             <div className="h-2.5 rounded-full bg-surfaceLight overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-500" 
-                style={{ width: `${progressPct}%`, backgroundColor: statusConfig.color }} 
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${progressPct}%`, backgroundColor: statusConfig.color }}
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export function SharedBookingDetail() {
           {/* Participants */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PARTICIPANTS</h3>
-            
+
             {/* Me */}
             <div className="flex items-center gap-3 py-3 border-b border-borderLight">
               <div className={clsx(
@@ -272,8 +272,8 @@ export function SharedBookingDetail() {
           {/* Actions */}
           <div className="flex flex-col gap-3 mt-2">
             {isPayable && (
-              <Button 
-                fullWidth 
+              <Button
+                fullWidth
                 onClick={handlePay}
                 disabled={paying}
                 className="shadow-[0_4px_12px_rgba(107,79,58,0.25)]"
@@ -281,7 +281,7 @@ export function SharedBookingDetail() {
                 {paying ? 'Processing...' : `Pay My Share (₦${myParticipant?.amountDue?.toLocaleString()})`}
               </Button>
             )}
-            
+
             {myPaid && !booking.status.includes('confirmed') && (
               <div className="flex items-center gap-3 bg-primary/10 p-4 rounded-2xl border border-primary/20">
                 <Time02Icon size={20} className="text-primary" />
@@ -292,14 +292,14 @@ export function SharedBookingDetail() {
                 </span>
               </div>
             )}
-            
+
             {canCancel && (
               <Button fullWidth variant="secondary" onClick={handleCancel}>
                 Cancel Booking
               </Button>
             )}
           </div>
-          
+
         </div>
       </div>
     </AppShell>

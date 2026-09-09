@@ -39,7 +39,7 @@ const LEGACY_KEY: Record<ShortletUnit, string> = {
 };
 
 /**
- * Bookable shortlet tiers for a listing, newest shape first. Zero-priced entries are dropped —
+ * Bookable shortlet tiers for a listing, newest shape first. Zero-priced entries are dropped,
  * they mean "this unit is not offered", not "this stay is free".
  */
 export function getListingShortletTiers(listing: any): ShortletTier[] {

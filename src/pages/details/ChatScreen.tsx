@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
-import { 
-  ArrowRight01Icon, 
-  CallIcon, 
-  Home01Icon, 
-  Attachment01Icon, 
-  Image01Icon, 
+import {
+  ArrowRight01Icon,
+  CallIcon,
+  Home01Icon,
+  Attachment01Icon,
+  Image01Icon,
   File01Icon,
   Cancel01Icon,
   Video01Icon,
@@ -38,23 +38,23 @@ export function ChatScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthStore();
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
-  
+
   const [chatInfo, setChatInfo] = useState<ChatInfo>({
     name: 'Loading...',
     isOnline: false,
     avatar: undefined
   });
-  
+
   const [partnerTyping, setPartnerTyping] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const call = useCall();
@@ -107,7 +107,7 @@ export function ChatScreen() {
 
   const placeCall = async (callType: 'audio' | 'video') => {
     // The buttons used to be disabled outright, so a tap produced no response at
-    // all and no explanation — the title tooltip never shows on a phone.
+    // all and no explanation, the title tooltip never shows on a phone.
     if (!canPlaceCall || !id || !callAvailability?.peerId) {
       customAlert(callBlockedReason(), 'Cannot place call', 'info');
       return;
@@ -139,7 +139,7 @@ export function ChatScreen() {
         if (!id) return;
         setLoading(true);
         const response = await chatService.getMessages(id);
-        
+
         // Fetch conversation info
         try {
           const convRes = await chatService.getConversations();
@@ -179,7 +179,7 @@ export function ChatScreen() {
 
   const handleSend = async () => {
     if (!text.trim() && !replyingTo) return;
-    
+
     setIsSending(true);
     const tempMsg: any = {
       _id: Date.now().toString(),
@@ -189,12 +189,12 @@ export function ChatScreen() {
       replyTo: replyingTo?._id,
       replyPreview: replyingTo?.text || replyingTo?.fileName || (replyingTo?.type === 'image' ? 'Image' : undefined)
     };
-    
+
     setMessages(prev => [...prev, tempMsg]);
     setText('');
     setReplyingTo(null);
     setTimeout(scrollToBottom, 100);
-    
+
     try {
       await chatService.sendMessage(id || '', tempMsg.text);
     } catch (error) {
@@ -212,18 +212,18 @@ export function ChatScreen() {
   return (
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative overflow-hidden">
-        
+
         {/* Custom Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-surface border-b border-borderLight z-20">
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate(-1)} 
+            <button
+              onClick={() => navigate(-1)}
               className="w-10 h-10 flex items-center justify-center text-textPrimary active:bg-surfaceLight rounded-full transition-colors -ml-2"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
-            
-            <div 
+
+            <div
               className="flex items-center gap-3 cursor-pointer active:opacity-70 transition-opacity"
               onClick={() => setShowProfileModal(true)}
             >
@@ -241,7 +241,7 @@ export function ChatScreen() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-1">
             <button
               onClick={() => placeCall('audio')}
@@ -275,7 +275,7 @@ export function ChatScreen() {
             <span className="text-sm text-primary font-medium truncate">{chatInfo.propertyTitle}</span>
           </div>
         )}
-        
+
         {/* Messages List */}
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
           {loading ? (
@@ -288,7 +288,7 @@ export function ChatScreen() {
               const isDeleted = (msg as any).isDeleted;
 
               // A call leaves a centred record in the transcript rather than a chat
-              // bubble — a missed call is otherwise invisible to the person who missed it.
+              // bubble, a missed call is otherwise invisible to the person who missed it.
               if (msg.type === 'call') {
                 const missed = msg.call?.status === 'missed' || msg.call?.status === 'failed';
                 return (
@@ -307,20 +307,20 @@ export function ChatScreen() {
               }
 
               return (
-                <div 
-                  key={msg._id} 
+                <div
+                  key={msg._id}
                   className={clsx(
                     "flex flex-col max-w-[80%]",
                     isMe ? "self-end items-end" : "self-start items-start",
                     isDeleted && "opacity-70"
                   )}
                 >
-                  <div 
+                  <div
                     onClick={() => handleMessageLongPress(msg)}
                     className={clsx(
                       "px-3.5 py-2.5 rounded-[18px] text-sm leading-relaxed relative flex flex-col cursor-pointer active:scale-[0.98] transition-transform",
-                      isMe 
-                        ? "bg-primary text-white rounded-br-sm shadow-[0_2px_5px_rgba(107,79,58,0.2)]" 
+                      isMe
+                        ? "bg-primary text-white rounded-br-sm shadow-[0_2px_5px_rgba(107,79,58,0.2)]"
                         : "bg-surface border border-borderLight text-textPrimary rounded-bl-sm shadow-[0_2px_5px_rgba(0,0,0,0.02)]"
                     )}
                   >
@@ -347,8 +347,8 @@ export function ChatScreen() {
                     {['file', 'video', 'audio'].includes((msg as any).type) && (msg as any).fileUrl && (
                       <div className={clsx("flex items-center gap-2 mb-2 p-2 rounded-xl", isMe ? "bg-black/10" : "bg-primary/5")}>
                         {((msg as any).type === 'video') ? <Video01Icon size={24} className={isMe ? "text-white" : "text-primary"} /> :
-                         ((msg as any).type === 'audio') ? <MusicNote01Icon size={24} className={isMe ? "text-white" : "text-primary"} /> :
-                         <File01Icon size={24} className={isMe ? "text-white" : "text-primary"} />}
+                          ((msg as any).type === 'audio') ? <MusicNote01Icon size={24} className={isMe ? "text-white" : "text-primary"} /> :
+                            <File01Icon size={24} className={isMe ? "text-white" : "text-primary"} />}
                         <span className={clsx("text-sm font-semibold truncate max-w-[140px]", isMe ? "text-white" : "text-primary")}>
                           {(msg as any).fileName || 'Attachment'}
                         </span>
@@ -358,7 +358,7 @@ export function ChatScreen() {
                     {msg.text && (
                       <span>{msg.text}</span>
                     )}
-                    
+
                     <div className="flex items-center justify-end gap-1 mt-1">
                       <span className={clsx("text-[10px]", isMe ? "text-white/70" : "text-textTertiary")}>
                         {format(new Date(msg.createdAt), 'h:mm a')}
@@ -369,16 +369,16 @@ export function ChatScreen() {
               );
             })
           )}
-          
+
           {partnerTyping && (
             <div className="self-start px-4 py-2 rounded-full bg-surfaceLight border border-borderLight flex items-center gap-1 mt-2">
               <span className="text-xs text-textSecondary italic">{chatInfo.name} is typing...</span>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} className="h-2" />
         </div>
-        
+
         {/* Input Area */}
         <div className="bg-surface border-t border-borderLight z-20 pb-safe-bottom">
           {replyingTo && (
@@ -394,18 +394,18 @@ export function ChatScreen() {
               </button>
             </div>
           )}
-          
+
           <div className="p-3 flex items-center gap-2">
-            <button 
+            <button
               onClick={() => setShowAttachmentMenu(true)}
               className="w-10 h-10 flex items-center justify-center text-textTertiary active:bg-surfaceLight rounded-full transition-colors shrink-0"
             >
               <Attachment01Icon size={22} />
             </button>
-            
+
             <div className="flex-1 bg-surfaceLight rounded-full border border-borderLight px-4 py-2.5 flex items-center">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -413,8 +413,8 @@ export function ChatScreen() {
                 className="flex-1 bg-transparent outline-none text-sm text-textPrimary placeholder:text-textSecondary"
               />
             </div>
-            
-            <button 
+
+            <button
               onClick={handleSend}
               disabled={isSending || (!text.trim() && !replyingTo)}
               className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0 disabled:opacity-50 transition-all active:scale-95 shadow-[0_2px_8px_rgba(107,79,58,0.25)]"
@@ -432,14 +432,14 @@ export function ChatScreen() {
         <AnimatePresence>
           {showAttachmentMenu && (
             <>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/50 z-40"
                 onClick={() => setShowAttachmentMenu(false)}
               />
-              <motion.div 
+              <motion.div
                 initial={{ y: 200, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 200, opacity: 0 }}
@@ -457,7 +457,7 @@ export function ChatScreen() {
                     <span className="text-base font-medium text-textPrimary">Document or Audio</span>
                   </button>
                 </div>
-                <button 
+                <button
                   className="w-full mt-4 p-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:opacity-70 transition-opacity"
                   onClick={() => setShowAttachmentMenu(false)}
                 >
@@ -472,14 +472,14 @@ export function ChatScreen() {
         <AnimatePresence>
           {showProfileModal && (
             <>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/50 z-40"
                 onClick={() => setShowProfileModal(false)}
               />
-              <motion.div 
+              <motion.div
                 initial={{ y: '100%' }}
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
@@ -487,22 +487,22 @@ export function ChatScreen() {
                 className="absolute bottom-0 left-0 right-0 bg-surface rounded-t-[32px] p-8 z-50 flex flex-col items-center pb-safe-bottom"
               >
                 <div className="w-12 h-1.5 bg-borderLight rounded-full mb-6" />
-                <button 
+                <button
                   className="absolute top-6 right-6 p-2 text-textSecondary"
                   onClick={() => setShowProfileModal(false)}
                 >
                   <Cancel01Icon size={24} />
                 </button>
-                
+
                 <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center mb-4">
                   <span className="text-3xl font-bold text-white">{chatInfo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
                 </div>
-                
+
                 <h2 className="text-2xl font-black text-textPrimary mb-1">{chatInfo.name}</h2>
                 <p className="text-sm text-textSecondary mb-6">
                   {chatInfo.type === 'agent' ? 'Landlord / Agent' : 'Student / Individual'}
                 </p>
-                
+
                 {chatInfo.phone ? (
                   <div className="w-full flex items-center justify-center gap-2 mb-6 p-4 bg-surfaceLight rounded-xl border border-borderLight">
                     <CallIcon size={20} className="text-textSecondary" />
@@ -511,9 +511,9 @@ export function ChatScreen() {
                 ) : (
                   <p className="text-sm text-textTertiary italic mb-6">Phone number not available</p>
                 )}
-                
+
                 {chatInfo.phone && (
-                  <button 
+                  <button
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-primary text-white shadow-[0_4px_12px_rgba(107,79,58,0.25)] active:scale-[0.98] transition-transform"
                     onClick={() => window.open(`tel:${chatInfo.phone}`)}
                   >

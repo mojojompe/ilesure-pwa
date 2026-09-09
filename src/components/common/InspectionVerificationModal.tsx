@@ -12,7 +12,7 @@ interface InspectionVerificationModalProps {
 
 /**
  * After the viewing, the tenant confirms here whether the apartment matched the listing.
- * That answer is the gate before payment, so the choice is deliberate — nothing is
+ * That answer is the gate before payment, so the choice is deliberate, nothing is
  * preselected, and the confirm button stays disabled until one is picked.
  */
 export const InspectionVerificationModal: React.FC<InspectionVerificationModalProps> = ({
@@ -75,11 +75,10 @@ export const InspectionVerificationModal: React.FC<InspectionVerificationModalPr
                   type="button"
                   onClick={() => setIsVerified(true)}
                   aria-pressed={isVerified === true}
-                  className={`flex items-center gap-3 w-full p-4 rounded-xl border text-left transition-colors ${
-                    isVerified === true
+                  className={`flex items-center gap-3 w-full p-4 rounded-xl border text-left transition-colors ${isVerified === true
                       ? 'border-primary bg-surface'
                       : 'border-border bg-background hover:bg-surfaceLight'
-                  }`}
+                    }`}
                 >
                   <CheckmarkCircle02Icon
                     size={22}
@@ -99,11 +98,10 @@ export const InspectionVerificationModal: React.FC<InspectionVerificationModalPr
                   type="button"
                   onClick={() => setIsVerified(false)}
                   aria-pressed={isVerified === false}
-                  className={`flex items-center gap-3 w-full p-4 rounded-xl border text-left transition-colors ${
-                    isVerified === false
+                  className={`flex items-center gap-3 w-full p-4 rounded-xl border text-left transition-colors ${isVerified === false
                       ? 'border-error bg-surface'
                       : 'border-border bg-background hover:bg-surfaceLight'
-                  }`}
+                    }`}
                 >
                   <AlertCircleIcon
                     size={22}

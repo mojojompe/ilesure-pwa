@@ -2,7 +2,7 @@ import { apiClient } from './client';
 
 export interface InitializePaymentRequest {
   // SECURITY-FIX (P-M1): `amount` removed from the client request. The charge amount is
-  // derived and enforced by the backend from the tier/listing/booking — never trusted
+  // derived and enforced by the backend from the tier/listing/booking, never trusted
   // from the client. The backend must reject any client-supplied amount.
   email: string;
   tier?: string;

@@ -14,7 +14,7 @@ import { LocationAnchorPicker, LocationAnchor } from './LocationAnchorPicker';
 
 /**
  * Every enumerated field holds a canonical value ('2_bed'), never the display
- * label — the label lives only on the pill. This modal originally stored labels
+ * label, the label lives only on the pill. This modal originally stored labels
  * ('2-Bedroom') and compared them against listings holding machine values, so
  * the property-type filter never matched anything.
  */
@@ -29,7 +29,7 @@ export interface FilterState {
   furnished: boolean;
   powerStable: boolean;
   /**
-   * Where to search from — a neighbourhood, estate, campus or address. Replaces
+   * Where to search from, a neighbourhood, estate, campus or address. Replaces
    * the student-only "near my school" switch, which left renters who are not
    * students with no location filter at all.
    */
@@ -87,12 +87,11 @@ export const DEFAULT_FILTERS: FilterState = {
 };
 
 const pill = (isActive: boolean, accent: 'primary' | 'accent' = 'primary') =>
-  `px-4 py-2 rounded-full text-sm font-semibold transition-colors border ${
-    isActive
-      ? accent === 'accent'
-        ? 'bg-accent text-white border-accent'
-        : 'bg-primary text-white border-primary'
-      : 'bg-surface text-textSecondary border-borderLight'
+  `px-4 py-2 rounded-full text-sm font-semibold transition-colors border ${isActive
+    ? accent === 'accent'
+      ? 'bg-accent text-white border-accent'
+      : 'bg-primary text-white border-primary'
+    : 'bg-surface text-textSecondary border-borderLight'
   }`;
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean) => void }> = ({
@@ -175,7 +174,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             </div>
 
             <div className="p-6 overflow-y-auto flex-1">
-              {/* Search Near — available to every renter, not just students. */}
+              {/* Search Near, available to every renter, not just students. */}
               <div className="mb-6">
                 <h3 className="text-base font-bold text-textPrimary mb-3">Search Near</h3>
                 <LocationAnchorPicker
@@ -282,7 +281,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 )}
               </div>
 
-              {/* The lister's own "distance from school" bucket — only meaningful
+              {/* The lister's own "distance from school" bucket, only meaningful
                   to a student, so it is the one thing here that stays gated. */}
               {isStudent && (
                 <div className="mb-6">

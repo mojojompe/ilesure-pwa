@@ -11,7 +11,7 @@ export interface Tier {
   billingCycle: string;
   /** Price for one month, in naira. */
   priceMonthly?: number;
-  /** Price for one year, in naira — set per tier, not derived from the monthly price. */
+  /** Price for one year, in naira, set per tier, not derived from the monthly price. */
   priceYearly?: number;
   features: {
     maxListings: number;

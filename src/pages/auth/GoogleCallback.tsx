@@ -33,7 +33,7 @@ export function GoogleCallback() {
     const code = params.get('code');
     const serverError = params.get('error');
 
-    // Strip the credentials from the URL before anything else — before any await, so they are
+    // Strip the credentials from the URL before anything else, before any await, so they are
     // never left in the address bar or pushed into history.
     window.history.replaceState({}, document.title, window.location.pathname);
 

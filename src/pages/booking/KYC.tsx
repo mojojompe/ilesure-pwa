@@ -4,10 +4,10 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
-import { 
-  UserCircleIcon, 
-  CheckmarkBadge01Icon, 
-  CreditCardIcon, 
+import {
+  UserCircleIcon,
+  CheckmarkBadge01Icon,
+  CreditCardIcon,
   RefreshIcon,
   CheckmarkCircle02Icon,
   Certificate01Icon
@@ -93,7 +93,7 @@ export function KYC() {
       // BUGFIX (QA-PWAJ2-009): the widget is opened with window.open, and the modal below
       // then told the renter verification had "started" whether or not anything opened. A
       // popup is blocked by default in plenty of mobile browsers and in an installed PWA, so
-      // the renter saw a confident message over a window that never appeared — and KYC is
+      // the renter saw a confident message over a window that never appeared, and KYC is
       // the gate that stands between them and every booking.
       //
       // window.open returns null when the popup is blocked. Say so, and give them the link.
@@ -112,7 +112,7 @@ export function KYC() {
         setBlockedWidgetUrl(widgetUrl);
         customAlert(
           'Your browser blocked the verification window. Use the "Open verification" link below, ' +
-            'then tap "Sync with Dojah" when you are done.',
+          'then tap "Sync with Dojah" when you are done.',
           'Popup blocked',
           'error'
         );
@@ -135,7 +135,7 @@ export function KYC() {
   /**
    * `silent` is the automatic pass that runs when the user comes back from the Dojah tab
    * (QA-API-280). It reports success the same way a tapped sync does, but says nothing when
-   * there is simply nothing to sync yet — an unprompted "Not verified" popup on every tab
+   * there is simply nothing to sync yet, an unprompted "Not verified" popup on every tab
    * switch would be noise, and the screen already shows the real state.
    */
   const handleSync = async (opts?: { silent?: boolean }) => {
@@ -152,7 +152,7 @@ export function KYC() {
       // BUGFIX (QA-PWAJ2-010): this showed a green tick and "Sync complete! / Success"
       // whenever the REQUEST did not throw. The endpoint answers 200 with
       // { success: true, results: { nin: { checked: false, reason: "Dojah API error: 404" } } }
-      // when nothing was verified — which is the normal case for a renter who has not
+      // when nothing was verified, which is the normal case for a renter who has not
       // finished the widget. So the screen told them verification had succeeded while the
       // server had verified nothing, and the gate then refused their booking with no
       // explanation they could connect to this.
@@ -177,7 +177,7 @@ export function KYC() {
       if (silent) return;
 
       // BUGFIX (QA-API-281): this used to splice the server's `reason` straight into the
-      // sentence, and for the commonest case — modal opened, closed before finishing — that
+      // sentence, and for the commonest case, modal opened, closed before finishing, that
       // reason was the literal "Dojah API error: 404". The renter was shown a provider status
       // code, run together with the next sentence for want of a separator. The server no
       // longer sends codes, and the two sentences are now joined properly rather than by
@@ -199,7 +199,7 @@ export function KYC() {
   /**
    * BUGFIX (QA-API-280): the widget opens in a separate tab and reports back to Dojah, not to
    * us. Until now the only thing that pulled the result across was a secondary "Sync with
-   * Dojah" button — so a renter who verified successfully and simply switched back to the app
+   * Dojah" button, so a renter who verified successfully and simply switched back to the app
    * stayed unverified, and every booking was refused with nothing on screen explaining why.
    *
    * Returning to the tab is the signal that they are done, so that is what triggers the sync.
@@ -233,16 +233,16 @@ export function KYC() {
   const requirements = isKYCRequired
     ? 'Verify your NIN and BVN to book listings'
     : 'Verify your NIN to book listings';
-  
+
   const allVerified = ninVerified && (!isKYCRequired || bvnVerified);
 
   return (
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative overflow-hidden">
         <MobileHeader title="Identity Verification" onBack={() => navigate(-1)} />
-        
+
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 pb-[100px]">
-          
+
           {/* Info Card */}
           <div className="bg-surface rounded-2xl p-6 border border-border flex flex-col items-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-center">
             <div className="mb-3">
@@ -256,7 +256,7 @@ export function KYC() {
             <div className="bg-primary/10 px-4 py-1.5 rounded-md mb-3">
               <span className="text-sm font-semibold text-primary">{roleLabel}</span>
             </div>
-            
+
             <div className={clsx(
               "px-5 py-1.5 rounded-md",
               allVerified ? "bg-[#E8F5E9]" : verifying ? "bg-[#FFF3E0]" : "bg-surfaceLight"
@@ -362,7 +362,7 @@ export function KYC() {
 
               {/* Sync Button */}
               <div className="flex flex-col items-center mt-2">
-                <button 
+                <button
                   onClick={() => {
                     if (manualRefId.trim()) handleSync();
                     else handleSync();
@@ -381,7 +381,7 @@ export function KYC() {
                 </button>
 
                 {/* BUGFIX (QA-PWAJ2-009): if the browser blocked the verification popup, the
-                    renter previously had no route forward at all — the modal claimed
+                    renter previously had no route forward at all, the modal claimed
                     verification had started and nothing had opened. A plain link works where
                     window.open does not, because it is a direct user gesture on an anchor. */}
                 {blockedWidgetUrl && (
@@ -395,8 +395,8 @@ export function KYC() {
                     Open verification
                   </a>
                 )}
-                
-                <button 
+
+                <button
                   onClick={() => setShowRefInput(!showRefInput)}
                   className="mt-2"
                 >
@@ -406,7 +406,7 @@ export function KYC() {
                 </button>
 
                 {showRefInput && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     className="flex items-center w-full mt-4 gap-2 px-2"
@@ -418,7 +418,7 @@ export function KYC() {
                       onChange={(e) => setManualRefId(e.target.value)}
                       className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                     />
-                    <button 
+                    <button
                       onClick={() => handleSync()}
                       className="bg-primary text-white font-bold text-sm px-4 py-2 rounded-lg"
                     >
@@ -430,7 +430,7 @@ export function KYC() {
 
               {/* All Done */}
               {allVerified && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-[#E8F5E9] border border-[#C8E6C9] rounded-2xl p-6 mt-4 flex flex-col items-center shadow-sm text-center"
@@ -442,7 +442,7 @@ export function KYC() {
               )}
             </>
           )}
-          
+
         </div>
       </div>
     </AppShell>

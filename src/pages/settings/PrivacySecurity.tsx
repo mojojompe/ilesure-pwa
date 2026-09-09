@@ -8,19 +8,19 @@ import { clsx } from 'clsx';
  * BUGFIX (flow audit): every control on this screen was decorative.
  *
  * The five toggles called `togglePrivacy`/`toggleSecurity`, which set local React state and
- * nothing else — no request, no persistence, so a setting a user changed reverted the moment
+ * nothing else, no request, no persistence, so a setting a user changed reverted the moment
  * they navigated away. The three chevron rows ("Profile Visibility", "Download My Data",
  * "Delete Account") had no handler at all. There is no backend for any of it: the API has no
  * endpoint for profile visibility, location, analytics, biometrics or 2FA, and none for data
  * export or account deletion.
  *
- * A switch that flips and forgets is worse than an absent one — it tells the user their data
+ * A switch that flips and forgets is worse than an absent one, it tells the user their data
  * is handled a way it is not. "Delete Account" is the sharpest case: presenting a data right
  * the product does not yet honour.
  *
- * So the screen now states plainly what is not built yet. Implementing these for real —
+ * So the screen now states plainly what is not built yet. Implementing these for real,
  * particularly deletion, which needs decisions about what must be retained for bookings,
- * payments and signed contracts — is separate work, not something to smuggle into a UI fix.
+ * payments and signed contracts, is separate work, not something to smuggle into a UI fix.
  */
 interface SettingRow {
   id: string;

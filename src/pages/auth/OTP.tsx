@@ -97,7 +97,7 @@ export function OTP() {
       const response = await authService.verifyOTP(code, email);
 
       if (response.accessToken) {
-        // Store the verified user as well as the tokens — without it the app had a session
+        // Store the verified user as well as the tokens, without it the app had a session
         // but no user object, and the route guard could not pick a shell.
         if (response.user) setUser(response.user);
         setTokens(response.accessToken, response.refreshToken || null);
@@ -152,9 +152,9 @@ export function OTP() {
 
         <div className="flex-none px-6 pt-12 pb-8 z-10">
           <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center mb-8">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
-          
+
           <h1 className="text-[32px] font-black text-white tracking-tight mb-2">Verify Code</h1>
           <p className="text-white/80 text-base leading-relaxed font-medium max-w-[280px]">
             {email ? (<>We've sent a secure PIN to <span className="font-bold text-white">{email}</span>.</>) : (
@@ -216,7 +216,7 @@ export function OTP() {
             >
               {loading ? 'Verifying...' : 'Verify'}
             </Button>
-            
+
             <div className="mt-6 flex justify-center">
               <button onClick={() => navigate(-1)} className="text-sm font-medium text-textTertiary underline active:opacity-70">
                 Change email address

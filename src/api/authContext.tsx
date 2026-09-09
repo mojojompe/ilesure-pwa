@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (isAuthenticated && isPublicRoute && user) {
         // DECISION (P-M2): the role read here comes from client-controlled storage and
         // is used ONLY to pick which UI shell to render (and to keep non-renter roles
-        // out of the PWA). It is NOT an authorization boundary — the backend enforces
+        // out of the PWA). It is NOT an authorization boundary, the backend enforces
         // role/permission on every route and endpoint. A tampered local role can change
         // the UI but cannot grant access to protected data.
         // Only allow student and individual to access PWA routes

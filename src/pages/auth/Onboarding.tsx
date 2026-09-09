@@ -5,7 +5,7 @@ import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/react';
 import { useAuthStore } from '../../stores/authStore';
 import { BrandSplash } from '../../components/splash/BrandSplash';
 
-// BUGFIX: all three onboarding slides were written for LANDLORDS — "Expand Your Reach",
+// BUGFIX: all three onboarding slides were written for LANDLORDS, "Expand Your Reach",
 // "Build your reputation... to earn the trust of premium renters", "Track listings,
 // manage inquiries... analyze your performance". This is the renter PWA, and these are
 // the first three screens a student sees. The image filenames (renters_*) show which
@@ -26,7 +26,7 @@ const SLIDES = [
   {
     id: 3,
     title: 'Everything In One Place',
-    subtitle: 'Book an inspection, find a roommate, sign your tenancy agreement and pay securely — all from your phone.',
+    subtitle: 'Book an inspection, find a roommate, sign your tenancy agreement and pay securely, all from your phone.',
     image: '/images/renters_manage.png'
   },
 ];
@@ -34,7 +34,7 @@ const SLIDES = [
 export function Onboarding() {
   const navigate = useNavigate();
   const { isAuthenticated, user, setHasSeenOnboarding } = useAuthStore();
-  
+
   const [showBrand, setShowBrand] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [displayedTitle, setDisplayedTitle] = useState('');
@@ -82,13 +82,13 @@ export function Onboarding() {
 
   const handleBrandFinished = () => {
     setShowBrand(false);
-    
+
     // Auth flow routing
     if (isAuthenticated) {
       navigate('/', { replace: true });
       return;
     }
-    
+
     if (false) { // was hasEverLoggedIn
       navigate('/login', { replace: true });
       return;
@@ -183,17 +183,17 @@ export function Onboarding() {
             }}
             className="absolute inset-0"
           >
-            <img 
-              src={SLIDES[currentSlide].image} 
+            <img
+              src={SLIDES[currentSlide].image}
               alt={SLIDES[currentSlide].title}
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-cover"
             />
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* ── Fixed Top Navigation ── */}
-      <motion.div 
+      <motion.div
         className="absolute top-[56px] left-6 right-6 flex flex-row justify-between items-center z-10"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -241,14 +241,14 @@ export function Onboarding() {
       </motion.div>
 
       {/* ── Fixed Bottom Sheet ── */}
-      <motion.div 
+      <motion.div
         className="absolute bottom-0 left-0 right-0 z-10"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
         <div className="h-[120px] w-full bg-gradient-to-b from-transparent to-[#f4f4f4]" />
-        
+
         <div className="bg-[#f4f4f4] pt-4 pb-[48px] px-6">
           <div className="mb-8 min-h-[120px]">
             <h1 className="text-[42px] font-extrabold text-primary-dark mb-2 tracking-[-1.5px] leading-tight">
@@ -265,7 +265,7 @@ export function Onboarding() {
                 const isActive = i === currentSlide;
                 return (
                   <button key={i} onClick={() => setSlide(i)} className="p-1">
-                    <motion.div 
+                    <motion.div
                       className={`h-2 rounded-full ${isActive ? 'bg-accent' : 'bg-burnt-brown/20'}`}
                       animate={{ width: isActive ? 24 : 8 }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}

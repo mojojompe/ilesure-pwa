@@ -112,8 +112,8 @@ export const authService = {
   },
 
   // REMOVED: googleLogin(). It posted to POST /auth/google-login, which does not exist.
-  // The backend implements Google sign-in as a REDIRECT flow — GET /auth/google/login,
-  // returning via GET /auth/google/callback — so a POST of an id_token was never going
+  // The backend implements Google sign-in as a REDIRECT flow, GET /auth/google/login,
+  // returning via GET /auth/google/callback, so a POST of an id_token was never going
   // to work. Nothing called this; the only reference was a comment on the Login screen
   // describing an implementation that does not match the server. Removed so the next
   // person builds against the endpoint that is actually there.
@@ -164,7 +164,7 @@ export const authService = {
 
   /**
    * Redeem the single-use code from a Google redirect for a session.
-   * The redirect no longer carries tokens — see authController.exchangeGoogleCode.
+   * The redirect no longer carries tokens, see authController.exchangeGoogleCode.
    */
   async exchangeGoogleCode(code: string): Promise<{
     success: boolean;

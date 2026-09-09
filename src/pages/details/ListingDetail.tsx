@@ -4,10 +4,10 @@ import { AppShell } from '../../components/layout/AppShell';
 import { Button } from '../../components/ui/Button';
 import { Tag } from '../../components/ui/Tag';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
-import { 
-  Building03Icon, 
-  Location01Icon, 
-  Share01Icon, 
+import {
+  Building03Icon,
+  Location01Icon,
+  Share01Icon,
   FavouriteIcon,
   CheckmarkBadge01Icon,
   Sofa01Icon,
@@ -62,7 +62,7 @@ export function ListingDetail() {
   const [isSaved, setIsSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [inquiries, setInquiries] = useState<any[]>([]);
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +76,7 @@ export function ListingDetail() {
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showCarousel, setShowCarousel] = useState(false);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
-  
+
   const [existingBooking, setExistingBooking] = useState<any>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
@@ -90,7 +90,7 @@ export function ListingDetail() {
           listingService.getListingById(id),
           listingService.getSavedListings().catch(() => ({ data: { listings: [] } }))
         ]);
-        
+
         setListing(listingData);
 
         const isListingSaved = savedData.data?.listings?.some((s: any) =>
@@ -102,7 +102,7 @@ export function ListingDetail() {
         try {
           const inqRes = await listingService.getInquiries(id);
           setInquiries(inqRes.data?.inquiries || []);
-        } catch(e) {}
+        } catch (e) { }
 
         // Fetch bookings if user is logged in
         if (user) {
@@ -143,12 +143,12 @@ export function ListingDetail() {
     if (!listing) return;
     try {
       const l = listing as any;
-      const participantId = 
-        l.agentId?._id || l.agentId?.id || 
+      const participantId =
+        l.agentId?._id || l.agentId?.id ||
         l.landlordId?._id || l.landlordId?.id ||
         l.agent?._id || l.agent?.id ||
         l.companyId?._id || l.companyId?.id;
-      
+
       if (participantId) {
         const res = await chatService.startChat(participantId, listing._id, 'Hi, I\'m interested in this property. Can we chat?');
         if (res.success && res.data) {
@@ -169,7 +169,7 @@ export function ListingDetail() {
       navigate('/booking/kyc/temp');
       return;
     }
-    
+
     try {
       const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
       const rateQuantity = data.rateQuantity || 1;
@@ -226,7 +226,7 @@ export function ListingDetail() {
         customAlert(
           isVerified
             ? 'Inspection confirmed. You can now proceed to payment.'
-            : 'Thanks — we have recorded that the apartment did not match the listing.',
+            : 'Thanks, we have recorded that the apartment did not match the listing.',
           isVerified ? 'Success' : 'Recorded',
           isVerified ? 'success' : 'error',
         );
@@ -311,19 +311,19 @@ export function ListingDetail() {
   return (
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative pb-[80px]">
-        
+
         {/* Floating Header Actions */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-6 flex justify-between items-center pointer-events-none">
-          <button 
+          <button
             /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
             aria-label="Go back"
-            onClick={() => navigate(-1)} 
+            onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform pointer-events-auto"
           >
             <ArrowLeft01Icon size={20} />
           </button>
           <div className="flex gap-2 pointer-events-auto">
-            <button 
+            <button
               /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
               aria-label={isSaved ? 'Remove from saved' : 'Save this listing'}
               aria-pressed={isSaved}
@@ -340,13 +340,13 @@ export function ListingDetail() {
 
         {/* Sticky Background Image Carousel */}
         <div className="sticky top-0 w-full h-[40vh] bg-surfaceLight shrink-0 z-0">
-          <div 
+          <div
             ref={scrollContainerRef}
             className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
             onScroll={handleScroll}
           >
             {images.map((img, idx) => (
-              <button 
+              <button
                 key={idx}
                 className="w-full h-full shrink-0 snap-start active:opacity-90"
                 onClick={() => {
@@ -354,8 +354,8 @@ export function ListingDetail() {
                   setShowCarousel(true);
                 }}
               >
-                <img 
-                  src={img} 
+                <img
+                  src={img}
                   alt={`${listing.title} - ${idx}`}
                   className="w-full h-full object-cover"
                 />
@@ -364,11 +364,10 @@ export function ListingDetail() {
           </div>
           <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-1.5 z-10">
             {images.map((_, i) => (
-              <div 
-                key={i} 
-                className={`h-1.5 rounded-full transition-all ${
-                  i === currentImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
-                }`}
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
+                  }`}
               />
             ))}
           </div>
@@ -392,7 +391,7 @@ export function ListingDetail() {
                 <span className="truncate">{listing.areaCluster || listing.address}</span>
               </div>
               <p className="text-xs font-medium text-textTertiary mb-3">Listed by {agentName}</p>
-              
+
               <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
                 {/* BUGFIX (QA-PWAJ2-006): a shortlet stores rentAnnual 0 and keeps its real
                     prices in shortletRates[], so the screen a renter books FROM showed
@@ -403,7 +402,7 @@ export function ListingDetail() {
                     // BUGFIX (QA-API-335): this rendered a price range suffixed "/stay", so a
                     // ₦50,000-per-day room read as ₦50,000 for the whole stay. A renter planning
                     // five nights believed they were seeing the total and met a bill ten times
-                    // larger at checkout. "/stay" was never true of any tier — every rate is
+                    // larger at checkout. "/stay" was never true of any tier, every rate is
                     // priced per its own duration.
                     //
                     // A range cannot carry one honest unit either, because tiers can mix them
@@ -449,13 +448,12 @@ export function ListingDetail() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`pb-2 shrink-0 text-sm font-semibold transition-colors relative ${
-                    activeTab === tab.id ? 'text-primary' : 'text-textSecondary'
-                  }`}
+                  className={`pb-2 shrink-0 text-sm font-semibold transition-colors relative ${activeTab === tab.id ? 'text-primary' : 'text-textSecondary'
+                    }`}
                 >
                   {tab.label}
                   {activeTab === tab.id && (
-                    <motion.div 
+                    <motion.div
                       layoutId="activeTab"
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full"
                     />
@@ -480,7 +478,7 @@ export function ListingDetail() {
                     </div>
                   )}
 
-                  <div 
+                  <div
                     onClick={() => {
                       const participantId = l.agentId?._id || l.agentId?.id || l.landlordId?._id || l.landlordId?.id || l.agent?._id || l.agent?.id || l.companyId?._id || l.companyId?.id;
                       if (participantId) navigate(`/agent/${participantId}`);
@@ -502,13 +500,13 @@ export function ListingDetail() {
                       <p className="text-xs text-textSecondary">Property Manager</p>
                     </div>
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
                         className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center"
                       >
                         <Alert02Icon size={16} className="text-error" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleChat(); }}
                         className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
                       >
@@ -518,7 +516,7 @@ export function ListingDetail() {
                   </div>
 
                   {/* Safety Banner */}
-                  <div 
+                  <div
                     onClick={() => navigate('/safety-tips')}
                     className="flex items-center gap-3 p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl mb-6 cursor-pointer active:scale-[0.98] transition-transform"
                   >
@@ -582,12 +580,12 @@ export function ListingDetail() {
                   </div>
                 </motion.div>
               )}
-              
+
               {/* Fallback for other tabs */}
               {activeTab === 'location' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-4">Location Details</h3>
-                  
+
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                       <span className="text-sm text-textSecondary">Address</span>
@@ -608,8 +606,8 @@ export function ListingDetail() {
                   </div>
 
                   <div className="relative h-48 bg-softSurface rounded-2xl overflow-hidden flex items-center justify-center">
-                    <img 
-                      src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80" 
+                    <img
+                      src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80"
                       alt="Map"
                       className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -694,7 +692,7 @@ export function ListingDetail() {
               {activeTab === 'inquiries' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-4">Inquiries</h3>
-                  
+
                   {inquiries.length > 0 ? (
                     <div className="space-y-4">
                       {inquiries.map((inq: any, i: number) => (
@@ -710,7 +708,7 @@ export function ListingDetail() {
                       <p className="text-sm text-textSecondary">No inquiries yet</p>
                     </div>
                   )}
-                  
+
                   <button
                     className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
                     onClick={() => setShowInquiryModal(true)}
@@ -731,8 +729,8 @@ export function ListingDetail() {
 
         {/* Bottom CTA */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-borderLight z-30 pb-safe-bottom">
-          <Button 
-            fullWidth 
+          <Button
+            fullWidth
             onClick={cta.action}
             disabled={paymentLoading}
             loading={paymentLoading}
@@ -745,7 +743,7 @@ export function ListingDetail() {
       </div>
 
       {/* Modals */}
-      <BookAppointmentModal 
+      <BookAppointmentModal
         visible={showBookModal}
         onClose={() => setShowBookModal(false)}
         onConfirm={handleBook}
@@ -781,7 +779,7 @@ export function ListingDetail() {
         loading={verifyLoading}
       />
 
-      <BookingTimelineModal 
+      <BookingTimelineModal
         visible={showTimelineModal}
         onClose={() => setShowTimelineModal(false)}
         booking={existingBooking}
@@ -791,7 +789,7 @@ export function ListingDetail() {
         onMakePayment={() => setShowPrePaymentModal(true)}
       />
 
-      <FullscreenImageCarousel 
+      <FullscreenImageCarousel
         images={images}
         initialIndex={currentImageIndex}
         visible={showCarousel}

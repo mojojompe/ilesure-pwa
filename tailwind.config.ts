@@ -8,71 +8,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-<<<<<<< HEAD
         // Core brand
-        'primary':        '#3E1F0A',
-        'primary-dark':   '#2C1406',
-        'primary-light':  '#5C2F12',
+        'primary':        '#6B3A1F', // Burnt Brown
+        'primary-dark':   '#4E2A14',
+        'primary-light':  '#9B5B35',
 
-        'accent':         '#E1AD01',
-        'accent-light':   '#F0C832',
-        'accent-dark':    '#C49B00',
+        'accent':         '#C97B1C', // Mustard
+        'accent-light':   '#E8941E',
+        'accent-dark':    '#A65D15',
 
         // Backgrounds & surfaces
-        'background':     '#FAFAF9',
-        'surface':        '#FFFFFF',
-        'soft-surface':   '#F5F5F4',
-        'surfaceLight':   '#F5F0EB',
+        'background':     '#FAFAF8', // off-white
+        'surface':        '#FFFFFF', // clay-surface
+        'soft-surface':   '#F5F0EB', // soft-surface
+        'surfaceLight':   '#FAF3EE', // burnt-brown-xpale
 
         // Text
-        'text-primary':   '#2D1B12',
-        'text-secondary': '#6B4F3A',
-        'text-tertiary':  '#A08070',
+        'text-primary':   '#1C0A00',
+        'text-secondary': '#6B4C3B',
+        /* A11Y-FIX (QA-A11Y-003): #A08070 is 3.61:1 on white.
+           #8A6A5A is 4.90:1. */
+        'text-tertiary':  '#8A6A5A',
         'text-inverse':   '#FFFFFF',
-        'text-disabled':  '#C4B5A5',
-        'text-muted':     '#BCA99A',
+        'text-disabled':  '#C4AFA4',
+        'text-muted':     '#C4AFA4',
         // camelCase aliases used in JSX
-        'textPrimary':    '#2D1B12',
-        'textSecondary':  '#6B4F3A',
-        'textTertiary':   '#A08070',
-        'textMuted':      '#BCA99A',
+        'textPrimary':    '#1C0A00',
+        'textSecondary':  '#6B4C3B',
+        'textTertiary':   '#8A6A5A',
+        'textMuted':      '#C4AFA4',
 
         // Borders
-        'border':         '#E7DCD4',
-        'border-light':   '#F0E8E2',
-        'border-dark':    '#D4C5B8',
-        'borderLight':    '#F0E8E2',
-
-        // Status
-=======
-        'primary':       '#3E1F0A',
-        'primary-dark':  '#2C1406',
-        'primary-light': '#5C2F12',
-        
-        'accent':        '#E1AD01',
-        'accent-light':  '#F0C832',
-        'accent-dark':   '#C49B00',
-        
-        'background':    '#FAFAF9',
-        'surface':       '#FFFFFF',
-        'soft-surface':  '#F5F5F4',
-        
-        'text-primary':  '#2D1B12',
-        'text-secondary':'#6B4F3A',
-        /* A11Y-FIX (QA-A11Y-003): #A08070 is 3.61:1 on white — the figure axe measured
-           across five 11px nodes on the register screen. #8A6A5A is 4.90:1.
-           text-disabled and text-muted are deliberately left alone: disabled controls are
-           exempt from the contrast minimum, and lifting them would misrepresent state. */
-        'text-tertiary': '#8A6A5A',
-        'text-inverse':  '#FFFFFF',
-        'text-disabled': '#C4B5A5',
-        'text-muted':    '#BCA99A',
-        
-        'border':        '#E7DCD4',
-        'border-light':  '#F0E8E2',
-        'border-dark':   '#D4C5B8',
-        
->>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
+        'border':         '#E7DCD4', // clay-border
+        'border-light':   '#F2EDE8', // clay-border-light
+        'border-dark':    '#D4C5B8', // clay-border-dark
+        'borderLight':    '#F2EDE8',
         'status-success': '#4CAF50',
         'status-warning': '#FF9800',
         'status-error':   '#E53935',

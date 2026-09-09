@@ -1,7 +1,7 @@
 /**
  * Client mirror of the backend's `src/config/fees.ts`.
  *
- * The server is always the authority on what is actually charged — prefer the
+ * The server is always the authority on what is actually charged, prefer the
  * amounts returned by `POST /bookings/summary` wherever they are available.
  * These constants exist only for pre-quote UI (e.g. the booking modal, which
  * estimates the total before a booking record exists) and for fee labels.

@@ -19,14 +19,14 @@ export interface LocationAnchor {
 interface LocationAnchorPickerProps {
   value: LocationAnchor | null;
   onChange: (anchor: LocationAnchor | null) => void;
-  /** One-tap option at the top — a student's campus. Null for everyone else. */
+  /** One-tap option at the top, a student's campus. Null for everyone else. */
   suggestion?: { label: string; landmark: string } | null;
   /** Seeded place types to list before the renter types anything. */
   defaultTypes?: string;
 }
 
 /**
- * Lets any renter anchor their search to a place — a neighbourhood, an estate, a
+ * Lets any renter anchor their search to a place, a neighbourhood, an estate, a
  * campus, or any address Google knows. This was a student-only "near my school"
  * switch, which left a renter who is not a student with no location filter at
  * all; a campus is now just one of the places you can pick.

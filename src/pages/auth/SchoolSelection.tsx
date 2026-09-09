@@ -64,7 +64,7 @@ const NIGERIAN_UNIVERSITIES = [
 export function SchoolSelection() {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+
   const [selectedSchool, setSelectedSchool] = useState('lcu');
   const [suggestionText, setSuggestionText] = useState('');
   const [sendingSuggestion, setSendingSuggestion] = useState(false);
@@ -77,14 +77,14 @@ export function SchoolSelection() {
     setTimeout(() => setIsReady(true), 50);
   }, []);
 
-  const filteredUniversities = NIGERIAN_UNIVERSITIES.filter(uni => 
+  const filteredUniversities = NIGERIAN_UNIVERSITIES.filter(uni =>
     uni.toLowerCase().includes(suggestionText.toLowerCase())
   ).slice(0, 5);
 
   /**
    * BUGFIX (QA-PWA-006): this used to be `setSuggestionSent(true)` and nothing else.
    * The green banner claimed "Your suggestion has been sent to admin" while ZERO
-   * network requests were made and nothing was stored anywhere — the same
+   * network requests were made and nothing was stored anywhere, the same
    * success-without-persistence pattern the prior audit flagged as its dominant theme.
    * It now posts to the existing unauthenticated support endpoint, which persists a
    * ticket server-side, so the confirmation is true.
@@ -120,17 +120,17 @@ export function SchoolSelection() {
   return (
     <div className="min-h-screen bg-[#FFF5E1] flex flex-col font-sans relative">
       <div className="absolute inset-0 bg-gradient-to-b from-[#FAFAF9] to-[#F5E6D3] opacity-50 z-0" />
-      
+
       <div className="flex-1 flex flex-col overflow-y-auto px-4 pb-[130px] pt-safe-top z-10" ref={scrollRef}>
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="pt-2 mb-6"
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
           >
@@ -139,7 +139,7 @@ export function SchoolSelection() {
         </motion.div>
 
         {/* Title Block */}
-        <motion.div 
+        <motion.div
           className="mb-8"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -172,20 +172,19 @@ export function SchoolSelection() {
                         setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 100);
                       }
                     }}
-                    className={`w-full bg-white rounded-2xl p-4 flex flex-row items-center gap-4 text-left transition-all duration-300 border-2 ${
-                      isSelected 
-                        ? 'border-accent shadow-[0_8px_16px_rgba(225,173,1,0.15)] scale-[1.02] bg-[#FFFdf5]' 
+                    className={`w-full bg-white rounded-2xl p-4 flex flex-row items-center gap-4 text-left transition-all duration-300 border-2 ${isSelected
+                        ? 'border-accent shadow-[0_8px_16px_rgba(225,173,1,0.15)] scale-[1.02] bg-[#FFFdf5]'
                         : 'border-transparent opacity-65'
-                    }`}
+                      }`}
                   >
                     <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center shrink-0 overflow-hidden ${isSelected ? 'bg-[#FFF8E1] border border-accent' : 'bg-surface-soft'}`}>
                       {school.logo ? (
-                        <img src={school.logo} alt={school.shortName} className="w-full h-full object-contain p-1" onError={(e: any) => { e.target.style.display='none'; e.target.parentNode.innerHTML = '🎓'; }} />
+                        <img src={school.logo} alt={school.shortName} className="w-full h-full object-contain p-1" onError={(e: any) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '🎓'; }} />
                       ) : (
                         <span className="text-2xl">{school.icon}</span>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 flex flex-col gap-[2px]">
                       <div className="flex flex-row items-center flex-wrap gap-2">
                         <span className={`text-[18px] font-extrabold ${isSelected ? 'text-accent' : 'text-text-primary'}`}>
@@ -194,7 +193,7 @@ export function SchoolSelection() {
                         {school.isDefault}
                       </div>
                       <span className="text-sm font-semibold text-text-secondary mt-0.5">{school.shortName}</span>
-                      
+
                       {isSelected && (
                         <div className="flex flex-row items-center gap-1 mt-1">
                           <Location01Icon size={14} className="text-text-tertiary" />
@@ -209,18 +208,18 @@ export function SchoolSelection() {
           </AnimatePresence>
         </div>
 
-        <motion.div 
+        <motion.div
           className="flex flex-row items-center gap-2 bg-[#FFF8E1] rounded-lg p-4 border border-[#FFE88A] mb-4"
           initial={{ y: 50, opacity: 0 }}
           animate={isReady ? { y: 0, opacity: 1 } : {}}
           transition={{ delay: 0.4 }}
         >
           <UniversityIcon size={18} className="text-accent shrink-0" />
-          <span className="text-sm text-text-secondary flex-1">More schools coming soon — suggest yours!</span>
+          <span className="text-sm text-text-secondary flex-1">More schools coming soon, suggest yours!</span>
         </motion.div>
 
         {/* Suggestion Box */}
-        <motion.div 
+        <motion.div
           className="relative z-20 mb-8"
           initial={{ y: 50, opacity: 0 }}
           animate={isReady ? { y: 0, opacity: 1 } : {}}
@@ -253,8 +252,8 @@ export function SchoolSelection() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 />
                 <button
-          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
-          aria-label="Submit"
+                  /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+                  aria-label="Submit"
                   onClick={handleSendSuggestion}
                   disabled={!suggestionText.trim()}
                   className={`w-12 h-12 rounded-lg flex items-center justify-center ${suggestionText.trim() ? 'bg-accent' : 'bg-[#ccc]'}`}
@@ -286,7 +285,7 @@ export function SchoolSelection() {
       </div>
 
       {/* Footer */}
-      <motion.div 
+      <motion.div
         className="fixed bottom-0 left-0 right-0 px-4 pb-safe-bottom pt-4 flex flex-col gap-2 bg-[#FFF5E1] z-50 shadow-[0_-10px_20px_rgba(255,245,225,0.9)]"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 32px)' }}
         initial={{ y: 50, opacity: 0 }}

@@ -7,8 +7,8 @@ import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
-import { 
-  UserMultipleIcon, 
+import {
+  UserMultipleIcon,
   Settings02Icon,
   Mail01Icon,
   Home01Icon,
@@ -32,12 +32,12 @@ export function Roommates() {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
-      
+
       const [profileRes, listingsRes] = await Promise.all([
         roommateService.getProfile(),
         apiClient.get<any>('/listings?needsRoommate=true&limit=5').catch(() => null),
       ]);
-      
+
       if (!profileRes.data) {
         setHasProfile(false);
         return;
@@ -109,8 +109,8 @@ export function Roommates() {
           <p className="text-textSecondary text-base leading-relaxed mb-8 px-4">
             Complete your roommate preferences to find your perfect living companion
           </p>
-          <Button 
-            onClick={() => navigate('/lifestyle-survey')} 
+          <Button
+            onClick={() => navigate('/lifestyle-survey')}
             className="w-full max-w-[280px] bg-primary"
             size="lg"
           >
@@ -140,9 +140,9 @@ export function Roommates() {
       <div className="px-5 pt-safe-top pb-6 min-h-full bg-background flex flex-col relative overflow-hidden">
         {/* RN background pattern approximation */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-bl-[100px] -z-10" />
-        
+
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-row justify-between items-start pt-4 mb-6"
@@ -152,13 +152,13 @@ export function Roommates() {
             <p className="text-textSecondary text-sm">Find your ideal living companion</p>
           </div>
           <div className="flex flex-row gap-2">
-            <button 
+            <button
               onClick={() => navigate('/incoming-requests')}
               className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center active:scale-95 transition-transform shadow-sm border border-borderLight"
             >
               <Mail01Icon size={20} className="text-accent" />
             </button>
-            <button 
+            <button
               onClick={() => navigate('/lifestyle-survey')}
               className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center active:scale-95 transition-transform shadow-sm border border-borderLight"
             >
@@ -169,10 +169,10 @@ export function Roommates() {
 
         {/* Content */}
         <RefreshIndicator isRefreshing={refreshing} />
-        
+
         <div className="flex-1">
           {roommateListings.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -186,15 +186,14 @@ export function Roommates() {
                   <button
                     key={l._id}
                     onClick={() => navigate(`/listing/${l._id}`)}
-                    className={`flex flex-row items-center gap-3 py-3 w-full text-left active:bg-surfaceLight transition-colors ${
-                      index !== roommateListings.length - 1 ? 'border-b border-borderLight' : ''
-                    }`}
+                    className={`flex flex-row items-center gap-3 py-3 w-full text-left active:bg-surfaceLight transition-colors ${index !== roommateListings.length - 1 ? 'border-b border-borderLight' : ''
+                      }`}
                   >
                     <Home01Icon size={20} className="text-primary shrink-0" />
                     <div className="flex-1 overflow-hidden">
                       <p className="text-sm font-semibold text-textPrimary truncate">{l.title}</p>
                       <p className="text-[11px] text-textSecondary mt-0.5 truncate">
-                        {l.areaCluster} — ₦{l.rentAnnual?.toLocaleString()}/yr
+                        {l.areaCluster}, ₦{l.rentAnnual?.toLocaleString()}/yr
                       </p>
                     </div>
                     <ArrowRight01Icon size={18} className="text-textTertiary shrink-0" />
@@ -205,7 +204,7 @@ export function Roommates() {
           )}
 
           {matches.length > 0 ? (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
@@ -213,7 +212,7 @@ export function Roommates() {
             >
               {matches.map((item) => (
                 <motion.div key={item.userId} variants={itemVariants}>
-                  <MatchCard 
+                  <MatchCard
                     item={item}
                     onPress={() => navigate(`/match/${item.userId}`)}
                     onPass={() => handlePass(item.userId)}
@@ -223,7 +222,7 @@ export function Roommates() {
               ))}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center text-center py-12"

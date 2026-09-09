@@ -64,7 +64,7 @@ export default function App() {
     if (!isAuthenticated || !token) return;
     authService.getProfile()
       .then((res) => { if (res?.success && res.data) setUser({ ...useAuthStore.getState().user, ...res.data } as any); })
-      .catch(() => { /* offline or expired session — the API client handles 401s */ });
+      .catch(() => { /* offline or expired session, the API client handles 401s */ });
   }, []);
 
   /**
@@ -88,70 +88,70 @@ export default function App() {
 
   return (
     <CallProvider>
-    <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">
-      <Routes>
-        <Route path="/" element={<Splash />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/auth/choice" element={<AuthChoice />} />
-        <Route path="/auth/role" element={<RoleSelection />} />
-        <Route path="/auth/school" element={<SchoolSelection />} />
-        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-        <Route path="/auth/otp" element={<OTP />} />
-        {/* Google sign-in returns here with the session in the query string (P-L1). */}
-        <Route path="/auth/google/callback" element={<GoogleCallback />} />
-        
-        {/* Protected Routes - Only for Students and Individuals on PWA */}
-        <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/roommates" element={<Roommates />} />
-          <Route path="/my-apartments" element={<MyApartments />} />
-          <Route path="/chats" element={<ChatsList />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/profile" element={<Profile />} />
+      <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">
+        <Routes>
+          <Route path="/" element={<Splash />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/auth/choice" element={<AuthChoice />} />
+          <Route path="/auth/role" element={<RoleSelection />} />
+          <Route path="/auth/school" element={<SchoolSelection />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/otp" element={<OTP />} />
+          {/* Google sign-in returns here with the session in the query string (P-L1). */}
+          <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
-          {/* Details & Modals */}
-          <Route path="/listing/:id" element={<ListingDetail />} />
-          <Route path="/agent/:id" element={<AgentProfile />} />
-          <Route path="/match/:id" element={<MatchProfile />} />
-          <Route path="/roommate-profile" element={<RoommateProfile />} />
-          <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
-          <Route path="/chat/:id" element={<ChatScreen />} />
-          
-          {/* Booking & Checkout */}
-          <Route path="/booking/:id" element={<BookingDetail />} />
-          <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
-          <Route path="/booking/checkout/:id" element={<Checkout />} />
-          <Route path="/booking/kyc/:id" element={<KYC />} />
-          <Route path="/booking/signature/:id" element={<Signature />} />
-          <Route path="/booking/payment/:id" element={<Payment />} />
-          {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
-          <Route path="/payment/callback" element={<PaymentCallback />} />
-          <Route path="/payment-history" element={<PaymentHistory />} />
-          <Route path="/payment-detail" element={<PaymentDetail />} />
+          {/* Protected Routes - Only for Students and Individuals on PWA */}
+          <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
+            <Route path="/discover" element={<Discover />} />
+            <Route path="/roommates" element={<Roommates />} />
+            <Route path="/my-apartments" element={<MyApartments />} />
+            <Route path="/chats" element={<ChatsList />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profile" element={<Profile />} />
 
-          {/* Settings & Support */}
-          <Route path="/saved-listings" element={<SavedListings />} />
-          <Route path="/settings/notifications" element={<NotificationSettings />} />
-          <Route path="/settings/privacy" element={<PrivacySecurity />} />
-          <Route path="/terms" element={<TermsPrivacy />} />
-          <Route path="/support" element={<HelpSupport />} />
-          <Route path="/settings/edit-profile" element={<EditProfile />} />
-          <Route path="/safety-tips" element={<SafetyTips />} />
-          
-          {/* Missing Parity Pages */}
-          <Route path="/incoming-requests" element={<IncomingRequests />} />
-          <Route path="/waitlist" element={<Waitlist />} />
-        </Route>
+            {/* Details & Modals */}
+            <Route path="/listing/:id" element={<ListingDetail />} />
+            <Route path="/agent/:id" element={<AgentProfile />} />
+            <Route path="/match/:id" element={<MatchProfile />} />
+            <Route path="/roommate-profile" element={<RoommateProfile />} />
+            <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
+            <Route path="/chat/:id" element={<ChatScreen />} />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <AlertModal />
-      <PWAInstallModal />
-      {/* Above the router so a call survives navigation and can arrive on any screen. */}
-      <CallOverlay />
-    </div>
+            {/* Booking & Checkout */}
+            <Route path="/booking/:id" element={<BookingDetail />} />
+            <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
+            <Route path="/booking/checkout/:id" element={<Checkout />} />
+            <Route path="/booking/kyc/:id" element={<KYC />} />
+            <Route path="/booking/signature/:id" element={<Signature />} />
+            <Route path="/booking/payment/:id" element={<Payment />} />
+            {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
+            <Route path="/payment/callback" element={<PaymentCallback />} />
+            <Route path="/payment-history" element={<PaymentHistory />} />
+            <Route path="/payment-detail" element={<PaymentDetail />} />
+
+            {/* Settings & Support */}
+            <Route path="/saved-listings" element={<SavedListings />} />
+            <Route path="/settings/notifications" element={<NotificationSettings />} />
+            <Route path="/settings/privacy" element={<PrivacySecurity />} />
+            <Route path="/terms" element={<TermsPrivacy />} />
+            <Route path="/support" element={<HelpSupport />} />
+            <Route path="/settings/edit-profile" element={<EditProfile />} />
+            <Route path="/safety-tips" element={<SafetyTips />} />
+
+            {/* Missing Parity Pages */}
+            <Route path="/incoming-requests" element={<IncomingRequests />} />
+            <Route path="/waitlist" element={<Waitlist />} />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <AlertModal />
+        <PWAInstallModal />
+        {/* Above the router so a call survives navigation and can arrive on any screen. */}
+        <CallOverlay />
+      </div>
     </CallProvider>
   );
 }
