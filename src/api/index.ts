@@ -13,3 +13,5 @@ export { default as tierService } from './tierService';
 export { contractService } from './contractService';
 export type { ContractType } from './contractService';
 export { sharedBookingService } from './sharedBookingService';
+export { aiService } from './aiService';
+
