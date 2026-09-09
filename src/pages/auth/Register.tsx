@@ -9,7 +9,12 @@ import { PENDING_EMAIL_KEY } from './OTP';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
+<<<<<<< HEAD
 const TOTAL_STEPS = 2;
+=======
+import { SCHOOLS } from './SchoolSelection';
+const TOTAL_STEPS = 3;
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
 
 function PasswordStrengthMeter({ password }: { password: string }) {
   const reqs = [
@@ -98,6 +103,11 @@ export function Register() {
   const navigate = useNavigate();
   const location = useLocation();
   const initialRole = location.state?.role || 'student';
+  // BUGFIX (QA-PWA-005): SchoolSelection navigates here with
+  // `{ role, school }` in router state, but only `role` was ever read. The school the
+  // user picked was silently dropped, the field below started empty, and the register
+  // payload sent `selectedSchool: ''`.
+  const preselectedSchool: string = location.state?.school || '';
   const { setUser, setTokens } = useAuthStore();
 
   const [step, setStep] = useState(0);
@@ -113,10 +123,16 @@ export function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
+<<<<<<< HEAD
   const [school, setSchool] = useState('');
   const [occupation, setOccupation] = useState('');
   const [employer, setEmployer] = useState('');
   const [locationStr, setLocationStr] = useState('');
+=======
+  const [school, setSchool] = useState(
+    () => SCHOOLS.find(s => s.id === preselectedSchool)?.name || ''
+  );
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -259,10 +275,24 @@ export function Register() {
               
               <div className="text-center mb-1">
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-[-0.5px]">
+<<<<<<< HEAD
                   {step === 0 ? 'Account Details' : 'Your Details'}
                 </h2>
                 <p className="text-base text-text-secondary mt-1 mb-6">
                   {step === 0 ? 'Secure your ideal living space.' : 'Tell us a bit more about you.'}
+=======
+                  {/* BUGFIX: the final step was titled "Bank Account" for everyone, including
+                      students, who never provide one. For a renter this screen is the terms
+                      confirmation and nothing else, so it says so. */}
+                  {step === 0 ? 'Account Details' : step === 1 ? 'Your Details'
+                    : (initialRole === 'agent' || initialRole === 'company') ? 'Bank Account' : 'Confirm & Create'}
+                </h2>
+                <p className="text-base text-text-secondary mt-1 mb-6">
+                  {step === 0 ? 'Secure your ideal living space.'
+                    : step === 1 ? 'Tell us a bit more about you.'
+                    : (initialRole === 'agent' || initialRole === 'company') ? 'Link your bank for automatic rent payouts.'
+                    : 'Just accept the terms and you are in.'}
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
                 </p>
               </div>
 
@@ -434,7 +464,56 @@ export function Register() {
                       </>
                     )}
 
+<<<<<<< HEAD
 
+=======
+                    {step === 2 && (
+                      <>
+                        {/* Consent sits at the top of the final step, so it is
+                            read before the account is created rather than
+                            buried under optional bank fields. */}
+                        <label className="flex items-start gap-3 rounded-2xl border border-borderLight bg-surface p-4 mb-4 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={acceptedTerms}
+                            onChange={e => setAcceptedTerms(e.target.checked)}
+                            className="mt-0.5 h-5 w-5 shrink-0 accent-accent cursor-pointer"
+                          />
+                          <span className="text-sm leading-5 text-textSecondary">
+                            I agree to the{' '}
+                            <a href="https://ilesure.com/terms-of-service" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                              Terms of Service
+                            </a>{' '}
+                            and{' '}
+                            <a href="https://ilesure.com/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-bold text-accent underline">
+                              Privacy Policy
+                            </a>.
+                          </span>
+                        </label>
+                        {errors.acceptedTerms && (
+                          <p className="-mt-2 mb-4 text-xs text-error">{errors.acceptedTerms}</p>
+                        )}
+                        {/* BUGFIX: a student was shown a "BANK ACCOUNT" heading whose entire content
+                            was "Bank account setup is not required for student accounts." — a section
+                            that existed only to announce it did not apply, on the last screen before
+                            the account is created. A renter never provides a payout account, so there
+                            is nothing to tell them. Rendered for agents and companies only, who do
+                            need to know where payouts are configured. */}
+                        {(initialRole === 'agent' || initialRole === 'company') && (
+                          <>
+                            <span className="text-xs font-bold tracking-[0.8px] text-text-secondary mb-2 uppercase block">
+                              BANK ACCOUNT (RECOMMENDED)
+                            </span>
+                            <p className="text-sm text-text-secondary mb-4">
+                              {/* The PWA is the renter app; payout accounts are managed on the agent/company
+                                  web portal. The previous inputs here were not wired to anything. */}
+                              Bank account setup for rent payouts is done on the web portal at app.ilesure.com after you verify your email.
+                            </p>
+                          </>
+                        )}
+                      </>
+                    )}
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
                   </motion.div>
                 </AnimatePresence>
               </div>

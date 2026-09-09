@@ -8,6 +8,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+<<<<<<< HEAD
         // Core brand
         'primary':        '#3E1F0A',
         'primary-dark':   '#2C1406',
@@ -43,6 +44,35 @@ const config: Config = {
         'borderLight':    '#F0E8E2',
 
         // Status
+=======
+        'primary':       '#3E1F0A',
+        'primary-dark':  '#2C1406',
+        'primary-light': '#5C2F12',
+        
+        'accent':        '#E1AD01',
+        'accent-light':  '#F0C832',
+        'accent-dark':   '#C49B00',
+        
+        'background':    '#FAFAF9',
+        'surface':       '#FFFFFF',
+        'soft-surface':  '#F5F5F4',
+        
+        'text-primary':  '#2D1B12',
+        'text-secondary':'#6B4F3A',
+        /* A11Y-FIX (QA-A11Y-003): #A08070 is 3.61:1 on white — the figure axe measured
+           across five 11px nodes on the register screen. #8A6A5A is 4.90:1.
+           text-disabled and text-muted are deliberately left alone: disabled controls are
+           exempt from the contrast minimum, and lifting them would misrepresent state. */
+        'text-tertiary': '#8A6A5A',
+        'text-inverse':  '#FFFFFF',
+        'text-disabled': '#C4B5A5',
+        'text-muted':    '#BCA99A',
+        
+        'border':        '#E7DCD4',
+        'border-light':  '#F0E8E2',
+        'border-dark':   '#D4C5B8',
+        
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
         'status-success': '#4CAF50',
         'status-warning': '#FF9800',
         'status-error':   '#E53935',

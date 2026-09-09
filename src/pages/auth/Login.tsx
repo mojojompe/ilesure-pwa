@@ -5,7 +5,11 @@ import { ArrowLeft01Icon, Alert01Icon, GoogleIcon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuthStore } from '../../stores/authStore';
+<<<<<<< HEAD
 import { useAlertStore } from '../../stores/alertStore';
+=======
+import { API_BASE_URL } from '../../api/config';
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
@@ -176,16 +180,23 @@ export function Login() {
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
 
-              {/* SECURITY-FIX TODO (P-L1): this button is inert (onClick is a no-op).
-                  Wire it to Google OAuth via @react-oauth/google (e.g. useGoogleLogin)
-                  and pass the returned id_token to authService.googleLogin(). The backend
-                  must verify the id_token's aud/iss/signature/expiry before trusting it. */}
+              {/* P-L1: wired. The backend does Google auth as a redirect, not a client-side
+                  token exchange — GET /auth/google/login sends the browser to Google, and its
+                  callback redirects back to /auth/google/callback with the session. So this is
+                  a full-page navigation, not a fetch.
+
+                  `redirect` must be an origin the server allowlists (config.frontendUrl or
+                  OAUTH_ALLOWED_ORIGINS). If this origin is not on that list the server returns
+                  JSON instead of redirecting, and GoogleCallback reports a failed sign-in
+                  rather than leaving the user on a blank page. */}
               <Button
                 type="button"
                 variant="outline"
                 className="w-full !border-border-light text-text-primary !py-4 rounded-[50px] flex items-center justify-center gap-2"
                 onClick={() => {
-                  customAlert('Google Sign-In is not yet implemented.', 'Info', 'info');
+                  const returnTo = `${window.location.origin}/auth/google/callback`;
+                  window.location.href =
+                    `${API_BASE_URL}/auth/google/login?redirect=${encodeURIComponent(returnTo)}`;
                 }}
               >
                 {/* Simplified Google Icon for PWA */}

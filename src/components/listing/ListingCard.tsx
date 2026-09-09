@@ -118,7 +118,7 @@ export function ListingCard({
         <div className="absolute top-3 left-3 flex flex-col items-start gap-2 z-10">
           <div className="flex flex-row flex-wrap gap-2">
             {listing.propertyType && (
-              <Tag label={listing.propertyType} variant="mustard" className="shadow-md" />
+              <Tag label={labelFor(listing.propertyType)} variant="mustard" className="shadow-md" />
             )}
             {listing.needsRoommate && (
               <Tag label="Needs Roommate" variant="brown" className="shadow-md" />
@@ -135,6 +135,9 @@ export function ListingCard({
 
         {/* Floating Save Button (Top Right) */}
         <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label={saved ? 'Remove from saved' : 'Save this listing'}
+          aria-pressed={saved}
           onClick={handleSave}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center transition-transform active:scale-90"
         >

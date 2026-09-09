@@ -5,6 +5,7 @@ import { MobileHeader } from '../../components/layout/MobileHeader';
 import { CreditCardIcon, CheckmarkCircle02Icon, Alert01Icon } from '@hugeicons/react';
 import { clsx } from 'clsx';
 import { bookingService } from '../../api/bookingService';
+import { PaymentSafetyModal } from '../../components/common/PaymentSafetyModal';
 
 // SECURITY-FIX (P-H4): this screen no longer fabricates a successful payment with a
 // hardcoded amount/reference. Payment is server-authoritative: we ask the backend to
@@ -16,9 +17,11 @@ export function Payment() {
   const navigate = useNavigate();
   const [initiating, setInitiating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
 
   const handleProceed = async () => {
     if (!id) return;
+    setShowSafetyModal(false);
     setError(null);
     setInitiating(true);
     try {
@@ -78,7 +81,7 @@ export function Payment() {
 
         <div className="p-4 border-t border-border bg-surface">
           <button
-            onClick={handleProceed}
+            onClick={() => setShowSafetyModal(true)}
             disabled={initiating}
             className={clsx(
               'w-full py-4 rounded-xl flex items-center justify-center transition-transform',
@@ -95,7 +98,15 @@ export function Payment() {
             )}
           </button>
         </div>
+
+        <PaymentSafetyModal
+          visible={showSafetyModal}
+          onClose={() => setShowSafetyModal(false)}
+          onConfirm={handleProceed}
+          loading={initiating}
+        />
       </div>
     </AppShell>
   );
 }
+

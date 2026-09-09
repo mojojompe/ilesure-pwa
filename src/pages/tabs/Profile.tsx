@@ -90,13 +90,26 @@ export function Profile() {
   const handleLogout = async () => {
     const isConfirmed = await customConfirm('Are you sure you want to log out?', 'Logout', 'warning');
     if (!isConfirmed) return;
+    // BUGFIX (QA-PWA-008): the server call was swallowed by an empty catch, so if
+    // revocation failed the app still cleared local state and navigated away as though
+    // logout had succeeded — while the token stayed valid server-side for its full
+    // 7-day life. The API does support revocation, so a failure here is worth surfacing.
+    let revoked = true;
     try {
       await authService.logout();
     } catch (e) {
-      // Ignore
+      revoked = false;
+      console.error('[logout] server-side revocation failed', e);
     } finally {
       clearAuth();
       navigate('/auth/choice', { replace: true });
+    }
+    if (!revoked) {
+      await customAlert(
+        'You have been signed out on this device, but we could not reach the server to end the session everywhere. If this was not your own device, please change your password.',
+        'Signed out',
+        'warning'
+      );
     }
   };
 
@@ -173,11 +186,11 @@ export function Profile() {
               </div>
             )}
             
-            {user?.role !== 'individual' && (
+            {user?.role !== 'individual' && !!(user as any)?.university && (
               <div className="flex flex-row items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-1 rounded-md">
                 <Mortarboard01Icon size={12} className="text-primary" />
                 <span className="text-[11px] font-bold text-primary">
-                  {(user as any)?.university || 'Lead City University'}
+                  {(user as any)?.university}
                 </span>
               </div>
             )}

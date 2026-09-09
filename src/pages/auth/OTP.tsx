@@ -57,12 +57,31 @@ export function OTP() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const newOtp = [...otp];
-      newOtp[index - 1] = '';
-      setOtp(newOtp);
-      inputRefs.current[index - 1]?.focus();
+    if (e.key === 'Backspace') {
+      if (otp[index]) {
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      } else if (index > 0) {
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+        inputRefs.current[index - 1]?.focus();
+      }
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+    if (!pasted) return;
+    const newOtp = [...otp];
+    for (let i = 0; i < pasted.length; i++) {
+      newOtp[i] = pasted[i];
+    }
+    setOtp(newOtp);
+    const nextIdx = Math.min(pasted.length, OTP_LENGTH - 1);
+    inputRefs.current[nextIdx]?.focus();
   };
 
   const handleVerify = async () => {
@@ -88,7 +107,8 @@ export function OTP() {
         customAlert(response.message || 'Verification failed', 'Error', 'error');
       }
     } catch (error: any) {
-      customAlert(error.message || 'An error occurred', 'Error', 'error');
+      const msg = error.response?.data?.error?.message || error.response?.data?.message || error.message || 'An error occurred';
+      customAlert(msg, 'Error', 'error');
     } finally {
       setLoading(false);
     }
@@ -160,6 +180,8 @@ export function OTP() {
                   value={digit}
                   onChange={e => handleDigitChange(e.target.value, i)}
                   onKeyDown={e => handleKeyDown(e, i)}
+                  onPaste={handlePaste}
+                  onFocus={e => e.target.select()}
                   inputMode="numeric"
                   maxLength={1}
                   // Only the first box advertises one-time-code; iOS fills the

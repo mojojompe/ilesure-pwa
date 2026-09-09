@@ -17,7 +17,11 @@ interface ShortletRate {
 interface BookAppointmentModalProps {
   visible: boolean;
   onClose: () => void;
+<<<<<<< HEAD
   onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any }) => void;
+=======
+  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; moveInDate?: string }) => void;
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
   listing: {
     title: string;
     rentAnnual: number;
@@ -26,6 +30,9 @@ interface BookAppointmentModalProps {
     needsRoommate?: boolean;
     shareable?: boolean;
     propertyType?: string;
+    areaCluster?: string;
+    city?: string;
+    address?: string;
     shortletRates?: ShortletRate[];
     shortletPricing?: {
       hourly?: number;
@@ -50,6 +57,11 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [rateQuantity, setRateQuantity] = useState(1);
   const [selectedRateId, setSelectedRateId] = useState<string>('');
+  const [moveInDate, setMoveInDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
 
   const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
 
@@ -105,11 +117,19 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
     };
     
     if (isShortlet) {
+<<<<<<< HEAD
       onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, userDetails });
     } else {
       onConfirm({ requiresRoommate: isShareable && includeRoommate, userDetails });
+=======
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, moveInDate });
+    } else {
+      onConfirm({ requiresRoommate: isShareable && includeRoommate, moveInDate });
+>>>>>>> 1c10007a4e6717c3e8d5e9b1e47a57f6078a5f35
     }
   };
+
+  const dynamicLocation = [listing?.areaCluster, listing?.city].filter(Boolean).join(', ') || listing?.address || 'Nigeria';
 
   return (
     <AnimatePresence>
@@ -137,7 +157,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
             
             <div className="flex justify-between items-center px-6 py-4 border-b border-borderLight shrink-0">
               <h2 className="text-xl font-bold text-textPrimary">Book Appointment</h2>
-              <button onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
+              <button
+          /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+          aria-label="Close" onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
                 <Cancel01Icon size={20} />
               </button>
             </div>
@@ -145,7 +167,20 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
             <div className="p-6 overflow-y-auto flex-1">
               <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm">
                 <h3 className="text-lg font-bold text-textPrimary mb-1">{listing?.title}</h3>
-                <p className="text-sm text-textSecondary">Ibadan, Nigeria</p>
+                <p className="text-sm text-textSecondary">{dynamicLocation}</p>
+              </div>
+
+              <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm">
+                <label className="block text-sm font-semibold text-textPrimary mb-2">
+                  {isShortlet ? 'Check-in Date' : 'Target Move-in Date'}
+                </label>
+                <input
+                  type="date"
+                  min={new Date().toISOString().split('T')[0]}
+                  value={moveInDate}
+                  onChange={(e) => setMoveInDate(e.target.value)}
+                  className="w-full bg-background border border-borderLight rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
+                />
               </div>
 
               <h4 className="text-base font-semibold text-textPrimary mb-3">Your Details</h4>
