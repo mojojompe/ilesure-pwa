@@ -9,40 +9,40 @@ const config: Config = {
     extend: {
       colors: {
         // Core brand
-        'primary':        '#6B3A1F', // Burnt Brown
+        'primary':        '#6B3A1F',
         'primary-dark':   '#4E2A14',
         'primary-light':  '#9B5B35',
 
-        'accent':         '#C97B1C', // Mustard
+        'accent':         '#C97B1C',
         'accent-light':   '#E8941E',
         'accent-dark':    '#A65D15',
 
         // Backgrounds & surfaces
-        'background':     '#FAFAF8', // off-white
-        'surface':        '#FFFFFF', // clay-surface
-        'soft-surface':   '#F5F0EB', // soft-surface
-        'surfaceLight':   '#FAF3EE', // burnt-brown-xpale
+        'background':     '#FDF6E3',
+        'surface':        '#FFFFFF',
+        'soft-surface':   '#FDF6E3',
+        'surfaceLight':   '#FFFDF7',
 
         // Text
-        'text-primary':   '#1C0A00',
-        'text-secondary': '#6B4C3B',
-        /* A11Y-FIX (QA-A11Y-003): #A08070 is 3.61:1 on white.
-           #8A6A5A is 4.90:1. */
-        'text-tertiary':  '#8A6A5A',
+        'text-primary':   '#2D1B12',
+        'text-secondary': '#6B4F3A',
+        'text-tertiary':  '#A08070',
         'text-inverse':   '#FFFFFF',
-        'text-disabled':  '#C4AFA4',
-        'text-muted':     '#C4AFA4',
+        'text-disabled':  '#C4B5A5',
+        'text-muted':     '#BCA99A',
         // camelCase aliases used in JSX
-        'textPrimary':    '#1C0A00',
-        'textSecondary':  '#6B4C3B',
-        'textTertiary':   '#8A6A5A',
-        'textMuted':      '#C4AFA4',
+        'textPrimary':    '#2D1B12',
+        'textSecondary':  '#6B4F3A',
+        'textTertiary':   '#A08070',
+        'textMuted':      '#BCA99A',
 
         // Borders
-        'border':         '#E7DCD4', // clay-border
-        'border-light':   '#F2EDE8', // clay-border-light
-        'border-dark':    '#D4C5B8', // clay-border-dark
-        'borderLight':    '#F2EDE8',
+        'border':         '#E7DCD4',
+        'border-light':   '#F0E8E2',
+        'border-dark':    '#D4C5B8',
+        'borderLight':    '#F0E8E2',
+
+        // Status
         'status-success': '#4CAF50',
         'status-warning': '#FF9800',
         'status-error':   '#E53935',
@@ -52,21 +52,21 @@ const config: Config = {
         'warning':        '#FF9800',
 
         // Buttons
-        'btn-primary':    '#3E1F0A',
-        'btn-mustard':    '#E1AD01',
+        'btn-primary':    '#6B3A1F',
+        'btn-mustard':    '#C97B1C',
 
         // Tiers
         'tier-free':       '#A08070',
         'tier-basic':      '#2196F3',
         'tier-premium':    '#4CAF50',
-        'tier-enterprise': '#E1AD01',
+        'tier-enterprise': '#C97B1C',
 
         // Legacy aliases from index.css components
-        'burnt-brown':      '#3E1F0A',
-        'burnt-brown-pale': '#F5EDE7',
-        'mustard':          '#E1AD01',
-        'mustard-pale':     '#FDF6DC',
-        'off-white':        '#FAFAF9',
+        'burnt-brown':      '#6B3A1F',
+        'burnt-brown-pale': '#F2E8DF',
+        'mustard':          '#C97B1C',
+        'mustard-pale':     '#FAF1CC',
+        'off-white':        '#FDF6E3',
         'clay-border':      '#E7DCD4',
         'clay-border-light':'#F0E8E2',
       },

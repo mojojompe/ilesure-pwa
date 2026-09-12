@@ -4,6 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton, NotificationSkeleton } from '../../components/ui/SkeletonLoader';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
+import { useNavigate } from 'react-router-dom';
 import { 
   Notification01Icon, 
   Cancel01Icon,
@@ -11,12 +12,46 @@ import {
   UserMultipleIcon,
   CheckmarkBadge01Icon,
   Alert02Icon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  UserCheck01Icon,
+  Book01Icon,
+  Time02Icon,
+  CreditCardIcon,
+  CancelCircleIcon,
+  SecurityCheckIcon,
+  Comment01Icon
 } from '@hugeicons/react';
 import { notificationService } from '../../api/notificationService';
 import { socketService } from '../../api/socketService';
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string }> = {
+  // Matches
+  match_found: { icon: UserMultipleIcon, color: '#E1AD01', bg: '#FEF3C7' },
+  match_accepted: { icon: UserCheck01Icon, color: '#4CAF50', bg: '#E8F5E9' },
+  match_declined: { icon: CancelCircleIcon, color: '#F44336', bg: '#FFEBEE' },
+  match_message: { icon: Comment01Icon, color: '#3E1F0A', bg: '#F2F0EC' },
+  // Listings
+  listing_approved: { icon: Home01Icon, color: '#4CAF50', bg: '#E8F5E9' },
+  listing_rejected: { icon: Alert02Icon, color: '#F44336', bg: '#FFEBEE' },
+  listing_expired: { icon: Time02Icon, color: '#FF9800', bg: '#FFF3E0' },
+  // Bookings
+  booking_requested: { icon: Book01Icon, color: '#E1AD01', bg: '#FEF3C7' },
+  booking_accepted: { icon: CheckmarkBadge01Icon, color: '#4CAF50', bg: '#E8F5E9' },
+  booking_declined: { icon: CancelCircleIcon, color: '#F44336', bg: '#FFEBEE' },
+  booking_payment_received: { icon: CreditCardIcon, color: '#4CAF50', bg: '#E8F5E9' },
+  booking_cancelled: { icon: CancelCircleIcon, color: '#F44336', bg: '#FFEBEE' },
+  rent_reminder: { icon: Time02Icon, color: '#FF9800', bg: '#FFF3E0' },
+  // Security
+  account_verified: { icon: SecurityCheckIcon, color: '#4CAF50', bg: '#E8F5E9' },
+  account_suspended: { icon: Alert02Icon, color: '#F44336', bg: '#FFEBEE' },
+  account_deleted: { icon: CancelCircleIcon, color: '#F44336', bg: '#FFEBEE' },
+  kyc_approved: { icon: SecurityCheckIcon, color: '#4CAF50', bg: '#E8F5E9' },
+  kyc_rejected: { icon: Alert02Icon, color: '#F44336', bg: '#FFEBEE' },
+  // System
+  system_announcement: { icon: InformationCircleIcon, color: '#2196F3', bg: '#E3F2FD' },
+  message: { icon: Comment01Icon, color: '#3E1F0A', bg: '#F2F0EC' },
+  
+  // Fallbacks
   match: { icon: UserMultipleIcon, color: '#E1AD01', bg: '#FEF3C7' },
   listing: { icon: Home01Icon, color: '#3E1F0A', bg: '#F2F0EC' },
   booking: { icon: CheckmarkBadge01Icon, color: '#4CAF50', bg: '#E8F5E9' },
@@ -73,8 +108,10 @@ export function Notifications() {
     };
   }, []);
 
+  const navigate = useNavigate();
+
   const handleNotificationPress = async (notif: any) => {
-    // In a real app, open modal or navigate. Here we just mark as read.
+    // Mark as read if not already read
     if (!notif.readAt && notif.id !== 'system-bank-account-req') {
       try {
         await notificationService.markAsRead(notif.id || notif._id);
@@ -84,6 +121,25 @@ export function Notifications() {
       } catch (error) {
         console.error('Failed to mark as read:', error);
       }
+    }
+
+    // Deep linking navigation based on notification type
+    const type = notif.type;
+    const data = notif.data || {};
+
+    if (type.startsWith('booking_')) {
+      if (data.bookingId) navigate(`/booking/${data.bookingId}`);
+      else navigate('/bookings');
+    } else if (type.startsWith('listing_')) {
+      if (data.listingId) navigate(`/listing/${data.listingId}`);
+      else navigate('/explore');
+    } else if (type.startsWith('match_')) {
+      navigate('/matches');
+    } else if (type === 'message' || type === 'match_message') {
+      if (data.chatId) navigate(`/chat/${data.chatId}`);
+      else navigate('/messages');
+    } else if (type.startsWith('account_') || type.startsWith('kyc_')) {
+      navigate('/settings/verification');
     }
   };
 

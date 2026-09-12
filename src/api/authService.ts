@@ -107,7 +107,7 @@ export const authService = {
     // SECURITY-FIX: never log the login body (email/password) or the response
     // (accessToken/refreshToken). Plaintext credentials/tokens must not reach the
     // console or any telemetry that captures console output.
-    const response = await apiClient.post<AuthResponse>('/auth/login', data);
+    const response = await apiClient.post<AuthResponse>('/auth/login', { ...data, intent: 'pwa' });
     return response.data;
   },
 
@@ -181,6 +181,25 @@ export const authService = {
     }
   },
 
+  /**
+   * Authenticates directly with Google via popup/One Tap, bypassing the redirect flow.
+   * Sends the authorization code obtained from @react-oauth/google to the backend.
+   */
+  async directGoogleSignIn(code: string, intent: string = 'pwa'): Promise<{
+    success: boolean;
+    user?: any;
+    accessToken?: string;
+    refreshToken?: string;
+    error?: { code?: string; message?: string };
+  }> {
+    try {
+      const response = await apiClient.post<any>('/auth/google/direct-signin', { code, intent });
+      return response.data;
+    } catch (error: any) {
+      return { success: false, error: error?.response?.data?.error || { message: 'Sign-in failed' } };
+    }
+  },
+
   async getProfile(): Promise<{ success: boolean; data: UserProfile }> {
     const response = await apiClient.get<{ success: boolean; data: UserProfile }>('/users/me');
     return response.data;
@@ -190,6 +209,26 @@ export const authService = {
     // QA-AGT-004 (PWA variant): the backend routes PUT for this resource; PATCH returned 404,
     // so profile edits were never saved.
     const response = await apiClient.put<{ success: boolean; data: UserProfile }>('/users/me', data);
+    return response.data;
+  },
+
+  async requestAccountDeletion(): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>('/auth/delete-account/request');
+    return response.data;
+  },
+
+  async confirmAccountDeletion(otp: string, confirmText: string): Promise<{ success: boolean }> {
+    const response = await apiClient.post<{ success: boolean }>('/auth/delete-account/confirm', { otp, confirmText });
+    return response.data;
+  },
+
+  async requestReactivation(email: string): Promise<{ success: boolean }> {
+    const response = await apiClient.post<{ success: boolean }>('/auth/reactivate/request', { email });
+    return response.data;
+  },
+
+  async confirmReactivation(email: string, otp: string): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/auth/reactivate/confirm', { email, otp });
     return response.data;
   },
 };

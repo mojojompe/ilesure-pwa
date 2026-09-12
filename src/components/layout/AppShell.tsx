@@ -3,6 +3,7 @@ import { BottomTabBar } from './BottomTabBar';
 import { clsx } from 'clsx';
 import { useLocation } from 'react-router-dom';
 import { InstallPrompt } from '../ui/InstallPrompt';
+import { NotificationPermissionBanner } from '../notifications/NotificationPermissionBanner';
 
 interface AppShellProps {
   children: ReactNode;
@@ -30,6 +31,7 @@ export function AppShell({ children, hideTabBar = false }: AppShellProps) {
       {!shouldHideTabBar && <BottomTabBar />}
       
       <InstallPrompt />
+      <NotificationPermissionBanner />
     </div>
   );
 }

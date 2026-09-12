@@ -70,26 +70,37 @@ function InertToggle({ on }: { on?: boolean }) {
 }
 
 function SettingsGroup({ rows, withToggle }: { rows: SettingRow[]; withToggle: boolean }) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] mb-6">
-      {rows.map((item, idx) => (
-        <div
-          key={item.id}
-          className={clsx(
-            'flex justify-between items-center px-4 py-4',
-            idx < rows.length - 1 && 'border-b border-borderLight'
-          )}
-        >
-          <div className="flex-1 mr-4">
-            <h4 className="text-[15px] font-semibold text-textPrimary mb-0.5">{item.title}</h4>
-            <p className="text-sm text-textSecondary leading-snug">{item.subtitle}</p>
+      {rows.map((item, idx) => {
+        const isDelete = item.id === 'delete';
+
+        return (
+          <div
+            key={item.id}
+            onClick={isDelete ? () => navigate('/settings/delete-account') : undefined}
+            className={clsx(
+              'flex justify-between items-center px-4 py-4',
+              idx < rows.length - 1 && 'border-b border-borderLight',
+              isDelete && 'cursor-pointer hover:bg-surfaceLight'
+            )}
+          >
+            <div className="flex-1 mr-4">
+              <h4 className={clsx(
+                "text-[15px] font-semibold mb-0.5",
+                isDelete ? "text-error" : "text-textPrimary"
+              )}>{item.title}</h4>
+              <p className="text-sm text-textSecondary leading-snug">{item.subtitle}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {!isDelete && <ComingSoon />}
+              {withToggle && !isDelete && <InertToggle on={item.defaultOn} />}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ComingSoon />
-            {withToggle && <InertToggle on={item.defaultOn} />}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -104,8 +115,7 @@ export function PrivacySecurity() {
 
         <div className="flex-1 overflow-y-auto px-4 pb-12">
           <p className="mt-6 mb-4 rounded-2xl border border-border bg-surface px-4 py-3 text-sm leading-snug text-textSecondary">
-            These controls are not available yet. To ask about your data or to close your
-            account in the meantime, contact support and we will handle it for you.
+            Some of these controls are not available yet. To ask about your data, contact support.
           </p>
 
           <h3 className="text-xs font-bold tracking-wide text-textTertiary mb-2 mt-6 uppercase">

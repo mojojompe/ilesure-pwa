@@ -52,7 +52,7 @@ export function BottomTabBar() {
             >
               <div className={clsx(
                 'relative p-2 rounded-2xl transition-all duration-300',
-                isActive ? 'bg-btn-primary/10 text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
+                isActive ? 'text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
               )}>
                 <Icon 
                   size={24} 
@@ -78,7 +78,7 @@ export function BottomTabBar() {
           >
             <div className={clsx(
               'relative p-2 rounded-2xl transition-all duration-300',
-              isMoreButtonActive ? 'bg-btn-primary/10 text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
+              isMoreButtonActive ? 'text-btn-primary' : 'text-textSecondary hover:bg-surfaceLight'
             )}>
               <MoreHorizontalIcon 
                 size={24} 

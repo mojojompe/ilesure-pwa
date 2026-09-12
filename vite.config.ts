@@ -76,6 +76,7 @@ export default defineConfig(({ command }) => ({
         // fetched on demand by the runtime caching rules below.
         globPatterns: ['**/*.{js,css,html,ico,svg,webp}'],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024, // 2 MiB
+        importScripts: ['/custom-sw.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.ilesure\.com\/api\/v1\/.*/i,

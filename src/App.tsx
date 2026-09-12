@@ -10,7 +10,6 @@ import { RoleSelection } from './pages/auth/RoleSelection';
 import { SchoolSelection } from './pages/auth/SchoolSelection';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { OTP } from './pages/auth/OTP';
-import { GoogleCallback } from './pages/auth/GoogleCallback';
 
 import { Discover } from './pages/tabs/Discover';
 import { Roommates } from './pages/tabs/Roommates';
@@ -45,6 +44,7 @@ import { PrivacySecurity } from './pages/settings/PrivacySecurity';
 import { TermsPrivacy } from './pages/settings/TermsPrivacy';
 import { HelpSupport } from './pages/settings/HelpSupport';
 import { EditProfile } from './pages/settings/EditProfile';
+import { DeleteAccount } from './pages/settings/DeleteAccount';
 import { AlertModal } from './components/common/AlertModal';
 import { PWAInstallModal } from './components/common/PWAInstallModal';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
@@ -99,8 +99,6 @@ export default function App() {
           <Route path="/auth/school" element={<SchoolSelection />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/otp" element={<OTP />} />
-          {/* Google sign-in returns here with the session in the query string (P-L1). */}
-          <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
           {/* Protected Routes - Only for Students and Individuals on PWA */}
           <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
@@ -135,6 +133,7 @@ export default function App() {
             <Route path="/saved-listings" element={<SavedListings />} />
             <Route path="/settings/notifications" element={<NotificationSettings />} />
             <Route path="/settings/privacy" element={<PrivacySecurity />} />
+            <Route path="/settings/delete-account" element={<DeleteAccount />} />
             <Route path="/terms" element={<TermsPrivacy />} />
             <Route path="/support" element={<HelpSupport />} />
             <Route path="/settings/edit-profile" element={<EditProfile />} />

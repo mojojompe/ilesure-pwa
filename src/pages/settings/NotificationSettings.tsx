@@ -6,12 +6,14 @@ import { clsx } from 'clsx';
 import notificationService from '../../api/notificationService';
 import { customAlert } from '../../stores/alertStore';
 
+import { pushNotificationService } from '../../api/pushNotificationService';
+
 const NOTIFICATION_SETTINGS = [
   { id: 'bookings', title: 'Booking Updates', description: 'Get notified about booking status changes', hasSwitch: true },
   { id: 'messages', title: 'New Messages', description: 'Receive alerts when you get new messages', hasSwitch: true },
-  { id: 'listings', title: 'New Listings', description: 'Get notified about new listings in your area', hasSwitch: true },
+  { id: 'listings', title: 'Listing Updates', description: 'Alerts for listing approvals, rejections, or expiry', hasSwitch: true },
   { id: 'matches', title: 'Roommate Matches', description: 'Alerts about new roommate compatibility', hasSwitch: true },
-  { id: 'price', title: 'Price Drops', description: 'Get notified when saved listings have price changes', hasSwitch: true },
+  { id: 'security', title: 'Account Security', description: 'Alerts for verifications, suspensions, and KYC', hasSwitch: true },
   { id: 'reminders', title: 'Payment Reminders', description: 'Reminders for upcoming payments', hasSwitch: true },
 ];
 
@@ -25,9 +27,9 @@ const DEFAULTS: Record<string, boolean> = {
   messages: true,
   listings: false,
   matches: true,
-  price: false,
+  security: true,
   reminders: true,
-  push: true,
+  push: false,
   email: true,
 };
 
@@ -40,7 +42,17 @@ export function NotificationSettings() {
     const fetchSettings = async () => {
       try {
         const response = await notificationService.getSettings();
-        setSettings(prev => ({ ...prev, ...(response.data || {}) }));
+        // Also check actual push permission status to sync the UI
+        let pushStatus = response.data?.push || false;
+        if ('Notification' in window && Notification.permission === 'granted') {
+           const reg = await navigator.serviceWorker.getRegistration();
+           const sub = reg ? await reg.pushManager.getSubscription() : null;
+           pushStatus = !!sub;
+        } else {
+           pushStatus = false;
+        }
+        
+        setSettings(prev => ({ ...prev, ...(response.data || {}), push: pushStatus }));
       } catch (error: any) {
         customAlert(error.response?.data?.error?.message || 'Failed to load settings', 'Error', 'error');
       } finally {
@@ -51,7 +63,31 @@ export function NotificationSettings() {
   }, []);
 
   const toggleSetting = async (id: string) => {
-    const updated = { ...settings, [id]: !settings[id] };
+    let newValue = !settings[id];
+    
+    // Handle Push Notifications specifically
+    if (id === 'push') {
+      if (newValue) {
+        const permission = await pushNotificationService.requestPermission();
+        if (permission === 'granted') {
+          const success = await pushNotificationService.subscribeUserToPush();
+          if (!success) {
+            customAlert('Failed to subscribe to push notifications.', 'Error', 'error');
+            return;
+          }
+        } else {
+          customAlert('Push notifications were denied. Please enable them in your browser settings.', 'Permission Denied', 'warning');
+          return; // Don't update state
+        }
+      } else {
+        const success = await pushNotificationService.unsubscribeUserFromPush();
+        if (!success) {
+           console.warn('Failed to unsubscribe from push');
+        }
+      }
+    }
+
+    const updated = { ...settings, [id]: newValue };
     setSettings(updated);
     try {
       await notificationService.updateSettings(updated);

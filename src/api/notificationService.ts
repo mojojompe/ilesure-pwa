@@ -5,7 +5,14 @@ import { apiClient } from './client';
 export interface AppNotification {
   _id: string;
   userId: string;
-  type: 'match' | 'listing' | 'waitlist' | 'interest' | 'booking' | 'verification' | 'message' | 'system';
+  type: 
+    | 'match_found' | 'match_accepted' | 'match_declined' | 'match_message'
+    | 'listing_approved' | 'listing_rejected' | 'listing_expired'
+    | 'booking_requested' | 'booking_accepted' | 'booking_declined' | 'booking_payment_received' | 'booking_cancelled'
+    | 'rent_reminder'
+    | 'account_verified' | 'account_suspended' | 'account_deleted'
+    | 'kyc_approved' | 'kyc_rejected'
+    | 'system_announcement' | 'message';
   title: string;
   body: string;
   read: boolean;
