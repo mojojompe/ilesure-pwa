@@ -13,14 +13,14 @@ const config: Config = {
         'primary-dark':   '#4E2A14',
         'primary-light':  '#9B5B35',
 
-        'accent':         '#C97B1C',
+        'accent':         '#4E2A14',
         'accent-light':   '#E8941E',
-        'accent-dark':    '#A65D15',
+        'accent-dark':    '#4E2A14',
 
         // Backgrounds & surfaces
-        'background':     '#FDF6E3',
+        'background':     '#FFFFFF',
         'surface':        '#FFFFFF',
-        'soft-surface':   '#FDF6E3',
+        'soft-surface':   '#FFFFFF',
         'surfaceLight':   '#FFFDF7',
 
         // Text
