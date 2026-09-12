@@ -21,7 +21,7 @@ const config: Config = {
         'background':     '#FFFFFF',
         'surface':        '#FFFFFF',
         'soft-surface':   '#FFFFFF',
-        'surfaceLight':   '#FFFDF7',
+        'surfaceLight':   '#fff4d4ff',
 
         // Text
         'text-primary':   '#2D1B12',
@@ -32,7 +32,7 @@ const config: Config = {
         'text-muted':     '#BCA99A',
         // camelCase aliases used in JSX
         'textPrimary':    '#2D1B12',
-        'textSecondary':  '#6B4F3A',
+        'textSecondary':  '#4E2A14',
         'textTertiary':   '#A08070',
         'textMuted':      '#BCA99A',
 
@@ -52,13 +52,13 @@ const config: Config = {
         'warning':        '#FF9800',
 
         // Buttons
-        'btn-primary':    '#6B3A1F',
-        'btn-mustard':    '#C97B1C',
+        'btn-primary':    '#4E2A14',
+        'btn-mustard':    '#4E2A14',
 
         // Tiers
         'tier-free':       '#A08070',
-        'tier-basic':      '#2196F3',
-        'tier-premium':    '#4CAF50',
+        'tier-basic':      '#4E2A14',
+        'tier-premium':    '#8d5510ff',
         'tier-enterprise': '#C97B1C',
 
         // Legacy aliases from index.css components
