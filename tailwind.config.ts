@@ -21,7 +21,7 @@ const config: Config = {
         'background':     '#FFFFFF',
         'surface':        '#FFFFFF',
         'soft-surface':   '#FFFFFF',
-        'surfaceLight':   '#fff4d4ff',
+        'surfaceLight':   '#fffdf7',
 
         // Text
         'text-primary':   '#2D1B12',
