@@ -228,9 +228,13 @@ export function ChatScreen() {
               onClick={() => setShowProfileModal(true)}
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                  <span className="text-white font-bold">{chatInfo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
-                </div>
+                {chatInfo.avatar ? (
+                  <img src={chatInfo.avatar} alt={chatInfo.name} className="w-10 h-10 rounded-full object-cover bg-surfaceLight" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+                    <span className="text-white font-bold uppercase">{chatInfo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                  </div>
+                )}
                 {chatInfo.isOnline && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-surface" />
                 )}
@@ -494,9 +498,13 @@ export function ChatScreen() {
                   <Cancel01Icon size={24} />
                 </button>
 
-                <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center mb-4">
-                  <span className="text-3xl font-bold text-white">{chatInfo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
-                </div>
+                {chatInfo.avatar ? (
+                  <img src={chatInfo.avatar} alt={chatInfo.name} className="w-20 h-20 rounded-full object-cover bg-surfaceLight mb-4" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center mb-4">
+                    <span className="text-3xl font-bold text-white uppercase">{chatInfo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                  </div>
+                )}
 
                 <h2 className="text-2xl font-black text-textPrimary mb-1">{chatInfo.name}</h2>
                 <p className="text-sm text-textSecondary mb-6">

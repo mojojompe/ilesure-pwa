@@ -246,7 +246,7 @@ export function Register() {
         <AnimatePresence>
           {isReady && (
             <motion.img
-              src="/images/register_illustration_1788617130132.jpg"
+              src="/images/register_illustration_1788617130132.png"
               className="absolute -right-[60px] top-[5%] w-[260px] h-[260px] object-cover rounded-l-[100px] shadow-xl z-0"
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}

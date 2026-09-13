@@ -10,6 +10,7 @@ import {
   Chatting01Icon
 } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
+import { customConfirm } from '../../stores/alertStore';
 import { RentRenewal } from '../../components/ui/RentRenewal';
 
 export function MyApartments() {
@@ -44,7 +45,8 @@ export function MyApartments() {
   }, [fetchApartments]);
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
+    const isConfirmed = await customConfirm('Are you sure you want to cancel this booking?');
+    if (isConfirmed) {
       try {
         await bookingService.cancelBooking(bookingId);
         fetchApartments();

@@ -162,7 +162,7 @@ export function Login() {
         <AnimatePresence>
           {isReady && (
             <motion.img
-              src="/images/login_illustration_1788617118204.jpg"
+              src="/images/login_illustration_1788617118204.png"
               className="absolute -right-[60px] top-[10%] w-[260px] h-[260px] object-cover rounded-l-[100px] shadow-xl z-0"
               initial={{ x: 150, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}

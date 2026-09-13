@@ -272,14 +272,22 @@ export function SharedBookingDetail() {
           {/* Actions */}
           <div className="flex flex-col gap-3 mt-2">
             {isPayable && (
-              <Button
-                fullWidth
-                onClick={handlePay}
-                disabled={paying}
-                className="shadow-[0_4px_12px_rgba(107,79,58,0.25)]"
-              >
-                {paying ? 'Processing...' : `Pay My Share (₦${myParticipant?.amountDue?.toLocaleString()})`}
-              </Button>
+              <div className="mt-8">
+                {booking.hasChatted === false ? (
+                  <div className="bg-mustard-pale text-mustard-dark p-3 rounded-lg text-sm text-center mb-3">
+                    You must communicate with your roommate via chat before proceeding to payment.
+                  </div>
+                ) : null}
+                <Button 
+                  fullWidth 
+                  onClick={handlePay} 
+                  loading={paying}
+                  disabled={booking.hasChatted === false}
+                  className="bg-mustard text-white font-bold py-4 rounded-xl shadow-clay active:scale-95 transition-transform"
+                >
+                  Pay My Share (₦{myParticipant?.amountDue?.toLocaleString('en-NG')})
+                </Button>
+              </div>
             )}
 
             {myPaid && !booking.status.includes('confirmed') && (

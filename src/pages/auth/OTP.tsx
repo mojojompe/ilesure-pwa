@@ -147,7 +147,7 @@ export function OTP() {
       <div className="flex flex-col h-full bg-[#3E1F0A] relative pb-safe">
         {/* Header Background */}
         <div className="absolute top-[10%] -right-[60px] w-[260px] h-[260px] pointer-events-none z-0">
-          <img src="/images/otp_illustration_1788617227136.jpg" alt="OTP Illustration" className="w-full h-full object-cover rounded-l-[100px] shadow-xl" />
+          <img src="/images/otp_illustration_1788617227136.png" alt="OTP Illustration" className="w-full h-full object-cover rounded-l-[100px] shadow-xl" />
         </div>
 
         <div className="flex-none px-6 pt-12 pb-8 z-10">

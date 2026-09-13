@@ -134,7 +134,7 @@ export const authService = {
   },
 
   async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
-    const response = await apiClient.post<ForgotPasswordResponse>('/auth/forgot-password', { email });
+    const response = await apiClient.post<ForgotPasswordResponse>('/auth/forgot-password', { email, client: 'pwa' });
     return response.data;
   },
 
