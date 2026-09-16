@@ -78,42 +78,6 @@ export function Login() {
     return Object.keys(e).length === 0;
   };
 
-  const [reactivationStep, setReactivationStep] = useState<boolean>(false);
-  const [otp, setOtp] = useState('');
-
-  const handleReactivationRequest = async () => {
-    setLoading(true);
-    try {
-      await authService.requestReactivation(email);
-      setReactivationStep(true);
-    } catch (err: any) {
-      setErrors({ general: err.response?.data?.message || 'Failed to request reactivation.' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReactivateConfirm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length < 6) {
-      setErrors({ general: 'Enter a valid 6-digit code' });
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await authService.confirmReactivation(email, otp);
-      if (response.success && response.user) {
-        const userWithMeta = { ...response.user, createdAt: new Date().toISOString() } as any;
-        setUser(userWithMeta);
-        setTokens(response.accessToken, response.refreshToken);
-        navigate('/');
-      }
-    } catch (err: any) {
-      setErrors({ general: err.response?.data?.message || 'Invalid code. Try again.' });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,13 +107,8 @@ export function Login() {
         setErrors({ general: 'Invalid email or password. Try again.' });
       }
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || '';
-      // If the backend indicates the account is soft-deleted:
-      if (errMsg.toLowerCase().includes('deleted') || errMsg.toLowerCase().includes('reactivate') || error.response?.status === 403) {
-        await handleReactivationRequest();
-      } else {
-        setErrors({ general: errMsg || 'Invalid email or password. Try again.' });
-      }
+      const errMsg = error.response?.data?.error?.message || error.response?.data?.message || error.message || '';
+      setErrors({ general: errMsg || 'Invalid email or password. Try again.' });
     } finally {
       setLoading(false);
     }
@@ -222,46 +181,7 @@ export function Login() {
                 </div>
               )}
 
-              {reactivationStep ? (
-                <div className="flex flex-col gap-4 py-4">
-                  <div className="text-center mb-4">
-                    <h2 className="text-xl font-bold text-textPrimary mb-2">Reactivate Account</h2>
-                    <p className="text-sm text-textSecondary leading-snug">
-                      Your account was previously deleted. Enter the 6-digit code sent to your email to reactivate it and restore your data.
-                    </p>
-                  </div>
-                  <Input
-                    label="Reactivation Code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="000000"
-                    type="text"
-                    maxLength={6}
-                    error={errors.general}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleReactivateConfirm}
-                    className="w-full bg-primary text-white !py-4 rounded-[50px] shadow-sm mt-4"
-                    disabled={loading || otp.length < 6}
-                  >
-                    {loading ? 'Reactivating...' : 'Confirm Reactivation'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full !border-border-light text-text-primary !py-4 rounded-[50px] mt-2"
-                    onClick={() => {
-                      setReactivationStep(false);
-                      setOtp('');
-                      setErrors({});
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <>
+              <>
                   <div className="flex flex-col gap-3">
                     <Input
                       label="Email"
@@ -334,7 +254,7 @@ export function Login() {
                     </div>
                   </div>
                 </>
-              )}
+
             </form>
           </motion.div>
         )}
