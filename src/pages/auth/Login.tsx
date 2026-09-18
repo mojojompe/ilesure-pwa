@@ -147,15 +147,6 @@ export function Login() {
               >
                 <ArrowLeft01Icon size={24} className="text-white" />
               </button>
-
-              <div className="pr-[110px] mb-[34px] mt-auto">
-                <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
-                  Welcome back !
-                </h1>
-                <p className="text-base text-white/85 leading-[22px] font-medium">
-                  Sign in to find your sure home anywhere
-                </p>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -173,6 +164,13 @@ export function Login() {
               delay: 0.15
             }}
           >
+<div className="text-center mb-1">
+                <h2 className="text-2xl font-extrabold text-text-primary tracking-[-0.5px]">Welcome Back 👋
+                </h2>
+                <p className="text-base text-text-secondary mt-1 mb-6">
+                  Login to your Account...
+                </p>
+              </div>
             <form onSubmit={handleLogin} className="flex-1 overflow-y-auto px-6 pt-8 pb-12 flex flex-col">
               {errors.general && (
                 <div className="flex flex-row items-center gap-2 bg-[#FFEBEE] rounded-lg p-4 mb-6 border border-[#FFCDD2]">
