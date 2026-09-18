@@ -269,15 +269,6 @@ export function Register() {
               >
                 <ArrowLeft01Icon size={24} className="text-white" />
               </button>
-
-              <div className="pr-[90px] mb-[34px]">
-                <h1 className="text-[32px] font-black text-white tracking-[-1px] mb-1">
-                  Create your Account
-                </h1>
-                <p className="text-base text-white/85 leading-[22px] font-medium">
-                  Join iléSure to find your sure home.
-                </p>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -296,7 +287,7 @@ export function Register() {
               
               <div className="text-center mb-1">
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-[-0.5px]">
-                  {step === 0 ? 'Account Details' : 'Your Details'}
+                  {step === 0 ? 'Create your Account' : 'Your Details'}
                 </h2>
                 <p className="text-base text-text-secondary mt-1 mb-6">
                   {step === 0 ? 'Secure your ideal living space.' : 'Tell us a bit more about you.'}
