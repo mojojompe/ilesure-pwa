@@ -18,7 +18,12 @@ export function AddRatingModal({ visible, onClose, onSubmit, agentName }: AddRat
   const handleSubmit = async () => {
     if (rating === 0) return;
     setLoading(true);
-    await onSubmit(rating, comment);
+    
+    // The backend strictly requires a comment. If the user leaves the optional field blank,
+    // we send a default placeholder so the request doesn't fail with a 400 Bad Request.
+    const finalComment = comment.trim() !== '' ? comment.trim() : 'No comment provided.';
+    
+    await onSubmit(rating, finalComment);
     setLoading(false);
     setRating(0);
     setComment('');

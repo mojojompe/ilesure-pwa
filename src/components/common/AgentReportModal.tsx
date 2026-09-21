@@ -11,15 +11,16 @@ interface AgentReportModalProps {
 }
 
 const REPORT_REASONS = [
-  'Suspicious Activity or Scam',
-  'Fake Property Listing',
-  'Unprofessional Behavior',
-  'Requested Money Before Viewing',
-  'Other'
+  { label: 'Suspicious Activity or Scam', value: 'scam' },
+  { label: 'Fake Property Listing', value: 'fake_listing' },
+  { label: 'Unprofessional Behavior', value: 'abusive_behavior' },
+  { label: 'Requested Money Before Viewing', value: 'scam' },
+  { label: 'Inappropriate Content', value: 'inappropriate_content' },
+  { label: 'Other', value: 'other' }
 ];
 
 export function AgentReportModal({ visible, onClose, agentName, targetId }: AgentReportModalProps) {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState<{ label: string; value: string } | null>(null);
   const [description, setDescription] = useState('');
 
 
@@ -31,7 +32,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
     
     try {
       const { userService } = await import('../../api/userService');
-      await userService.reportAgent(targetId, reason, description || reason);
+      await userService.reportAgent(targetId, reason.value, description || reason.label);
       customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
       onClose();
     } catch (error: any) {
@@ -64,13 +65,13 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
             <div className="flex flex-col gap-2 mb-4">
               {REPORT_REASONS.map(r => (
                 <button 
-                  key={r}
+                  key={r.value + r.label}
                   onClick={() => setReason(r)}
                   className={`p-3 rounded-xl border text-left text-sm font-medium transition-colors ${
-                    reason === r ? 'border-primary bg-primary/5 text-primary' : 'border-borderLight bg-surface text-textSecondary hover:bg-surfaceLight'
+                    reason?.label === r.label ? 'border-primary bg-primary/5 text-primary' : 'border-borderLight bg-surface text-textSecondary hover:bg-surfaceLight'
                   }`}
                 >
-                  {r}
+                  {r.label}
                 </button>
               ))}
             </div>
