@@ -1,50 +1,89 @@
 import { Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 
 import { Splash } from './pages/auth/Splash';
-import { Onboarding } from './pages/auth/Onboarding';
-import { Login } from './pages/auth/Login';
-import { Register } from './pages/auth/Register';
-import { AuthChoice } from './pages/auth/AuthChoice';
-import { RoleSelection } from './pages/auth/RoleSelection';
-import { SchoolSelection } from './pages/auth/SchoolSelection';
-import { ForgotPassword } from './pages/auth/ForgotPassword';
-import { OTP } from './pages/auth/OTP';
+const Onboarding = lazy(() => import('./pages/auth/Onboarding').then(module => ({ default: module.Onboarding })));
 
-import { Discover } from './pages/tabs/Discover';
-import { Roommates } from './pages/tabs/Roommates';
-import { MyApartments } from './pages/tabs/MyApartments';
-import { ChatsList } from './pages/tabs/ChatsList';
-import { Waitlist } from './pages/settings/Waitlist';
-import { SafetyTips } from './pages/common/SafetyTips';
-import { Notifications } from './pages/tabs/Notifications';
-import { Profile } from './pages/tabs/Profile';
+const Login = lazy(() => import('./pages/auth/Login').then(module => ({ default: module.Login })));
 
-import { ListingDetail } from './pages/details/ListingDetail';
-import { AgentProfile } from './pages/details/AgentProfile';
-import { MatchProfile } from './pages/details/MatchProfile';
-import { ChatScreen } from './pages/details/ChatScreen';
-import { LifestyleSurvey } from './pages/roommate/LifestyleSurvey';
-import { IncomingRequests } from './pages/roommate/IncomingRequests';
-import { RoommateProfile } from './pages/roommate/RoommateProfile';
+const Register = lazy(() => import('./pages/auth/Register').then(module => ({ default: module.Register })));
 
-import { Checkout } from './pages/booking/Checkout';
-import { KYC } from './pages/booking/KYC';
-import { Signature } from './pages/booking/Signature';
-import { Payment } from './pages/booking/Payment';
-import { PaymentCallback } from './pages/booking/PaymentCallback';
-import { BookingDetail } from './pages/booking/BookingDetail';
-import { SharedBookingDetail } from './pages/booking/SharedBookingDetail';
-import { PaymentHistory } from './pages/booking/PaymentHistory';
-import { PaymentDetail } from './pages/booking/PaymentDetail';
+const AuthChoice = lazy(() => import('./pages/auth/AuthChoice').then(module => ({ default: module.AuthChoice })));
 
-import { SavedListings } from './pages/settings/SavedListings';
-import { NotificationSettings } from './pages/settings/NotificationSettings';
-import { PrivacySecurity } from './pages/settings/PrivacySecurity';
-import { TermsPrivacy } from './pages/settings/TermsPrivacy';
-import { HelpSupport } from './pages/settings/HelpSupport';
-import { EditProfile } from './pages/settings/EditProfile';
-import { DeleteAccount } from './pages/settings/DeleteAccount';
+const RoleSelection = lazy(() => import('./pages/auth/RoleSelection').then(module => ({ default: module.RoleSelection })));
+
+const SchoolSelection = lazy(() => import('./pages/auth/SchoolSelection').then(module => ({ default: module.SchoolSelection })));
+
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+
+const OTP = lazy(() => import('./pages/auth/OTP').then(module => ({ default: module.OTP })));
+
+
+const Discover = lazy(() => import('./pages/tabs/Discover').then(module => ({ default: module.Discover })));
+
+const Roommates = lazy(() => import('./pages/tabs/Roommates').then(module => ({ default: module.Roommates })));
+
+const MyApartments = lazy(() => import('./pages/tabs/MyApartments').then(module => ({ default: module.MyApartments })));
+
+const ChatsList = lazy(() => import('./pages/tabs/ChatsList').then(module => ({ default: module.ChatsList })));
+
+const Waitlist = lazy(() => import('./pages/settings/Waitlist').then(module => ({ default: module.Waitlist })));
+
+const SafetyTips = lazy(() => import('./pages/common/SafetyTips').then(module => ({ default: module.SafetyTips })));
+
+const Notifications = lazy(() => import('./pages/tabs/Notifications').then(module => ({ default: module.Notifications })));
+
+const Profile = lazy(() => import('./pages/tabs/Profile').then(module => ({ default: module.Profile })));
+
+
+const ListingDetail = lazy(() => import('./pages/details/ListingDetail').then(module => ({ default: module.ListingDetail })));
+
+const AgentProfile = lazy(() => import('./pages/details/AgentProfile').then(module => ({ default: module.AgentProfile })));
+
+const MatchProfile = lazy(() => import('./pages/details/MatchProfile').then(module => ({ default: module.MatchProfile })));
+
+const ChatScreen = lazy(() => import('./pages/details/ChatScreen').then(module => ({ default: module.ChatScreen })));
+
+const LifestyleSurvey = lazy(() => import('./pages/roommate/LifestyleSurvey').then(module => ({ default: module.LifestyleSurvey })));
+
+const IncomingRequests = lazy(() => import('./pages/roommate/IncomingRequests').then(module => ({ default: module.IncomingRequests })));
+
+const RoommateProfile = lazy(() => import('./pages/roommate/RoommateProfile').then(module => ({ default: module.RoommateProfile })));
+
+
+const Checkout = lazy(() => import('./pages/booking/Checkout').then(module => ({ default: module.Checkout })));
+
+const KYC = lazy(() => import('./pages/booking/KYC').then(module => ({ default: module.KYC })));
+
+const Signature = lazy(() => import('./pages/booking/Signature').then(module => ({ default: module.Signature })));
+
+const Payment = lazy(() => import('./pages/booking/Payment').then(module => ({ default: module.Payment })));
+
+const PaymentCallback = lazy(() => import('./pages/booking/PaymentCallback').then(module => ({ default: module.PaymentCallback })));
+
+const BookingDetail = lazy(() => import('./pages/booking/BookingDetail').then(module => ({ default: module.BookingDetail })));
+
+const SharedBookingDetail = lazy(() => import('./pages/booking/SharedBookingDetail').then(module => ({ default: module.SharedBookingDetail })));
+
+const PaymentHistory = lazy(() => import('./pages/booking/PaymentHistory').then(module => ({ default: module.PaymentHistory })));
+
+const PaymentDetail = lazy(() => import('./pages/booking/PaymentDetail').then(module => ({ default: module.PaymentDetail })));
+
+
+const SavedListings = lazy(() => import('./pages/settings/SavedListings').then(module => ({ default: module.SavedListings })));
+
+const NotificationSettings = lazy(() => import('./pages/settings/NotificationSettings').then(module => ({ default: module.NotificationSettings })));
+
+const PrivacySecurity = lazy(() => import('./pages/settings/PrivacySecurity').then(module => ({ default: module.PrivacySecurity })));
+
+const TermsPrivacy = lazy(() => import('./pages/settings/TermsPrivacy').then(module => ({ default: module.TermsPrivacy })));
+
+const HelpSupport = lazy(() => import('./pages/settings/HelpSupport').then(module => ({ default: module.HelpSupport })));
+
+const EditProfile = lazy(() => import('./pages/settings/EditProfile').then(module => ({ default: module.EditProfile })));
+
+const DeleteAccount = lazy(() => import('./pages/settings/DeleteAccount').then(module => ({ default: module.DeleteAccount })));
+
 import { AlertModal } from './components/common/AlertModal';
 import { PWAInstallModal } from './components/common/PWAInstallModal';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
@@ -89,7 +128,9 @@ export default function App() {
   return (
     <CallProvider>
       <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">
-        <Routes>
+        
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
@@ -146,6 +187,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
         <AlertModal />
         <PWAInstallModal />
         {/* Above the router so a call survives navigation and can arrive on any screen. */}

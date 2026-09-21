@@ -20,9 +20,10 @@ export function AuthChoice() {
           {isReady && (
             <>
               <motion.img
-                src="/images/auth_choice_illustration_1788617107149.png"
+                src="/images/auth_choice_memphis.png"
                 className="absolute -right-[60px] top-[10%] w-[280px] h-[280px] object-cover rounded-l-[100px] shadow-xl z-0"
                 initial={{ x: 150, opacity: 0 }}
+
                 animate={{ x: 0, opacity: 1 }}
                 transition={{
                   type: 'spring',

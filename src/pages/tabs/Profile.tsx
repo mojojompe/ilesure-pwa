@@ -25,14 +25,24 @@ import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { listingService } from '../../api/listingService';
 import { userService } from '../../api/userService';
 
+import { useQuery } from '@tanstack/react-query';
+
 export function Profile() {
   const { user, setUser, clearAuth } = useAuthStore();
   const navigate = useNavigate();
-  const [savedCount, setSavedCount] = useState(0);
-  const [matchesCount, setMatchesCount] = useState(0); // Optional: add roommateService if needed
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [matchesCount, setMatchesCount] = useState(0);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const { data: savedData, isLoading: loading, isFetching: refreshing, refetch } = useQuery({
+    queryKey: ['savedListings'],
+    queryFn: async () => {
+      const res = await listingService.getSavedListings();
+      return res.data?.listings || [];
+    },
+    enabled: !!user,
+  });
+
+  const savedCount = savedData?.length || 0;
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,33 +69,7 @@ export function Profile() {
     }
   };
 
-  const fetchProfileData = async (isRefresh = false) => {
-    try {
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
 
-      // We only have listingService.getSavedListings() ready in PWA typically
-      // Fallback matches count to 0 for now
-      try {
-        const savedData = await listingService.getSavedListings();
-        if (savedData.success) {
-          setSavedCount(savedData.data?.listings?.length || 0);
-        }
-      } catch (err) {
-        // ignore
-      }
-
-    } catch (error) {
-      console.error('Failed to fetch profile data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
 
   const handleLogout = async () => {
     const isConfirmed = await customConfirm('Are you sure you want to log out?', 'Logout', 'warning');

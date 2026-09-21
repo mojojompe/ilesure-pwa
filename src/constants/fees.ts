@@ -12,7 +12,7 @@
  */
 
 /** Platform service fee as a percentage of the subtotal (rent + caution + agency). */
-export const PLATFORM_FEE_PERCENT = 8;
+export const PLATFORM_FEE_PERCENT = 5;
 
 /** Roommate matching fee as a percentage of the subtotal. */
 export const ROOMMATE_MATCHING_FEE_PERCENT = 1;
