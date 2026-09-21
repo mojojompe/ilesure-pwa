@@ -165,7 +165,7 @@ export function Login() {
             }}
           >
 <div className="text-center mb-1">
-                <h2 className="text-3xl font-extrabold pt-6 text-text-primary tracking-[-0.5px]">Welcome Back 👋
+                <h2 className="text-3xl font-extrabold pt-10 text-text-primary tracking-[-0.5px]">Welcome Back 👋
                 </h2>
                 <p className="text-base text-text-secondary mt-2 mb-6">
                   Login to your Account...
