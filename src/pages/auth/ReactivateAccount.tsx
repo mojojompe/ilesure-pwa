@@ -118,6 +118,12 @@ export function ReactivateAccount() {
     try {
       const response = await authService.confirmReactivation(email, code);
       if (response.success && response.user) {
+        // The account is back either way, but this app is for renters only, the same
+        // rule Login.tsx applies; portal roles continue on the Web App.
+        if (response.user.role !== 'student' && response.user.role !== 'individual') {
+          setError('Your account is reactivated. Please sign in on the iléSure Web App at app.ilesure.com.');
+          return;
+        }
         // Same shape as Login.tsx's handleLogin: stamp createdAt for the parts of the
         // UI that read it, then set user/tokens and drop into the app.
         const userWithMeta = { ...response.user, createdAt: new Date().toISOString() } as any;
