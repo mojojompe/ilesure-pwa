@@ -31,3 +31,9 @@ dist-ssr
 # vite-plugin-pwa dev-mode service worker output, regenerated on every `npm run dev`,
 # so it produced a spurious diff on every branch. Build output does not belong in git.
 dev-dist/
+
+# One-off local codemod/scratch scripts and scratch files. Not part of the app.
+fix.cjs
+fix2.cjs
+resize.cjs
+temp_store.tsx

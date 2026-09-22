@@ -66,6 +66,9 @@ export function SchoolSelection() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selectedSchool, setSelectedSchool] = useState('lcu');
+  // React-state fallback for missing school logos, replaces an onError handler that
+  // reached into the DOM directly via e.target.parentNode.innerHTML.
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const [suggestionText, setSuggestionText] = useState('');
   const [sendingSuggestion, setSendingSuggestion] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
@@ -178,10 +181,15 @@ export function SchoolSelection() {
                       }`}
                   >
                     <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center shrink-0 overflow-hidden ${isSelected ? 'bg-[#FFF8E1] border border-accent' : 'bg-surface-soft'}`}>
-                      {school.logo ? (
-                        <img src={school.logo} alt={school.shortName} className="w-full h-full object-contain p-1" onError={(e: any) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '🎓'; }} />
+                      {school.logo && !failedLogos.has(school.id) ? (
+                        <img
+                          src={school.logo}
+                          alt={school.shortName}
+                          className="w-full h-full object-contain p-1"
+                          onError={() => setFailedLogos(prev => new Set(prev).add(school.id))}
+                        />
                       ) : (
-                        <span className="text-2xl">{school.icon}</span>
+                        <span className="text-2xl">{school.icon || '🎓'}</span>
                       )}
                     </div>
 

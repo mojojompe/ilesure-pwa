@@ -31,7 +31,7 @@ export interface AuthResponse {
     email: string;
     phone: string;
     role: UserRole;
-    status: 'active' | 'suspended' | 'pending';
+    status: 'active' | 'suspended' | 'pending' | 'inactive' | 'deleted';
     verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
     companyId?: string;
     gender?: string;
@@ -65,7 +65,7 @@ export interface VerifyOTPResponse {
     email: string;
     phone: string;
     role: UserRole;
-    status: 'active' | 'suspended' | 'pending';
+    status: 'active' | 'suspended' | 'pending' | 'inactive' | 'deleted';
     verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
     companyId?: string;
     gender?: string;

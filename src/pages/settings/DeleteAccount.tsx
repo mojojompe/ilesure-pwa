@@ -87,7 +87,7 @@ export function DeleteAccount() {
                     <li>Your chat messages will remain visible to other users.</li>
                   </ul>
                   <p className="font-semibold text-textPrimary mt-4">
-                    Note: You can reactivate your account at any time in the future by signing in with your email again.
+                    Note: You can reactivate your account at any time from the sign-in page, using a code sent to your email.
                   </p>
                 </div>
               </div>

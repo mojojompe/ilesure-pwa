@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { API_CACHE_NAME } from './src/utils/purgeApiCache';
 
 // SECURITY-FIX (P-M5): strip all `console.*` and `debugger` statements from production
 // builds so any residual credential/user-data logging cannot leak in prod. Applied only
@@ -82,7 +83,9 @@ export default defineConfig(({ command }) => ({
             urlPattern: /^https:\/\/api\.ilesure\.com\/api\/v1\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
+              // Kept in sync with src/utils/purgeApiCache.ts, which deletes this same
+              // cache on logout.
+              cacheName: API_CACHE_NAME,
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 // 1 day

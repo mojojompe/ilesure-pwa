@@ -49,7 +49,11 @@ export function Login() {
           navigate('/');
         } else {
           if (response.error?.code === 'ACCOUNT_DELETED' || response.error?.message?.toLowerCase().includes('deleted')) {
-            setErrors({ general: 'Your account was deleted. Please use manual email login to reactivate it.' });
+            // Google gives us no email to prefill (the exchange failed before we
+            // learned who signed in), so send them to the reactivate screen and let
+            // them type it in there.
+            navigate('/auth/reactivate');
+            return;
           } else {
             setErrors({ general: response.error?.message || 'Google Sign-In failed.' });
           }
@@ -107,6 +111,10 @@ export function Login() {
         setErrors({ general: 'Invalid email or password. Try again.' });
       }
     } catch (error: any) {
+      if (error.response?.data?.error?.code === 'ACCOUNT_DELETED') {
+        navigate('/auth/reactivate', { state: { email } });
+        return;
+      }
       const errMsg = error.response?.data?.error?.message || error.response?.data?.message || error.message || '';
       setErrors({ general: errMsg || 'Invalid email or password. Try again.' });
     } finally {

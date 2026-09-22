@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import API_BASE_URL from './config';
+import { purgeApiCache } from '../utils/purgeApiCache';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -145,6 +146,10 @@ class ApiClient {
   }
 
   private clearTokens(): void {
+    // SECURITY-FIX: this is the 401/403 path, which bypasses authStore.clearAuth, so
+    // the 'api-cache' purge has to happen here too or a shared device can still be
+    // served the previous user's cached responses after a forced logout.
+    purgeApiCache();
     localStorage.removeItem('ilesure_pwa_auth');
   }
 

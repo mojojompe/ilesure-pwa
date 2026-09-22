@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { purgeApiCache } from '../utils/purgeApiCache';
 
 export interface User {
   id: string;
@@ -68,6 +69,9 @@ export const useAuthStore = create<AuthState>()(
       setSelectedSchool: (selectedSchool) => set({ selectedSchool }),
 
       clearAuth: () => {
+        // SECURITY-FIX: purge the workbox 'api-cache' on logout so a shared device
+        // isn't served the previous user's cached /users/me, /payments, /bookings, etc.
+        purgeApiCache();
         set({
           user: null,
           token: null,

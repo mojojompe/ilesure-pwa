@@ -18,6 +18,8 @@ const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(mod
 
 const OTP = lazy(() => import('./pages/auth/OTP').then(module => ({ default: module.OTP })));
 
+const ReactivateAccount = lazy(() => import('./pages/auth/ReactivateAccount').then(module => ({ default: module.ReactivateAccount })));
+
 
 const Discover = lazy(() => import('./pages/tabs/Discover').then(module => ({ default: module.Discover })));
 
@@ -140,6 +142,7 @@ export default function App() {
           <Route path="/auth/school" element={<SchoolSelection />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/otp" element={<OTP />} />
+          <Route path="/auth/reactivate" element={<ReactivateAccount />} />
 
           {/* Protected Routes - Only for Students and Individuals on PWA */}
           <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
