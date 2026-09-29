@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { deriveBookingProgress } from '../../utils/bookingProgress';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
@@ -242,9 +243,19 @@ export function BookingDetail() {
           {/* Actions */}
           {(booking.status === 'pending' || booking.status === 'confirmed') && (
             <div className="flex flex-col gap-3">
-              <Button fullWidth onClick={handlePay} className="shadow-[0_4px_12px_rgba(107,79,58,0.25)]">
-                Make Payment
-              </Button>
+              {/* Same payability rule as the booking timeline / payForBooking: an unverified
+                  long let would only be refused later, at the payment step. */}
+              {deriveBookingProgress(booking).isPayable ? (
+                <Button fullWidth onClick={handlePay} className="shadow-[0_4px_12px_rgba(107,79,58,0.25)]">
+                  Make Payment
+                </Button>
+              ) : (
+                <p className="text-xs text-textSecondary text-center">
+                  {deriveBookingProgress(booking).blockedMessage ?? (deriveBookingProgress(booking).inspectionFailed
+                    ? 'This inspection was recorded as not matching the listing, so payment is unavailable. Please contact support.'
+                    : 'Payment opens once your inspection has been scheduled and confirmed.')}
+                </p>
+              )}
               <Button fullWidth variant="secondary" onClick={handleCancel}>
                 Cancel Booking
               </Button>

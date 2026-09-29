@@ -30,7 +30,6 @@ import { chatService } from '../../api/chatService';
 import { useAuthStore } from '../../stores/authStore';
 import { clsx } from 'clsx';
 import { BookAppointmentModal } from '../../components/common/BookAppointmentModal';
-import { PrePaymentModal } from '../../components/common/PrePaymentModal';
 import { InspectionBookingModal } from '../../components/common/InspectionBookingModal';
 import { InspectionVerificationModal } from '../../components/common/InspectionVerificationModal';
 import { AgentReportModal } from '../../components/common/AgentReportModal';
@@ -68,7 +67,6 @@ export function ListingDetail() {
 
   // Modals state
   const [showBookModal, setShowBookModal] = useState(false);
-  const [showPrePaymentModal, setShowPrePaymentModal] = useState(false);
   const [showInspectionBooking, setShowInspectionBooking] = useState(false);
   const [showInspectionVerify, setShowInspectionVerify] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
@@ -78,7 +76,6 @@ export function ListingDetail() {
   const [showInquiryModal, setShowInquiryModal] = useState(false);
 
   const [existingBooking, setExistingBooking] = useState<any>(null);
-  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -163,13 +160,20 @@ export function ListingDetail() {
     }
   };
 
+  // SECURITY-FIX (M-M4 parity with mobile): guard against a double submit creating two
+  // booking requests. A ref, not state, so a second call in the same tick is refused.
+  const bookingInFlight = useRef(false);
+
   const handleBook = async (data: any) => {
     if (!listing) return;
+    if (bookingInFlight.current) return;
     if (!user?.ninVerified) {
-      navigate('/booking/kyc/temp');
+      setShowBookModal(false);
+      navigate(`/booking/kyc/${listing._id}`);
       return;
     }
 
+    bookingInFlight.current = true;
     try {
       const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
       const rateQuantity = data.rateQuantity || 1;
@@ -193,6 +197,8 @@ export function ListingDetail() {
     } catch (err) {
       console.error(err);
       customAlert('Failed to create booking', 'Error', 'error');
+    } finally {
+      bookingInFlight.current = false;
     }
   };
 
@@ -239,30 +245,12 @@ export function ListingDetail() {
     }
   };
 
-  const handlePayment = async () => {
+  // BUGFIX: "Make Payment" called payForBooking directly, which the backend refuses with
+  // CONTRACT_NOT_SIGNED until the tenancy agreement is signed. Route it through the same
+  // flow BookingDetail uses: checkout (breakdown + consent) -> signature -> payment.
+  const handleProceedToPayment = () => {
     if (!existingBooking?._id) return;
-    try {
-      setPaymentLoading(true);
-      const result = await bookingService.payForBooking(existingBooking._id);
-      if (result.data?.authorizationUrl) {
-        window.location.href = result.data.authorizationUrl;
-      }
-    } catch (err: any) {
-      console.error(err);
-      const apiCode = err?.response?.data?.error?.code || err?.code;
-      const apiMsg = err?.response?.data?.error?.message || err?.message;
-      if (apiCode === 'INSPECTION_NOT_VERIFIED' || (typeof apiMsg === 'string' && apiMsg.toLowerCase().includes('inspection'))) {
-        customAlert(
-          'An inspection must be conducted and confirmed before payment can be completed. Please schedule or complete your inspection in the booking timeline.',
-          'Inspection Required',
-          'warning'
-        );
-      } else {
-        customAlert(apiMsg || 'Failed to initiate payment', 'Error', 'error');
-      }
-    } finally {
-      setPaymentLoading(false);
-    }
+    navigate(`/booking/checkout/${existingBooking._id}`);
   };
 
   const getBookingCTA = () => {
@@ -732,8 +720,6 @@ export function ListingDetail() {
           <Button
             fullWidth
             onClick={cta.action}
-            disabled={paymentLoading}
-            loading={paymentLoading}
             className="bg-[#3E1F0A] text-[#FFF8E1] hover:bg-[#3E1F0A]/90"
           >
             {cta.title}
@@ -748,14 +734,6 @@ export function ListingDetail() {
         onClose={() => setShowBookModal(false)}
         onConfirm={handleBook}
         listing={listing as any}
-      />
-
-      <PrePaymentModal
-        visible={showPrePaymentModal}
-        onClose={() => setShowPrePaymentModal(false)}
-        onConfirm={handlePayment}
-        amount={(existingBooking?.amount || listing.rentAnnual)}
-        loading={paymentLoading}
       />
 
       <InspectionBookingModal
@@ -783,10 +761,9 @@ export function ListingDetail() {
         visible={showTimelineModal}
         onClose={() => setShowTimelineModal(false)}
         booking={existingBooking}
-        loading={paymentLoading}
         onScheduleInspection={() => setShowInspectionBooking(true)}
         onVerifyInspection={() => setShowInspectionVerify(true)}
-        onMakePayment={() => setShowPrePaymentModal(true)}
+        onMakePayment={handleProceedToPayment}
       />
 
       <FullscreenImageCarousel

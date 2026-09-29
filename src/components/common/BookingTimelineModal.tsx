@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { CheckmarkBadge01Icon, Time02Icon, InformationCircleIcon, Cancel01Icon, Home01Icon } from '@hugeicons/react';
 import { customAlert } from '../../stores/alertStore';
+import { deriveBookingProgress } from '../../utils/bookingProgress';
 
 interface BookingTimelineModalProps {
   visible: boolean;
@@ -17,8 +18,14 @@ interface BookingTimelineModalProps {
 export function BookingTimelineModal({ visible, onClose, booking, loading, onScheduleInspection, onVerifyInspection, onMakePayment }: BookingTimelineModalProps) {
   if (!visible) return null;
 
-  const currentStep = booking?.timelineStep || 1;
-  const isCancelled = booking?.status === 'cancelled' || booking?.status === 'rejected';
+  // BUGFIX: the backend only ever writes `timelineStep` 1-3 (2 = inspection scheduled or
+  // missed, 3 = inspection outcome recorded) and never 4, so gating payment on
+  // `timelineStep === 4` made it unreachable: after confirming the inspection the tenant
+  // tapped Payment and was told to "complete inspection first". The displayed step is now
+  // derived from the same facts `payForBooking` checks (status pending/confirmed, and
+  // `isVerified` unless the booking is a shortlet); a paid booking is `completed`.
+  // `isShortlet`/`isPaid` are part of the shared derivation; only these are needed here.
+  const { currentStep, isPayable, inspectionFailed, isCancelled, blockedMessage } = deriveBookingProgress(booking);
 
   const steps = [
     {
@@ -36,7 +43,11 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
     {
       id: 3,
       title: 'Inspection Verified',
-      desc: booking?.isVerified ? 'Inspection passed.' : 'Pending verification.',
+      desc: booking?.isVerified
+        ? 'Inspection passed.'
+        : inspectionFailed
+          ? 'You reported the apartment did not match the listing.'
+          : 'Pending verification.',
       icon: InformationCircleIcon
     },
     {
@@ -117,8 +128,14 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
 
                         // If they click on Step 4 (Payment) and it's not completed, check prerequisites
                         if (step.id === 4 && onMakePayment) {
-                          if (currentStep < 4) {
-                            customAlert('Please complete the physical inspection and verification first.', 'Prerequisite Not Met', 'warning');
+                          if (!isPayable) {
+                            customAlert(
+                              blockedMessage ?? (inspectionFailed
+                                ? 'This inspection was recorded as not matching the listing, so payment is unavailable. Please contact support.'
+                                : 'Please complete the physical inspection and verification first.'),
+                              'Prerequisite Not Met',
+                              'warning'
+                            );
                           } else {
                             onClose();
                             onMakePayment();

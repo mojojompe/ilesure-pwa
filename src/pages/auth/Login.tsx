@@ -18,7 +18,14 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // The API client lands a suspended account here with ?reason=suspended.
+  const [errors, setErrors] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    if (new URLSearchParams(window.location.search).get('reason') === 'suspended') {
+      initial.general = 'This account has been suspended. Contact support.';
+    }
+    return initial;
+  });
   const [isReady, setIsReady] = useState(false);
 
   const googleLogin = useGoogleLogin({
