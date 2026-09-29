@@ -49,7 +49,7 @@ export function Notifications() {
   useEffect(() => {
     fetchNotifications();
     
-    socketService.onNewNotification((notifData: any) => {
+    const unsubscribe = socketService.onNewNotification((notifData: any) => {
       setNotifications(prev => {
         // Prepend new notification, avoiding duplicates if id is already present
         if (prev.some(n => (n.id || n._id) === notifData.id)) {
@@ -69,7 +69,8 @@ export function Notifications() {
     });
 
     return () => {
-      socketService.offNewNotification();
+      // Remove only this screen's listener, not every new_notification listener.
+      unsubscribe();
     };
   }, []);
 

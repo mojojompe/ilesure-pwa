@@ -21,7 +21,34 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { customAlert } from '../../stores/alertStore';
-import { getSocket } from '../../api/socketService';
+import { getSocket, socketService } from '../../api/socketService';
+
+/** A message shown before the server confirmed it (optimistic send). */
+type LocalMessage = ChatMessage & { _pending?: boolean };
+
+/** The socket payload carries `id`; REST responses carry `_id`. Key everything on `_id`. */
+function normalizeMessage(raw: any): LocalMessage {
+  return { ...raw, _id: String(raw?._id ?? raw?.id ?? '') };
+}
+
+/**
+ * Merges a live `new_message` into the list. Our own sends arrive here too (the server
+ * broadcasts to the whole room, sender included), usually before the REST response, so
+ * an echo of our own message replaces the matching optimistic copy instead of adding a
+ * second bubble.
+ */
+function mergeIncoming(prev: LocalMessage[], incoming: LocalMessage, myId?: string): LocalMessage[] {
+  if (!incoming._id || prev.some(m => m._id === incoming._id)) return prev;
+  if (myId && incoming.senderId === myId) {
+    const pendingIndex = prev.findIndex(m => m._pending && m.text === incoming.text);
+    if (pendingIndex !== -1) {
+      const next = prev.slice();
+      next[pendingIndex] = incoming;
+      return next;
+    }
+  }
+  return [...prev, incoming];
+}
 
 // Mocking chat info that would usually come from the chat service or route state
 interface ChatInfo {
@@ -39,7 +66,7 @@ export function ChatScreen() {
   const location = useLocation();
   const { user } = useAuthStore();
   
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -56,6 +83,10 @@ export function ChatScreen() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const userIdRef = useRef(user?.id);
+  useEffect(() => { userIdRef.current = user?.id; }, [user?.id]);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
 
   const call = useCall();
   // Resolved from the server rather than the chat payload: it also tells us whether the
@@ -177,26 +208,119 @@ export function ChatScreen() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  /**
+   * Live messaging. The socket itself is app-wide (App.tsx); this screen only joins the
+   * chat room, adds its own listeners, and on leaving removes exactly those and leaves
+   * the room. Event names and payloads match the backend and the Web-App chat pages.
+   */
+  useEffect(() => {
+    if (!id) return;
+    const chatId = id;
+
+    // A (re)connect is a new server-side connection with no rooms, and joinChat is
+    // dropped while the socket is down, so join now and again on every connect.
+    const join = () => socketService.joinChat(chatId);
+    join();
+
+    const unsubscribe = [
+      socketService.onConnect(join),
+
+      socketService.onNewMessage((raw: any) => {
+        if (!raw || (raw.chatId && raw.chatId !== chatId)) return;
+        const incoming = normalizeMessage(raw);
+        setMessages(prev => mergeIncoming(prev, incoming, userIdRef.current));
+        if (incoming.senderId !== userIdRef.current) {
+          setPartnerTyping(false);
+          // We are looking at it, so it is read.
+          chatService.markAsRead(chatId).catch(() => {});
+        }
+        setTimeout(scrollToBottom, 100);
+      }),
+
+      socketService.onUserTyping((data) => {
+        if (data?.chatId !== chatId || data.userId === userIdRef.current) return;
+        setPartnerTyping(Boolean(data.isTyping));
+      }),
+
+      // `messages_read` goes to the whole room, reader included. A receipt means the
+      // reader has seen what the OTHER participant sent, so our own reading is ignored
+      // and only messages not sent by the reader are marked.
+      socketService.onMessagesRead((data) => {
+        if (data?.chatId !== chatId) return;
+        if (data.readerId && data.readerId === userIdRef.current) return;
+        const readAt = data.readAt || new Date().toISOString();
+        setMessages(prev => prev.map(m => {
+          if (m.readAt || m._pending) return m;
+          if (data.messageId && m._id !== data.messageId) return m;
+          if (data.readerId && m.senderId === data.readerId) return m;
+          return { ...m, readAt };
+        }));
+      }),
+    ];
+
+    return () => {
+      unsubscribe.forEach(off => off());
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      if (isTypingRef.current) socketService.sendTyping(chatId, false);
+      isTypingRef.current = false;
+      socketService.leaveChat(chatId);
+      setPartnerTyping(false);
+    };
+  }, [id]);
+
+  /** Tells the other side we are typing; stops after 2s without a keystroke. */
+  const notifyTyping = () => {
+    if (!id) return;
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      socketService.sendTyping(id, true);
+    }
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => {
+      isTypingRef.current = false;
+      socketService.sendTyping(id, false);
+    }, 2000);
+  };
+
+  const stopTyping = () => {
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    if (id && isTypingRef.current) socketService.sendTyping(id, false);
+    isTypingRef.current = false;
+  };
+
   const handleSend = async () => {
     if (!text.trim() && !replyingTo) return;
     
     setIsSending(true);
+    stopTyping();
+    const tempId = `temp-${Date.now()}`;
     const tempMsg: any = {
-      _id: Date.now().toString(),
+      _id: tempId,
+      _pending: true,
       text,
       senderId: user?.id || '',
       createdAt: new Date().toISOString(),
       replyTo: replyingTo?._id,
       replyPreview: replyingTo?.text || replyingTo?.fileName || (replyingTo?.type === 'image' ? 'Image' : undefined)
     };
-    
+
     setMessages(prev => [...prev, tempMsg]);
     setText('');
     setReplyingTo(null);
     setTimeout(scrollToBottom, 100);
-    
+
     try {
-      await chatService.sendMessage(id || '', tempMsg.text);
+      const res = await chatService.sendMessage(
+        id || '', tempMsg.text, 'text', undefined, undefined, tempMsg.replyTo, tempMsg.replyPreview
+      );
+      if (res?.success && res.data) {
+        const saved = normalizeMessage(res.data);
+        // Swap the optimistic copy for the saved one, unless the socket echo already did
+        // (then the optimistic copy is gone and there is nothing to do).
+        setMessages(prev => prev.some(m => m._id === saved._id)
+          ? prev.filter(m => m._id !== tempId)
+          : prev.map(m => (m._id === tempId ? saved : m)));
+      }
     } catch (error) {
       console.error('Failed to send message', error);
     } finally {
@@ -362,6 +486,7 @@ export function ChatScreen() {
                     <div className="flex items-center justify-end gap-1 mt-1">
                       <span className={clsx("text-[10px]", isMe ? "text-white/70" : "text-textTertiary")}>
                         {format(new Date(msg.createdAt), 'h:mm a')}
+                        {isMe && msg.readAt && ' · Read'}
                       </span>
                     </div>
                   </div>
@@ -407,7 +532,7 @@ export function ChatScreen() {
               <input 
                 type="text" 
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => { setText(e.target.value); notifyTyping(); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type a message..."
                 className="flex-1 bg-transparent outline-none text-sm text-textPrimary placeholder:text-textSecondary"

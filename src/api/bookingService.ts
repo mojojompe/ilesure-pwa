@@ -1,3 +1,4 @@
+import type { PaymentEligibility } from '../utils/bookingProgress';
 import { apiClient } from './client';
 import type { ShortletRate } from './listingService';
 
@@ -67,6 +68,8 @@ export interface Booking {
   leaseStartDate?: string;
   leaseEndDate?: string;
   timelineStep?: number;
+  /** Server-computed: may this booking be paid now, and if not, why (with a user-facing message). */
+  paymentEligibility?: PaymentEligibility;
   inspectionDate?: string;
   inspectionTime?: string;
   inspectorName?: string;
@@ -96,7 +99,15 @@ export interface BookingSummaryResponse {
     cautionFee: number;
     agencyFee: number;
     platformFee: number;
+    /** Server-side platform fee rate. Newer backends only; resolve via resolvePlatformFeePercent. */
+    platformFeePercent?: number;
     roommateMatchingFee: number;
+    /** rent + caution + agency, before the platform fee (newer backends). */
+    subtotal?: number;
+    /** How many ways the total is split (2 with a roommate). Newer backends. */
+    splitWays?: number;
+    /** This renter's share of the platform fee after any split. Newer backends. */
+    platformShare?: number;
     total: number;
     paymentFrequency?: string;
     customPaymentPlan?: { installments: number; interval: string; amountPerInstallment: number };
