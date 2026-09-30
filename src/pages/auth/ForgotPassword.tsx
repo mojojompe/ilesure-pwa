@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { authService } from '../../api/authService';
 import { isStrongPassword, PASSWORD_RULE_MESSAGE } from '../../utils/validation';
+import { getApiErrorMessage } from '../../api/client';
 
 type Step = 'request' | 'otp' | 'newPassword' | 'success';
 
@@ -36,7 +37,7 @@ export function ForgotPassword() {
       await authService.forgotPassword(email);
       setStep('otp');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to send reset email');
+      setError(getApiErrorMessage(err, 'Failed to send reset email'));
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +91,7 @@ export function ForgotPassword() {
       await authService.verifyResetOTP(code, email);
       setStep('newPassword');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Invalid or expired code');
+      setError(getApiErrorMessage(err, 'Invalid or expired code'));
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +110,7 @@ export function ForgotPassword() {
       await authService.resetPassword(email, otp.join(''), newPassword);
       setStep('success');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to reset password');
+      setError(getApiErrorMessage(err, 'Failed to reset password'));
     } finally {
       setIsLoading(false);
     }

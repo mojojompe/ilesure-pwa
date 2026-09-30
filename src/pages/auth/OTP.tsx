@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { authService } from '../../api/authService';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
+import { ERROR_CODE, getApiError, getApiErrorMessage } from '../../api/client';
 
 /** Email of an account that registered but has not yet verified its OTP. */
 export const PENDING_EMAIL_KEY = 'ilesure_pwa_pending_email';
@@ -107,8 +108,7 @@ export function OTP() {
         customAlert(response.message || 'Verification failed', 'Error', 'error');
       }
     } catch (error: any) {
-      const msg = error.response?.data?.error?.message || error.response?.data?.message || error.message || 'An error occurred';
-      customAlert(msg, 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'An error occurred'), 'Error', 'error');
     } finally {
       setLoading(false);
     }
@@ -134,7 +134,14 @@ export function OTP() {
       inputRefs.current[0]?.focus();
       customAlert('A new code has been sent to your email.', 'Success', 'success');
     } catch (error: any) {
-      customAlert(error.response?.data?.error?.message || error.message || 'Failed to resend OTP', 'Error', 'error');
+      const apiError = getApiError(error, 'Failed to resend OTP');
+      // RESEND_TOO_SOON carries the remaining wait in `error.details.retryAfter` (seconds).
+      const retryAfter = (apiError.details as { retryAfter?: unknown } | undefined)?.retryAfter;
+      if (apiError.code === ERROR_CODE.RESEND_TOO_SOON && typeof retryAfter === 'number' && retryAfter > 0) {
+        setTimer(Math.ceil(retryAfter));
+        setCanResend(false);
+      }
+      customAlert(apiError.message, 'Error', 'error');
     } finally {
       setResending(false);
     }

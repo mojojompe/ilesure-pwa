@@ -2,10 +2,11 @@ import React from 'react';
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
+import type { UserRole } from '../../contracts/generated';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  allowedRoles?: ('student' | 'individual' | 'company' | 'agent')[];
+  allowedRoles?: UserRole[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {

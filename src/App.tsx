@@ -165,6 +165,8 @@ export default function App() {
             <Route path="/booking/:id" element={<BookingDetail />} />
             <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
             <Route path="/booking/checkout/:id" element={<Checkout />} />
+            {/* KYC is account-level: the :id form carries the listing the renter came from; the bare form is the Profile entry point. Must stay explicit, or "/booking/:id" would swallow it. */}
+            <Route path="/booking/kyc" element={<KYC />} />
             <Route path="/booking/kyc/:id" element={<KYC />} />
             <Route path="/booking/signature/:id" element={<Signature />} />
             <Route path="/booking/payment/:id" element={<Payment />} />

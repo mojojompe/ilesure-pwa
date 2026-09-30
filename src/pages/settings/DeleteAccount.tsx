@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { authService } from '../../api/authService';
+import { getApiErrorMessage } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { Alert02Icon, Mail01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 
@@ -23,7 +24,7 @@ export function DeleteAccount() {
       await authService.requestAccountDeletion();
       setStep('otp');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to request account deletion.');
+      setError(getApiErrorMessage(err, 'Failed to request account deletion.'));
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +50,7 @@ export function DeleteAccount() {
         navigate('/');
       }, 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid OTP or confirmation.');
+      setError(getApiErrorMessage(err, 'Invalid OTP or confirmation.'));
     } finally {
       setIsLoading(false);
     }

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Cancel01Icon, Add01Icon, Remove01Icon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { Button } from '../ui/Button';
 import { useAuthStore } from '../../stores/authStore';
-import { calculatePlatformFee, calculateRoommateMatchingFee, PLATFORM_FEE_LABEL } from '../../constants/fees';
+import { calculatePlatformFee, calculateRoommateMatchingFee, platformFeeLabel, resolvePlatformFeePercent } from '../../constants/fees';
+import { bookingService, BookingSummaryResponse } from '../../api/bookingService';
 
 interface ShortletRate {
   id: string;
@@ -17,8 +18,9 @@ interface ShortletRate {
 interface BookAppointmentModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any; moveInDate?: string }) => void;
+  onConfirm: (data: { requiresRoommate: boolean; rateId?: string; rateQuantity?: number; userDetails?: any; moveInDate?: string }) => void | Promise<void>;
   listing: {
+    _id?: string;
     title: string;
     rentAnnual: number;
     cautionFee?: number;
@@ -59,6 +61,12 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
     return d.toISOString().split('T')[0];
   });
 
+  // SECURITY-FIX (M-M4 parity with mobile): a double tap on "Confirm Booking" fired
+  // onConfirm twice and created two booking requests. The ref closes the gap between
+  // the first tap and React re-rendering the disabled button.
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+
   const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
 
   // Build the tier list from shortletRates, falling back to legacy shortletPricing.
@@ -91,31 +99,78 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   // caution/agency for them, so including here would over-quote the total.
   const cautionFee = isShortlet ? 0 : (listing?.cautionFee || 0);
   const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
-
-  const subTotal = rentAmount + cautionFee + agencyFee;
-  const platformFee = calculatePlatformFee(subTotal);
-  const roommateMatchingFee = calculateRoommateMatchingFee(subTotal);
-
-  const totalWithoutRoommate = subTotal + platformFee;
-
+  
   const isShareable = listing?.shareable === true || listing?.needsRoommate === true || listing?.propertyType === 'shared_apartment';
+  const wantsRoommate = isShareable && includeRoommate;
 
-  const totalWithRoommate = (isShareable && includeRoommate)
-    ? Math.round((subTotal + platformFee + roommateMatchingFee) / 2)
-    : totalWithoutRoommate;
+  // The server is the authority on what is charged: quote the fees from
+  // POST /bookings/summary (no DB write). The local constants below are only the
+  // estimate shown while the quote loads, or if it fails (offline / signed out).
+  const listingId = listing?._id;
+  const quoteKey = [listingId, isShortlet ? selectedTier?.id : '', isShortlet ? rateQuantity : '', wantsRoommate].join('|');
+  const [quote, setQuote] = useState<{ key: string; data: BookingSummaryResponse['data'] } | null>(null);
+  useEffect(() => {
+    if (!visible || !listingId || (isShortlet && !selectedTier)) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      bookingService
+        .getBookingSummary({
+          listingId,
+          requiresRoommate: wantsRoommate,
+          ...(isShortlet && selectedTier
+            ? { rateId: selectedTier.id, rateQuantity, durationUnit: selectedTier.durationUnit }
+            : {}),
+        })
+        .then((res) => {
+          if (!cancelled && res?.success && res.data) setQuote({ key: quoteKey, data: res.data });
+        })
+        .catch(() => { /* keep the local estimate */ });
+    }, 250);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [visible, quoteKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleConfirm = () => {
+  const serverQuote = quote && quote.key === quoteKey ? quote.data : null;
+
+  const localSubTotal = rentAmount + cautionFee + agencyFee;
+  const localPlatformFee = calculatePlatformFee(localSubTotal);
+  const localMatchingFee = calculateRoommateMatchingFee(localSubTotal);
+  const localTotal = wantsRoommate
+    ? Math.round((localSubTotal + localPlatformFee + localMatchingFee) / 2)
+    : localSubTotal + localPlatformFee;
+
+  const shownRent = serverQuote ? serverQuote.rentAmount : rentAmount;
+  const shownCaution = serverQuote ? serverQuote.cautionFee : cautionFee;
+  const shownAgency = serverQuote ? serverQuote.agencyFee : agencyFee;
+  const subTotal = shownRent + shownCaution + shownAgency;
+  const platformFee = serverQuote ? serverQuote.platformFee : localPlatformFee;
+  const roommateMatchingFee = serverQuote ? serverQuote.roommateMatchingFee : localMatchingFee;
+  const totalToPay = serverQuote ? serverQuote.total : localTotal;
+  const feeLabel = platformFeeLabel(resolvePlatformFeePercent(serverQuote));
+
+  // Reset the guard whenever the modal is (re)opened.
+  useEffect(() => {
+    if (visible) { submittingRef.current = false; setSubmitting(false); }
+  }, [visible]);
+
+  const handleConfirm = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
     const userDetails = {
       occupation: (user as any)?.occupation,
       employer: (user as any)?.employer,
       school: (user as any)?.university || (user as any)?.selectedSchool,
       location: (user as any)?.location
     };
-
-    if (isShortlet) {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, rateId: selectedTier?.id, rateQuantity, userDetails, moveInDate });
-    } else {
-      onConfirm({ requiresRoommate: isShareable && includeRoommate, userDetails, moveInDate });
+    try {
+      if (isShortlet) {
+        await onConfirm({ requiresRoommate: wantsRoommate, rateId: selectedTier?.id, rateQuantity, userDetails, moveInDate });
+      } else {
+        await onConfirm({ requiresRoommate: wantsRoommate, userDetails, moveInDate });
+      }
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -251,7 +306,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
                         {selectedTier && (
                           <p className="text-xs text-textSecondary mt-3 text-center font-medium">
-                            ₦{selectedTier.price.toLocaleString()} × {rateQuantity} = ₦{rentAmount.toLocaleString()}
+                            ₦{selectedTier.price.toLocaleString()} × {rateQuantity} = ₦{shownRent.toLocaleString()}
                           </p>
                         )}
                       </>
@@ -266,27 +321,27 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
               <div className="bg-surface p-4 rounded-xl mb-5 border border-borderLight shadow-sm space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-textSecondary">{isShortlet ? 'Booking Cost' : 'Annual Rent'}</span>
-                  <span className="text-sm font-semibold text-textPrimary">₦{rentAmount.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-textPrimary">₦{shownRent.toLocaleString()}</span>
                 </div>
-                {cautionFee > 0 && (
+                {shownCaution > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-textSecondary">Caution Fee</span>
-                    <span className="text-sm font-semibold text-textPrimary">₦{cautionFee.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-textPrimary">₦{shownCaution.toLocaleString()}</span>
                   </div>
                 )}
-                {agencyFee > 0 && (
+                {shownAgency > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-textSecondary">Agency Fee</span>
-                    <span className="text-sm font-semibold text-textPrimary">₦{agencyFee.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-textPrimary">₦{shownAgency.toLocaleString()}</span>
                   </div>
                 )}
                 {subTotal > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-textSecondary">{PLATFORM_FEE_LABEL}</span>
+                    <span className="text-sm text-textSecondary">{feeLabel}</span>
                     <span className="text-sm font-semibold text-textPrimary">₦{platformFee.toLocaleString()}</span>
                   </div>
                 )}
-                {isShareable && includeRoommate && subTotal > 0 && (
+                {wantsRoommate && roommateMatchingFee > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-textSecondary">Matching Fee (1%)</span>
                     <span className="text-sm font-semibold text-textPrimary">₦{roommateMatchingFee.toLocaleString()}</span>
@@ -297,10 +352,10 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
                 <div className="flex justify-between items-center">
                   <span className="text-base font-semibold text-textPrimary">
-                    Total to Pay {isShareable && includeRoommate ? '(Split 50%)' : ''}
+                    Total to Pay {wantsRoommate ? '(Split 50%)' : ''}
                   </span>
                   <span className="text-lg font-black text-primary">
-                    ₦{(isShareable && includeRoommate ? totalWithRoommate : totalWithoutRoommate).toLocaleString()}
+                    ₦{totalToPay.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -353,7 +408,8 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                 >
                   <Button
                     fullWidth
-                    disabled={isShortlet && (shortletTiers.length === 0 || !selectedTier)}
+                    disabled={submitting || (isShortlet && (shortletTiers.length === 0 || !selectedTier))}
+                    loading={submitting}
                     onClick={handleConfirm}
                   >
                     {isShortlet && shortletTiers.length === 0 ? 'No pricing available' : 'Confirm Booking'}

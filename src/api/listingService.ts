@@ -6,15 +6,11 @@ import type {
   PowerSource,
   WaterSource,
   GenderRestriction,
-} from '../constants/listingVocabulary';
+  ListingStatus,
+  ShortletRate,
+} from '../contracts/generated';
 
-export interface ShortletRate {
-  id: string;
-  label: string;
-  durationValue: number;
-  durationUnit: 'hour' | 'day' | 'week' | 'month';
-  price: number;
-}
+export type { ShortletRate } from '../contracts/generated';
 
 export interface Listing {
   _id: string;
@@ -32,13 +28,13 @@ export interface Listing {
   areaCluster: string;
   distanceBucket: string;
   distance?: string;
-  furnishing: 'fully_furnished' | 'semi_furnished' | 'unfurnished';
-  power: 'constant' | 'gen_dependent' | 'solar_backed' | 'hybrid';
-  water: 'borehole' | 'public' | 'tank';
+  furnishing: Furnishing;
+  power: PowerSource;
+  water: WaterSource;
   maxOccupants: number;
-  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed';
-  gender?: 'any' | 'male_only' | 'female_only' | 'mixed';
-  status: 'pending_approval' | 'active' | 'needs_roommate' | 'fully_booked' | 'archived' | 'rejected';
+  genderRestriction: GenderRestriction;
+  gender?: GenderRestriction;
+  status: ListingStatus;
   images: string[];
   address?: string;
   city?: string;

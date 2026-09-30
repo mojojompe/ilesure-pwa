@@ -24,6 +24,7 @@ import {
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { listingService } from '../../api/listingService';
 import { userService } from '../../api/userService';
+import { getApiErrorMessage } from '../../api/client';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -63,7 +64,7 @@ export function Profile() {
         customAlert('Profile photo updated successfully', 'Success', 'success');
       }
     } catch (err: any) {
-      customAlert(err.response?.data?.error?.message || 'Failed to upload photo', 'Error', 'error');
+      customAlert(getApiErrorMessage(err, 'Failed to upload photo'), 'Error', 'error');
     } finally {
       setUploadingAvatar(false);
     }
@@ -99,7 +100,7 @@ export function Profile() {
 
   const accountItems = [
     { id: 'edit', icon: PencilEdit02Icon, label: 'Edit Profile', badge: null, path: '/settings/edit-profile' },
-    { id: 'verification', icon: CheckmarkBadge01Icon, label: 'Verification', badge: user?.ninVerified ? 'Done' : 'Pending', path: '/booking/kyc/temp' },
+    { id: 'verification', icon: CheckmarkBadge01Icon, label: 'Verification', badge: user?.ninVerified ? 'Done' : 'Pending', path: '/booking/kyc' },
     { id: 'saved', icon: FavouriteIcon, label: 'Saved Listings', badge: savedCount > 0 ? savedCount.toString() : null, path: '/saved-listings' },
     ...(user?.role !== 'individual' && user?.role !== 'agent' && user?.role !== 'company' && user?.role !== 'sub_agent' ? [{ id: 'roommate', icon: UserMultipleIcon, label: 'Roommate Profile', badge: null, path: '/roommate-profile' }] : []),
     { id: 'payments', icon: CreditCardIcon, label: 'Payment History', badge: null, path: '/payment-history' },

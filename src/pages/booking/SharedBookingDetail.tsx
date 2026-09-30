@@ -16,6 +16,7 @@ import { sharedBookingService, SharedBooking } from '../../api/sharedBookingServ
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert, customConfirm } from '../../stores/alertStore';
 import { clsx } from 'clsx';
+import { getApiErrorMessage } from '../../api/client';
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: any }> = {
   pending_payment: { color: '#E29C45', bg: '#E29C4515', label: 'Awaiting Payment', icon: Time02Icon },
@@ -88,7 +89,7 @@ export function SharedBookingDetail() {
         window.location.href = result.data.authorizationUrl;
       }
     } catch (error: any) {
-      customAlert(error.response?.data?.error?.message || 'Could not process payment', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Could not process payment'), 'Error', 'error');
     } finally {
       setPaying(false);
     }
@@ -102,7 +103,7 @@ export function SharedBookingDetail() {
         await customAlert('Refunds have been initiated where applicable.', 'Success', 'success');
         navigate(-1);
       } catch (error: any) {
-        customAlert(error.response?.data?.error?.message || 'Failed to cancel', 'Error', 'error');
+        customAlert(getApiErrorMessage(error, 'Failed to cancel'), 'Error', 'error');
       }
     }
   };

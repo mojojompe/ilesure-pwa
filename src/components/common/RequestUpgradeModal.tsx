@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, SparklesIcon, CheckmarkCircle02Icon } from '@hugeicons/react';
 import { API_BASE_URL } from '../../api/config';
+import { ApiRequestError, getApiError, getApiErrorMessage } from '../../api/apiError';
 
 interface RequestUpgradeModalProps {
   visible: boolean;
@@ -64,7 +65,7 @@ export const RequestUpgradeModal: React.FC<RequestUpgradeModalProps> = ({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error?.message || 'Failed to submit request');
+        throw new ApiRequestError({ ...getApiError(data, 'Failed to submit request'), status: res.status });
       }
 
       setSuccess('Your request has been added to our community roadmap stack!');
@@ -72,7 +73,7 @@ export const RequestUpgradeModal: React.FC<RequestUpgradeModalProps> = ({
         handleClose();
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Failed to submit upgrade request');
+      setError(getApiErrorMessage(err, 'Failed to submit upgrade request'));
     } finally {
       setLoading(false);
     }

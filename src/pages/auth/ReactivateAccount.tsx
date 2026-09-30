@@ -5,6 +5,7 @@ import { ArrowLeft01Icon } from '@hugeicons/react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { authService } from '../../api/authService';
+import { getApiErrorMessage } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 
 type Step = 'request' | 'otp';
@@ -51,7 +52,7 @@ export function ReactivateAccount() {
       await authService.requestReactivation(email);
       setStep('otp');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to send reactivation code');
+      setError(getApiErrorMessage(err, 'Failed to send reactivation code'));
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +66,7 @@ export function ReactivateAccount() {
       setOtp(Array(OTP_LENGTH).fill(''));
       inputRefs.current[0]?.focus();
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to resend code');
+      setError(getApiErrorMessage(err, 'Failed to resend code'));
     } finally {
       setIsResending(false);
     }
@@ -134,7 +135,7 @@ export function ReactivateAccount() {
         setError('Reactivation failed. Please try again.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Invalid or expired code');
+      setError(getApiErrorMessage(err, 'Invalid or expired code'));
     } finally {
       setIsLoading(false);
     }

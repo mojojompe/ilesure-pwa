@@ -10,6 +10,7 @@ import { useAlertStore } from '../../stores/alertStore';
 import { API_BASE_URL } from '../../api/config';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
+import { ERROR_CODE, getApiError } from '../../api/client';
 
 export function Login() {
   const navigate = useNavigate();
@@ -18,7 +19,14 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // The API client lands a suspended account here with ?reason=suspended.
+  const [errors, setErrors] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    if (new URLSearchParams(window.location.search).get('reason') === 'suspended') {
+      initial.general = 'This account has been suspended. Contact support.';
+    }
+    return initial;
+  });
   const [isReady, setIsReady] = useState(false);
 
   const googleLogin = useGoogleLogin({
@@ -48,7 +56,7 @@ export function Login() {
           }
           navigate('/');
         } else {
-          if (response.error?.code === 'ACCOUNT_DELETED' || response.error?.message?.toLowerCase().includes('deleted')) {
+          if (response.error?.code === ERROR_CODE.ACCOUNT_DELETED || response.error?.message?.toLowerCase().includes('deleted')) {
             // Google gives us no email to prefill (the exchange failed before we
             // learned who signed in), so send them to the reactivate screen and let
             // them type it in there.
@@ -111,12 +119,12 @@ export function Login() {
         setErrors({ general: 'Invalid email or password. Try again.' });
       }
     } catch (error: any) {
-      if (error.response?.data?.error?.code === 'ACCOUNT_DELETED') {
+      const apiError = getApiError(error, 'Invalid email or password. Try again.');
+      if (apiError.code === ERROR_CODE.ACCOUNT_DELETED) {
         navigate('/auth/reactivate', { state: { email } });
         return;
       }
-      const errMsg = error.response?.data?.error?.message || error.response?.data?.message || error.message || '';
-      setErrors({ general: errMsg || 'Invalid email or password. Try again.' });
+      setErrors({ general: apiError.message });
     } finally {
       setLoading(false);
     }
