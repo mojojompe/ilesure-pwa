@@ -5,6 +5,7 @@ import { MobileHeader } from '../../components/layout/MobileHeader';
 import { clsx } from 'clsx';
 import notificationService from '../../api/notificationService';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/client';
 
 const NOTIFICATION_SETTINGS = [
   { id: 'bookings', title: 'Booking Updates', description: 'Get notified about booking status changes', hasSwitch: true },
@@ -42,7 +43,7 @@ export function NotificationSettings() {
         const response = await notificationService.getSettings();
         setSettings(prev => ({ ...prev, ...(response.data || {}) }));
       } catch (error: any) {
-        customAlert(error.response?.data?.error?.message || 'Failed to load settings', 'Error', 'error');
+        customAlert(getApiErrorMessage(error, 'Failed to load settings'), 'Error', 'error');
       } finally {
         setLoading(false);
       }

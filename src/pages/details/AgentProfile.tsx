@@ -13,6 +13,7 @@ import {
 import { listingService, Listing } from '../../api/listingService';
 import { userService } from '../../api/userService';
 import { customAlert } from '../../stores/alertStore';
+import { ERROR_CODE, getApiError } from '../../api/client';
 import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { AddRatingModal } from '../../components/common/AddRatingModal';
 
@@ -279,10 +280,11 @@ export function AgentProfile() {
               setReviews(reviewsRes.data.reviews);
             }
           } catch (error: any) {
-            if (error.code === 'FORBIDDEN') {
-              customAlert(error.message || 'You can only review agents you have successfully booked with.', 'Error', 'error');
+            const apiError = getApiError(error, 'Failed to submit review');
+            if (apiError.code === ERROR_CODE.FORBIDDEN) {
+              customAlert(apiError.message || 'You can only review agents you have successfully booked with.', 'Error', 'error');
             } else {
-              customAlert('Failed to submit review', 'Error', 'error');
+              customAlert(apiError.message, 'Error', 'error');
             }
           }
         }}

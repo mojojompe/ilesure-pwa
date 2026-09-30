@@ -8,6 +8,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { API_BASE_URL } from '../../api/config';
 import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/client';
 
 export function Login() {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ export function Login() {
         setErrors({ general: 'Invalid email or password. Try again.' });
       }
     } catch (error: any) {
-      setErrors({ general: error.message || 'Invalid email or password. Try again.' });
+      setErrors({ general: getApiErrorMessage(error, 'Invalid email or password. Try again.') });
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/apiError';
 
 interface AgentReportModalProps {
   visible: boolean;
@@ -35,7 +36,7 @@ export function AgentReportModal({ visible, onClose, agentName, targetId }: Agen
       customAlert('Report Submitted. We will review this shortly.', 'Success', 'success');
       onClose();
     } catch (error: any) {
-      customAlert('Failed to submit report', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Failed to submit report'), 'Error', 'error');
     }
   };
 

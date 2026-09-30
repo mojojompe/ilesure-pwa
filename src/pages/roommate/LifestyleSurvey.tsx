@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import roommateService from '../../api/roommateService';
 import { customAlert } from '../../stores/alertStore';
 import { motion } from 'framer-motion';
+import { getApiErrorMessage } from '../../api/client';
 
 interface Question {
   id: string;
@@ -80,7 +81,7 @@ export function LifestyleSurvey() {
       navigate(-1);
     } catch (error: any) {
       console.error(error);
-      customAlert(error.response?.data?.error?.message || 'Failed to save profile', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Failed to save profile'), 'Error', 'error');
     } finally {
       setSaving(false);
     }

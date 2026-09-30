@@ -11,17 +11,11 @@
  * step 4 could never offer payment.
  */
 
-export type PaymentIneligibleReason =
-  | 'INVALID_STATUS'
-  | 'ALREADY_PAID'
-  | 'CONTRACT_NOT_SIGNED'
-  | 'LISTING_NOT_FOUND'
-  | 'LISTING_FULLY_BOOKED'
-  | 'INSPECTION_NOT_VERIFIED';
+import type { PaymentBlocker, PaymentEligibility } from '../contracts/generated';
 
-export type PaymentEligibility =
-  | { payable: true }
-  | { payable: false; reason: PaymentIneligibleReason | string; message?: string };
+/** Why payment is blocked; the contract's PAYMENT_BLOCKERS. */
+export type PaymentIneligibleReason = PaymentBlocker;
+export type { PaymentEligibility } from '../contracts/generated';
 
 export interface BookingProgress {
   /** 1 Requested, 2 Inspection, 3 Inspection verified, 4 Payment, 5 Paid / move in. */

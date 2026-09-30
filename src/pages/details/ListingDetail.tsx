@@ -37,6 +37,7 @@ import { BookingTimelineModal } from '../../components/common/BookingTimelineMod
 import { FullscreenImageCarousel } from '../../components/common/FullscreenImageCarousel';
 import { InquiryModal } from '../../components/common/InquiryModal';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/apiError';
 import { labelFor } from '../../constants/listingVocabulary';
 
 type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
@@ -238,7 +239,7 @@ export function ListingDetail() {
       }
     } catch (err: any) {
       console.error(err);
-      customAlert(err?.message || 'Failed to confirm inspection', 'Error', 'error');
+      customAlert(getApiErrorMessage(err, 'Failed to confirm inspection'), 'Error', 'error');
     } finally {
       setVerifyLoading(false);
     }

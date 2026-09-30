@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { AccountStatus, SELF_REGISTRATION_ROLES, VerificationStatus } from '../contracts/generated';
 
 export interface User {
   id: string;
   fullName: string;
   email: string;
   phone: string;
-  role: 'student' | 'individual' | 'landlord' | 'agent' | 'company' | 'company_admin' | 'sub_agent';
-  status: 'active' | 'suspended' | 'pending';
-  verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
+  role: (typeof SELF_REGISTRATION_ROLES)[number];
+  status: AccountStatus;
+  verificationStatus: VerificationStatus;
   companyId?: string;
   gender?: 'male' | 'female';
   avatar?: string;

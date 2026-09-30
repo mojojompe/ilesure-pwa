@@ -13,6 +13,7 @@ import { roommateService, MatchResult } from '../../api/roommateService';
 import { sharedBookingService } from '../../api/sharedBookingService';
 import { chatService } from '../../api/chatService';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/client';
 
 export function MatchProfile() {
   const { id } = useParams<{ id: string }>();
@@ -54,7 +55,7 @@ export function MatchProfile() {
       setInterested(true);
     } catch (error: any) {
       console.error(error);
-      customAlert(error?.response?.data?.error?.message || 'Failed to express interest', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Failed to express interest'), 'Error', 'error');
     }
   };
 
@@ -69,7 +70,7 @@ export function MatchProfile() {
       }
     } catch (error: any) {
       console.error(error);
-      customAlert(error?.response?.data?.error?.message || 'Failed to create booking', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Failed to create booking'), 'Error', 'error');
     } finally {
       setCreatingBooking(false);
     }

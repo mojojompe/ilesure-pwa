@@ -1,27 +1,37 @@
 /**
- * Canonical listing vocabulary — mirrors
- * `IleSure_Backend/src/constants/listingVocabulary.ts`.
+ * Listing filter vocabulary for the renter app. The value sets, their types and their display
+ * labels come from the API contract (contracts/generated.ts); this file only holds the PWA's
+ * own filter groupings (which values a chip or toggle stands for, which options a picker shows).
  *
- * Store and send values, render labels. Keep in sync with the backend file.
+ * Store and send values, render labels.
  */
+import {
+  AMENITIES,
+  AMENITY_LABELS,
+  DISTANCE_BUCKETS,
+  DISTANCE_LABELS,
+  FURNISHING_LABELS,
+  GENDER_LABELS,
+  POWER_LABELS,
+  PROPERTY_TYPE_LABELS,
+  WATER_LABELS,
+} from '../contracts/generated';
+import type {
+  DistanceBucket,
+  Furnishing,
+  GenderRestriction,
+  PowerSource,
+  PropertyType,
+} from '../contracts/generated';
 
-export type PropertyType =
-  | 'self_con'
-  | '1_bed'
-  | '2_bed'
-  | '3_bed'
-  | 'mini_flat'
-  | 'studio'
-  | 'penthouse'
-  | 'hostel_room'
-  | 'shared_apartment'
-  | 'shortlet';
-
-export type Furnishing = 'fully_furnished' | 'semi_furnished' | 'unfurnished';
-export type PowerSource = 'constant' | 'gen_dependent' | 'solar_backed' | 'hybrid';
-export type WaterSource = 'borehole' | 'public' | 'tank';
-export type GenderRestriction = 'any' | 'male_only' | 'female_only' | 'mixed';
-export type DistanceBucket = 'very_close' | 'close' | 'budget_stretch';
+export type {
+  DistanceBucket,
+  Furnishing,
+  GenderRestriction,
+  PowerSource,
+  PropertyType,
+  WaterSource,
+} from '../contracts/generated';
 
 export interface Option<T extends string> {
   value: T;
@@ -33,29 +43,21 @@ export interface Option<T extends string> {
  * label goes on the pill — the filter modal previously stored labels and
  * compared them against listings holding machine values, so nothing matched.
  */
-export const PROPERTY_TYPE_OPTIONS: Option<PropertyType>[] = [
-  { value: 'self_con', label: 'Self-con' },
-  { value: '1_bed', label: '1-Bedroom' },
-  { value: '2_bed', label: '2-Bedroom' },
-  { value: '3_bed', label: '3-Bedroom' },
-  { value: 'mini_flat', label: 'Mini Flat' },
-  { value: 'studio', label: 'Studio' },
-  { value: 'penthouse', label: 'Penthouse' },
-  { value: 'hostel_room', label: 'Hostel Room' },
-  { value: 'shortlet', label: 'Shortlet' },
-];
+const option = <T extends string>(labels: Record<T, string>) => (value: T): Option<T> => ({
+  value,
+  label: labels[value],
+});
 
-export const GENDER_OPTIONS: Option<GenderRestriction>[] = [
-  { value: 'any', label: 'Any' },
-  { value: 'female_only', label: 'Female Only' },
-  { value: 'male_only', label: 'Male Only' },
-];
+/** Shared apartments are booked through the roommate flow, not filtered for directly. */
+export const PROPERTY_TYPE_OPTIONS: Option<PropertyType>[] = (
+  ['self_con', '1_bed', '2_bed', '3_bed', 'mini_flat', 'studio', 'penthouse', 'hostel_room', 'shortlet'] as const
+).map(option(PROPERTY_TYPE_LABELS));
 
-export const DISTANCE_OPTIONS: Option<DistanceBucket>[] = [
-  { value: 'very_close', label: 'Very Close (5 mins or less)' },
-  { value: 'close', label: 'Close (5-15 mins)' },
-  { value: 'budget_stretch', label: 'Budget Stretch (15+ mins)' },
-];
+export const GENDER_OPTIONS: Option<GenderRestriction>[] = (['any', 'female_only', 'male_only'] as const).map(
+  option(GENDER_LABELS)
+);
+
+export const DISTANCE_OPTIONS: Option<DistanceBucket>[] = DISTANCE_BUCKETS.map(option(DISTANCE_LABELS));
 
 /** Furnishing values the "Furnished" filter toggle should accept. */
 export const FURNISHED_VALUES: Furnishing[] = ['fully_furnished', 'semi_furnished'];
@@ -75,62 +77,16 @@ export const CHIP_PROPERTY_TYPES: Record<string, PropertyType[]> = {
 };
 
 
-/**
- * Amenity vocabulary — mirrors `AMENITIES` / `AMENITY_LABELS` in the backend's
- * listingVocabulary. The backend canonicalises whatever a client sends, so these tokens are
- * what comes back on every listing and what the create forms should submit.
- */
-export const AMENITY_OPTIONS = [
-  { value: 'wifi', label: 'WiFi' },
-  { value: 'air_conditioning', label: 'Air Conditioning' },
-  { value: 'kitchen', label: 'Kitchen' },
-  { value: 'water_heater', label: 'Water Heater' },
-  { value: 'tv', label: 'TV' },
-  { value: 'washing_machine', label: 'Washing Machine' },
-  { value: 'refrigerator', label: 'Refrigerator' },
-  { value: 'workspace', label: 'Workspace / Desk' },
-  { value: 'parking', label: 'Parking Space' },
-  { value: 'security', label: '24/7 Security' },
-  { value: 'cctv', label: 'CCTV' },
-  { value: 'gated_estate', label: 'Gated Estate' },
-  { value: 'balcony', label: 'Balcony' },
-  { value: 'swimming_pool', label: 'Swimming Pool' },
-  { value: 'gym', label: 'Gym' },
-  { value: 'elevator', label: 'Elevator' },
-  { value: 'prepaid_meter', label: 'Prepaid Meter' },
-  { value: 'wardrobe', label: 'Wardrobe' },
-  { value: 'ensuite_bathroom', label: 'En-suite Bathroom' },
-  { value: 'generator', label: 'Generator' },
-] as const;
+/** Amenity picker options: the contract's canonical AMENITIES tokens with their labels. */
+export const AMENITY_OPTIONS = AMENITIES.map(option(AMENITY_LABELS));
 
 const LABELS: Record<string, string> = {
-  self_con: 'Self-con',
-  '1_bed': '1-Bedroom',
-  '2_bed': '2-Bedroom',
-  '3_bed': '3-Bedroom',
-  mini_flat: 'Mini Flat',
-  studio: 'Studio',
-  penthouse: 'Penthouse',
-  hostel_room: 'Hostel Room',
-  shared_apartment: 'Shared Apartment',
-  shortlet: 'Shortlet',
-  fully_furnished: 'Fully Furnished',
-  semi_furnished: 'Semi-Furnished',
-  unfurnished: 'Unfurnished',
-  constant: 'Constant PHCN',
-  gen_dependent: 'Gen Backup',
-  solar_backed: 'Solar-Backed',
-  hybrid: 'Hybrid',
-  borehole: 'Borehole',
-  public: 'Public Supply',
-  tank: 'Water Tank',
-  any: 'Any',
-  male_only: 'Male Only',
-  female_only: 'Female Only',
-  mixed: 'Mixed',
-  very_close: 'Very Close (5 mins or less)',
-  close: 'Close (5-15 mins)',
-  budget_stretch: 'Budget Stretch (15+ mins)',
+  ...PROPERTY_TYPE_LABELS,
+  ...FURNISHING_LABELS,
+  ...POWER_LABELS,
+  ...WATER_LABELS,
+  ...GENDER_LABELS,
+  ...DISTANCE_LABELS,
 };
 
 /** Display label for any stored value, with a readable fallback for pre-migration data. */

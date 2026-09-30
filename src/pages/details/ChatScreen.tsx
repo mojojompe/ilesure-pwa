@@ -21,6 +21,7 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/apiError';
 import { getSocket, socketService } from '../../api/socketService';
 
 /** A message shown before the server confirmed it (optimistic send). */
@@ -157,7 +158,7 @@ export function ChatScreen() {
       // previously startCall's rejection was unhandled and the screen just sat
       // there with no indication that the tap had failed.
       customAlert(
-        error?.message || 'Could not start the call. Please try again.',
+        getApiErrorMessage(error, 'Could not start the call. Please try again.'),
         'Call failed',
         'error'
       );

@@ -7,6 +7,7 @@ import SignatureCanvas from 'react-signature-canvas';
 import { customAlert } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 import { contractService } from '../../api/contractService';
+import { getApiErrorMessage } from '../../api/client';
 
 export function Signature() {
   const { id } = useParams<{ id: string }>();
@@ -49,8 +50,7 @@ export function Signature() {
       } catch (err: any) {
         if (cancelled) return;
         setLoadError(
-          err?.response?.data?.error?.message ||
-            'We could not load your tenancy agreement. Please try again.'
+          getApiErrorMessage(err, 'We could not load your tenancy agreement. Please try again.')
         );
       } finally {
         if (!cancelled) setLoading(false);
@@ -111,8 +111,7 @@ export function Signature() {
       }
     } catch (err: any) {
       customAlert(
-        err?.response?.data?.error?.message ||
-          'Could not record your signature. Please try again.',
+        getApiErrorMessage(err, 'Could not record your signature. Please try again.'),
         'Error',
         'error'
       );

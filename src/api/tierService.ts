@@ -1,26 +1,11 @@
 import { apiClient } from './client';
+import type { MyTierResponse as ContractMyTier, TierResponse } from '../contracts/generated';
 
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export interface Tier {
-  id: string;
-  name: string;
-  price: number;
-  priceDisplay: string;
-  billingCycle: string;
-  /** Price for one month, in naira. */
-  priceMonthly?: number;
-  /** Price for one year, in naira — set per tier, not derived from the monthly price. */
-  priceYearly?: number;
-  features: {
-    maxListings: number;
-    analytics: string;
-    support: string;
-    visibility?: string;
-  };
-  popular?: boolean;
-}
+/** A tier in the catalogue (GET /tiers), as the API contract defines it. */
+export type Tier = TierResponse;
 
 export interface TiersResponse {
   success: boolean;
@@ -29,13 +14,7 @@ export interface TiersResponse {
 
 export interface MyTierResponse {
   success: boolean;
-  data: {
-    tierId: string;
-    name: string;
-    expiresAt: string | null;
-    listingsUsed: number;
-    listingsLimit: number;
-  };
+  data: ContractMyTier;
 }
 
 export interface SelectTierResponse {

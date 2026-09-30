@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { authService } from '../../api/authService';
+import { ERROR_CODE } from '../../api/apiError';
 
 /**
  * Landing point for Google sign-in (P-L1).
@@ -63,7 +64,7 @@ export function GoogleCallback() {
         const user: any = result?.user;
         if (!result?.success || !user || !result.accessToken) {
           setError(
-            result?.error?.code === 'INVALID_CODE'
+            result?.error?.code === ERROR_CODE.INVALID_CODE
               ? 'That sign-in link has expired or was already used. Please try again.'
               : result?.error?.message || 'We could not complete your sign-in. Please try again.'
           );

@@ -10,6 +10,7 @@ import { authService } from '../../api/authService';
 import { customAlert } from '../../stores/alertStore';
 
 import { SCHOOLS } from './SchoolSelection';
+import { getApiErrorMessage } from '../../api/client';
 const TOTAL_STEPS = 3;
 
 function PasswordStrengthMeter({ password }: { password: string }) {
@@ -179,7 +180,7 @@ export function Register() {
         sessionStorage.setItem(PENDING_EMAIL_KEY, email.trim().toLowerCase());
         navigate('/auth/otp', { state: { email: email.trim().toLowerCase(), role: initialRole, fullName } });
       } catch (error: any) {
-        const msg = error.response?.data?.error?.message || 'Please try again later';
+        const msg = getApiErrorMessage(error, 'Please try again later');
         setErrors({ general: msg });
         customAlert(msg, 'Registration Failed', 'error');
       } finally {

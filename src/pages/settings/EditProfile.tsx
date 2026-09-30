@@ -9,6 +9,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
 import { authService } from '../../api/authService';
 import { userService } from '../../api/userService';
+import { getApiErrorMessage } from '../../api/client';
 
 export function EditProfile() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ export function EditProfile() {
         customAlert('Profile photo updated successfully', 'Success', 'success');
       }
     } catch (err: any) {
-      customAlert(err.response?.data?.error?.message || 'Failed to upload photo', 'Error', 'error');
+      customAlert(getApiErrorMessage(err, 'Failed to upload photo'), 'Error', 'error');
     } finally {
       setUploadingAvatar(false);
     }
@@ -75,7 +76,7 @@ export function EditProfile() {
       customAlert('Profile updated successfully', 'Success', 'success');
       navigate(-1);
     } catch (error: any) {
-      customAlert(error.response?.data?.error?.message || 'Failed to update profile', 'Error', 'error');
+      customAlert(getApiErrorMessage(error, 'Failed to update profile'), 'Error', 'error');
     } finally {
       setLoading(false);
     }

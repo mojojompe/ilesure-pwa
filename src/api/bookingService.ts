@@ -1,4 +1,11 @@
-import type { PaymentEligibility } from '../utils/bookingProgress';
+import type {
+  BookingStatus,
+  BookingSummaryResponse as ContractBookingSummary,
+  InspectionStatus,
+  PaymentEligibility,
+  RentPeriodStatus,
+  StayUnit,
+} from '../contracts/generated';
 import { apiClient } from './client';
 import type { ShortletRate } from './listingService';
 
@@ -10,7 +17,7 @@ export interface RentPeriod {
   label: string;
   dueDate: string;
   amount: number;
-  status: 'upcoming' | 'due' | 'overdue' | 'paid';
+  status: RentPeriodStatus;
   paidAt?: string;
 }
 
@@ -46,7 +53,7 @@ export interface Booking {
     maxStay?: number;
     maxStayUnit?: string;
   };
-  status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
+  status: BookingStatus;
   moveInDate: string;
   duration: string;
   message?: string;
@@ -73,7 +80,7 @@ export interface Booking {
   inspectionDate?: string;
   inspectionTime?: string;
   inspectorName?: string;
-  inspectionStatus?: 'pending' | 'scheduled' | 'completed' | 'missed';
+  inspectionStatus?: InspectionStatus;
   isVerified?: boolean;
 }
 
@@ -84,42 +91,15 @@ export interface CreateBookingRequest {
   message?: string;
   requiresRoommate?: boolean;
   durationQuantity?: number;
-  durationUnit?: 'hour' | 'day' | 'week' | 'month';
+  durationUnit?: StayUnit;
   rateId?: string;
   rateQuantity?: number;
 }
 
+/** POST /bookings/summary: the contract's fee quote. */
 export interface BookingSummaryResponse {
   success: boolean;
-  data: {
-    listingId: string;
-    propertyType: string;
-    title: string;
-    rentAmount: number;
-    cautionFee: number;
-    agencyFee: number;
-    platformFee: number;
-    /** Server-side platform fee rate. Newer backends only; resolve via resolvePlatformFeePercent. */
-    platformFeePercent?: number;
-    roommateMatchingFee: number;
-    /** rent + caution + agency, before the platform fee (newer backends). */
-    subtotal?: number;
-    /** How many ways the total is split (2 with a roommate). Newer backends. */
-    splitWays?: number;
-    /** This renter's share of the platform fee after any split. Newer backends. */
-    platformShare?: number;
-    total: number;
-    paymentFrequency?: string;
-    customPaymentPlan?: { installments: number; interval: string; amountPerInstallment: number };
-    perPeriodCost?: number;
-    isShortlet: boolean;
-    isShareable: boolean;
-    wantsRoommate: boolean;
-    durationLabel?: string;
-    selectedRate?: ShortletRate;
-    rateQuantity?: number;
-    shortletRates?: ShortletRate[];
-  };
+  data: ContractBookingSummary;
 }
 
 export interface BookingListResponse {
