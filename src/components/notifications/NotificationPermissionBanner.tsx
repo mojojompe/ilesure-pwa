@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Notification01Icon, Cancel01Icon, Bell01Icon } from '@hugeicons/react';
+import { Notification01Icon, Cancel01Icon } from '@hugeicons/react';
 import { pushNotificationService } from '../../api/pushNotificationService';
 import { notificationService } from '../../api/notificationService';
 
@@ -81,7 +81,7 @@ export function NotificationPermissionBanner() {
             {/* Icon Badge */}
             <div className="flex justify-center mb-5">
               <div className="w-20 h-20 rounded-[24px] bg-primary flex items-center justify-center shadow-lg">
-                <Bell01Icon size={36} className="text-white" />
+                <Notification01Icon size={36} className="text-white" />
               </div>
             </div>
 
