@@ -1,3 +1,15 @@
+import type {
+  DistanceBucket,
+  Furnishing,
+  GenderRestriction,
+  InstallmentInterval,
+  ListingStatus,
+  PaymentFrequency,
+  PowerSource,
+  UserRole,
+  WaterSource,
+} from '../contracts/generated';
+
 export interface ButtonProps {
   title: string;
   onPress: () => void;
@@ -60,7 +72,7 @@ export interface User {
   fullName: string;
   email: string;
   phone: string;
-  role: 'student' | 'landlord' | 'admin';
+  role: UserRole;
   gender?: 'male' | 'female';
   createdAt: string;
 }
@@ -74,13 +86,13 @@ export interface Listing {
   rentAnnual: number;
   rentDuration?: string;
   areaCluster: string;
-  distanceBucket: string;
-  furnishing: 'fully_furnished' | 'semi_furnished' | 'unfurnished';
-  power: 'constant' | 'gen_dependent' | 'solar_backed' | 'hybrid';
-  water: 'borehole' | 'public' | 'tank';
+  distanceBucket: DistanceBucket | (string & {});
+  furnishing: Furnishing;
+  power: PowerSource;
+  water: WaterSource;
   maxOccupants: number;
-  genderRestriction: 'any' | 'male_only' | 'female_only' | 'mixed';
-  status: 'pending_approval' | 'active' | 'needs_roommate' | 'fully_booked' | 'archived' | 'rejected';
+  genderRestriction: GenderRestriction;
+  status: ListingStatus;
   images: string[];
   createdAt: string;
   // Extended optional fields
@@ -96,10 +108,10 @@ export interface Listing {
   cautionFee?: number;
   agencyFee?: number;
   leaseDuration?: string;
-  paymentFrequency?: 'annually' | 'bi-annually' | 'quarterly' | 'monthly' | 'custom';
+  paymentFrequency?: PaymentFrequency;
   customPaymentPlan?: {
     installments: number;
-    interval: 'monthly' | 'bi-monthly';
+    interval: InstallmentInterval;
     amountPerInstallment: number;
   };
   shortletPricing?: {

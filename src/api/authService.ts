@@ -1,6 +1,8 @@
-import { apiClient } from './client';
+import { apiClient, getApiError } from './client';
+import type { AccountStatus, SELF_REGISTRATION_ROLES, VerificationStatus } from '../contracts/generated';
 
-export type UserRole = 'student' | 'individual' | 'landlord' | 'agent' | 'company' | 'company_admin' | 'sub_agent';
+/** Roles a client may sign up as (the contract's SELF_REGISTRATION_ROLES). */
+export type UserRole = (typeof SELF_REGISTRATION_ROLES)[number];
 
 export interface LoginRequest {
   email: string;
@@ -31,8 +33,8 @@ export interface AuthResponse {
     email: string;
     phone: string;
     role: UserRole;
-    status: 'active' | 'suspended' | 'pending' | 'inactive' | 'deleted';
-    verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
+    status: AccountStatus;
+    verificationStatus: VerificationStatus;
     companyId?: string;
     gender?: string;
     avatar?: string;
@@ -65,8 +67,8 @@ export interface VerifyOTPResponse {
     email: string;
     phone: string;
     role: UserRole;
-    status: 'active' | 'suspended' | 'pending' | 'inactive' | 'deleted';
-    verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
+    status: AccountStatus;
+    verificationStatus: VerificationStatus;
     companyId?: string;
     gender?: string;
     avatar?: string;
@@ -98,7 +100,7 @@ export interface UserProfile {
   gender?: string;
   avatar?: string;
   verified: boolean;
-  verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
+  verificationStatus: VerificationStatus;
   createdAt: string;
 }
 
@@ -177,7 +179,8 @@ export const authService = {
       const response = await apiClient.post<any>('/auth/google/exchange', { code });
       return response.data;
     } catch (error: any) {
-      return { success: false, error: error?.response?.data?.error || { message: 'Sign-in failed' } };
+      const { code, message } = getApiError(error, 'Sign-in failed');
+      return { success: false, error: { code, message } };
     }
   },
 
@@ -196,7 +199,8 @@ export const authService = {
       const response = await apiClient.post<any>('/auth/google/direct-signin', { code, intent });
       return response.data;
     } catch (error: any) {
-      return { success: false, error: error?.response?.data?.error || { message: 'Sign-in failed' } };
+      const { code, message } = getApiError(error, 'Sign-in failed');
+      return { success: false, error: { code, message } };
     }
   },
 

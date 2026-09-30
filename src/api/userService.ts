@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { VerificationStatus } from '../contracts/generated';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -16,7 +17,7 @@ export interface UserProfile {
   gender?: 'male' | 'female';
   avatar?: string;
   verified: boolean;
-  verificationStatus: 'pending' | 'verified' | 'rejected' | 'more_info';
+  verificationStatus: VerificationStatus;
   createdAt: string;
 }
 

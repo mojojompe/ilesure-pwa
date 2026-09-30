@@ -24,6 +24,7 @@ import {
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { listingService } from '../../api/listingService';
 import { userService } from '../../api/userService';
+import { getApiErrorMessage } from '../../api/client';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -63,7 +64,7 @@ export function Profile() {
         customAlert('Profile photo updated successfully', 'Success', 'success');
       }
     } catch (err: any) {
-      customAlert(err.response?.data?.error?.message || 'Failed to upload photo', 'Error', 'error');
+      customAlert(getApiErrorMessage(err, 'Failed to upload photo'), 'Error', 'error');
     } finally {
       setUploadingAvatar(false);
     }

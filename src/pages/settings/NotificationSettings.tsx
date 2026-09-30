@@ -5,6 +5,7 @@ import { MobileHeader } from '../../components/layout/MobileHeader';
 import { clsx } from 'clsx';
 import notificationService from '../../api/notificationService';
 import { customAlert } from '../../stores/alertStore';
+import { getApiErrorMessage } from '../../api/client';
 
 import { pushNotificationService } from '../../api/pushNotificationService';
 
@@ -54,7 +55,7 @@ export function NotificationSettings() {
         
         setSettings(prev => ({ ...prev, ...(response.data || {}), push: pushStatus }));
       } catch (error: any) {
-        customAlert(error.response?.data?.error?.message || 'Failed to load settings', 'Error', 'error');
+        customAlert(getApiErrorMessage(error, 'Failed to load settings'), 'Error', 'error');
       } finally {
         setLoading(false);
       }

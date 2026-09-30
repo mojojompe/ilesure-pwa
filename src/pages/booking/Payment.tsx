@@ -6,6 +6,7 @@ import { CreditCardIcon, CheckmarkCircle02Icon, Alert01Icon } from '@hugeicons/r
 import { clsx } from 'clsx';
 import { bookingService } from '../../api/bookingService';
 import { PaymentSafetyModal } from '../../components/common/PaymentSafetyModal';
+import { getApiErrorMessage } from '../../api/client';
 
 // SECURITY-FIX (P-H4): this screen no longer fabricates a successful payment with a
 // hardcoded amount/reference. Payment is server-authoritative: we ask the backend to
@@ -36,8 +37,7 @@ export function Payment() {
       }
     } catch (err: any) {
       setError(
-        err?.response?.data?.error?.message ||
-          'Failed to initiate payment. Please try again.'
+        getApiErrorMessage(err, 'Failed to initiate payment. Please try again.')
       );
       setInitiating(false);
     }

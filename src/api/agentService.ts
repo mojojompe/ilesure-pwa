@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { toApiFailure } from './apiError';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -122,7 +123,7 @@ export const agentService = {
     try {
       const response = await apiClient.get<{ success: boolean; data: AgentSubaccountInfo }>('/agent/subaccount');
       return response.data;
-    } catch { return { success: false, error: { message: 'Failed to fetch subaccount' } }; }
+    } catch (err) { return toApiFailure(err, 'Failed to fetch subaccount'); }
   },
 
   /** Setup or update agent's subaccount */
