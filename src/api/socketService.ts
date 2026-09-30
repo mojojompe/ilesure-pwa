@@ -141,6 +141,10 @@ export const socketService = {
     subscribe('user_typing', callback),
   offUserTyping: (callback?: (data: { chatId: string; isTyping: boolean }) => void) =>
     off('user_typing', callback),
+  /** Server `kyc_status_changed` after a Dojah webhook or sync: { ninVerified, bvnVerified, verificationStatus }. */
+  onKycStatusChanged: (
+    callback: (data: { ninVerified?: boolean; bvnVerified?: boolean; verificationStatus?: string }) => void
+  ) => subscribe(KYC_EVENTS.STATUS_CHANGED, callback),
   onNewNotification: (callback: (data: any) => void) => subscribe('new_notification', callback),
   offNewNotification: (callback?: (data: any) => void) => off('new_notification', callback),
 };

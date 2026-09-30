@@ -4,6 +4,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { useAuthStore } from '../../stores/authStore';
 import { customAlert } from '../../stores/alertStore';
+import { socketService } from '../../api/socketService';
 import {
   UserCircleIcon,
   CheckmarkBadge01Icon,
@@ -78,6 +79,10 @@ export function KYC() {
   useEffect(() => {
     fetchStatus();
   }, []);
+
+  // The backend pushes `kyc_status_changed` when a Dojah webhook or sync lands, so a renter
+  // who stays on this screen sees "Verified" without having to switch tabs or refresh.
+  useEffect(() => socketService.onKycStatusChanged(() => { void fetchStatus(); }), []);
 
   const openWidget = async (type: 'nin' | 'bvn') => {
     setVerifying(type);

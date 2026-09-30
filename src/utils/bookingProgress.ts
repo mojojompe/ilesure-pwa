@@ -59,6 +59,9 @@ export function deriveBookingProgress(booking: any): BookingProgress {
     isPayable = (status === 'pending' || status === 'confirmed') && (isShortlet || booking?.isVerified === true);
   }
 
-  const currentStep = isPaid ? 5 : isPayable ? 4 : Math.min(rawStep, 3);
+  // Step 1 ("Booking Requested") is done the moment the booking exists, so an unpaid booking
+  // is never earlier than step 2, which is where the renter schedules and then confirms the
+  // viewing. Leaving it on step 1 hid the Schedule Inspection action entirely.
+  const currentStep = isPaid ? 5 : isPayable ? 4 : Math.min(Math.max(rawStep, 2), 3);
   return { currentStep, rawStep, isShortlet, isPaid, isCancelled, isPayable, blockedMessage, inspectionFailed };
 }
