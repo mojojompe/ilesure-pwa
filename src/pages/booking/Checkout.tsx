@@ -51,6 +51,9 @@ export function Checkout() {
 
         const response = await bookingService.getBookingSummary({
           listingId,
+          // A roommate's share slot is quoted from its shared booking (the amount actually
+          // charged), not as a solo booking of the listing. Ignored for ordinary bookings.
+          bookingId: id,
           requiresRoommate: booking?.requiresRoommate,
           ...(booking?.selectedRate?.id
             ? { rateId: booking.selectedRate.id, rateQuantity: booking.durationQuantity || 1 }
