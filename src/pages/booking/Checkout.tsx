@@ -51,6 +51,9 @@ export function Checkout() {
 
         const response = await bookingService.getBookingSummary({
           listingId,
+          // A roommate's share slot is quoted from its shared booking (the amount actually
+          // charged), not as a solo booking of the listing. Ignored for ordinary bookings.
+          bookingId: id,
           requiresRoommate: booking?.requiresRoommate,
           ...(booking?.selectedRate?.id
             ? { rateId: booking.selectedRate.id, rateQuantity: booking.durationQuantity || 1 }
@@ -90,18 +93,22 @@ export function Checkout() {
   );
 
   const CheckItem = ({ checked, onToggle, label }: { checked: boolean; onToggle: () => void; label: string }) => (
-    <div
-      className="flex items-center gap-3 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+    // A real button with checkbox semantics, so keyboard and screen-reader users can tick it.
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      className="w-full text-left flex items-center gap-3 mb-3 cursor-pointer active:opacity-70 transition-opacity"
       onClick={onToggle}
     >
-      <div className={clsx(
+      <span className={clsx(
         "w-6 h-6 rounded flex items-center justify-center shrink-0 border-2 transition-colors",
         checked ? "bg-primary border-primary text-white" : "border-textTertiary"
       )}>
         {checked && <Tick01Icon size={16} variant="solid" />}
-      </div>
+      </span>
       <span className="text-sm text-textSecondary flex-1 leading-relaxed">{label}</span>
-    </div>
+    </button>
   );
 
   if (loading) {

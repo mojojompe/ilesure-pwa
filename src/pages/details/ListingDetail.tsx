@@ -150,7 +150,9 @@ export function ListingDetail() {
       if (participantId) {
         const res = await chatService.startChat(participantId, listing._id, 'Hi, I\'m interested in this property. Can we chat?');
         if (res.success && res.data) {
-          navigate('/chats');
+          // Open the conversation itself rather than the inbox.
+          const chatId = (res.data as any).id || (res.data as any)._id;
+          navigate(chatId ? `/chat/${chatId}` : '/chats');
         }
       } else {
         customAlert('Agent information is not available.', 'Error', 'error');
@@ -491,12 +493,14 @@ export function ListingDetail() {
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
+                        aria-label="Report this agent"
                         className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center"
                       >
                         <Alert02Icon size={16} className="text-error" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleChat(); }}
+                        aria-label="Message this agent"
                         className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
                       >
                         <BubbleChatIcon size={16} className="text-primary" />

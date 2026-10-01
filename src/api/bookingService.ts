@@ -157,7 +157,7 @@ export const bookingService = {
   },
 
   /** Get booking fee summary (no DB write) */
-  async getBookingSummary(data: { listingId: string; durationQuantity?: number; durationUnit?: string; requiresRoommate?: boolean; rateId?: string; rateQuantity?: number }): Promise<BookingSummaryResponse> {
+  async getBookingSummary(data: { listingId: string; bookingId?: string; durationQuantity?: number; durationUnit?: string; requiresRoommate?: boolean; rateId?: string; rateQuantity?: number }): Promise<BookingSummaryResponse> {
     const response = await apiClient.post<BookingSummaryResponse>('/bookings/summary', data);
     return response.data;
   },

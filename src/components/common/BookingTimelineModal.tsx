@@ -191,7 +191,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                         {isActive && step.id === 2 && booking?.inspectionStatus === 'scheduled' && (
                           <div className="mt-3">
                             <div className="p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
-                              Inspection scheduled for {booking?.inspectionDate} at {booking?.inspectionTime}.
+                              Inspection scheduled for {booking?.inspectionDate ? new Date(booking.inspectionDate).toLocaleDateString() : 'the agreed date'} at {booking?.inspectionTime}.
                             </div>
                             {onVerifyInspection && !booking?.isVerified && (
                               <div className="mt-3">

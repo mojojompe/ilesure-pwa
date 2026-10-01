@@ -609,6 +609,37 @@ describe('duplicate and late events', () => {
     await session.startCall('chat-2', 'audio', PEER);
     expect(log.filter((l) => l.startsWith('sig.initiate'))).toHaveLength(1);
   });
+
+  it('a device still ringing stops quietly when the call is answered on another device', () => {
+    sig.in.incoming(INCOMING);
+    sig.in.accepted({ callId: 'call-9' });
+    expect(session.getState()).toMatchObject({ phase: 'ended', endedReason: 'Answered on another device' });
+    // No decline or end: either would hang up the conversation now running on the other device.
+    expect(sig.sent).toHaveLength(0);
+    expect(peer.mediaRequests).toHaveLength(0);
+  });
+
+  it('the device that accepted is unaffected by its own accept being echoed back', async () => {
+    await ringAndAccept();
+    sig.in.accepted({ callId: 'call-9' });
+    await flush();
+    expect(session.getState()).toMatchObject({ phase: 'connecting', callId: 'call-9' });
+    expect(sig.events('offer')).toHaveLength(0);
+  });
+
+  it('call:error about another call leaves the current call alone', async () => {
+    await dialAndGetAccepted();
+    sig.in.error({ callId: 'call-old', message: 'This call is no longer ringing' });
+    expect(session.getState()).toMatchObject({ phase: 'connecting', callId: 'call-1' });
+    sig.in.error({ callId: 'call-1', message: 'Something went wrong with the call.' });
+    expect(session.getState()).toMatchObject({ phase: 'ended', endedReason: 'Something went wrong with the call.' });
+  });
+
+  it('a peer whose account cannot take calls is explained, not reported as a generic failure', async () => {
+    sig.initiateResult = { ok: false, error: 'PEER_UNAVAILABLE' };
+    await session.startCall('chat-1', 'audio', PEER);
+    expect(session.getState()).toMatchObject({ phase: 'ended', endedReason: 'This person cannot take calls right now' });
+  });
 });
 
 describe('cleanup on end', () => {

@@ -133,7 +133,7 @@ export function ChatScreen() {
   const callBlockedReason = (): string => {
     if (!callAvailability) return 'Could not check whether this person can be called. Check your connection and try again.';
     if (callAvailability.peerBusy) return 'They are already on another call.';
-    if (!callAvailability.canCall) return 'This conversation has no one to call.';
+    if (!callAvailability.canCall) return 'This person cannot take calls right now.';
     return 'Calling is unavailable right now.';
   };
 
