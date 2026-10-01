@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Notification01Icon, Cancel01Icon } from '@hugeicons/react';
+import { Notification01Icon, Cancel01Icon, Home01Icon, UserMultipleIcon, BubbleChatIcon } from '@hugeicons/react';
 import { pushNotificationService } from '../../api/pushNotificationService';
 import { notificationService } from '../../api/notificationService';
 
@@ -96,12 +96,12 @@ export function NotificationPermissionBanner() {
             {/* Feature Highlights */}
             <div className="bg-[#F9F5EE] rounded-2xl p-4 mb-6 flex flex-col gap-3">
               {[
-                { icon: '🏠', text: 'Instant booking confirmations & updates' },
-                { icon: '🤝', text: 'New roommate match alerts' },
-                { icon: '💬', text: 'Message & chat notifications' },
+                { icon: Home01Icon, text: 'Instant booking confirmations & updates' },
+                { icon: UserMultipleIcon, text: 'New roommate match alerts' },
+                { icon: BubbleChatIcon, text: 'Message & chat notifications' },
               ].map((item) => (
                 <div key={item.text} className="flex items-center gap-3">
-                  <span className="text-lg">{item.icon}</span>
+                  <span className="text-primary"><item.icon size={20} variant="solid" /></span>
                   <span className="text-[14px] font-medium text-[#374151]">{item.text}</span>
                 </div>
               ))}
