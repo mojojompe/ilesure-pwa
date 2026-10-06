@@ -19,6 +19,11 @@ export function AlertModal() {
     hideAlert();
   };
 
+  // A plain alert (customAlert) has no cancel path: dismissing it by tapping outside is an
+  // acknowledgement, so resolve it like OK. Closing without resolving left awaiting code
+  // (e.g. navigate back after "Booking has been cancelled") hanging forever.
+  const handleBackdrop = options.onCancel ? handleCancel : handleConfirm;
+
   const getIcon = () => {
     switch (options.type) {
       case 'success': return <CheckmarkBadge01Icon size={32} className="text-status-success" variant="solid" />;
@@ -34,7 +39,7 @@ export function AlertModal() {
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={handleCancel}
+          onClick={handleBackdrop}
         />
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }} 
