@@ -24,6 +24,15 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
     };
   }, [visible, initialIndex]);
 
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipeThreshold = 50;
+    if (offset.x < -swipeThreshold && currentIndex < images.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else if (offset.x > swipeThreshold && currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,7 +60,7 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
           /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
           aria-label="Close" 
             onClick={onClose} 
-            className="absolute top-safe-top right-4 p-2 bg-black/50 rounded-full z-10 text-white active:scale-95"
+            className="absolute top-4 right-4 mt-safe-top p-2 bg-black/50 rounded-full z-10 text-white active:scale-95"
           >
             <Cancel01Icon size={24} />
           </button>
@@ -64,7 +73,11 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ type: 'tween', duration: 0.2 }}
-              className="max-w-full max-h-full object-contain pointer-events-none"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.8}
+              onDragEnd={handleDragEnd}
+              className="max-w-full max-h-full object-contain cursor-grab active:cursor-grabbing"
               alt={`Image ${currentIndex + 1}`}
             />
             
