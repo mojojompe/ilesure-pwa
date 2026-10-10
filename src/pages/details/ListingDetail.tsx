@@ -626,10 +626,12 @@ export function ListingDetail() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <h3 className="text-sm font-bold text-textPrimary mb-4">Property Details</h3>
                   <div className="space-y-4 mb-8">
-                    {listing.rentDuration && (
+                    {/* The lease term drives the agreement and renewals; rentDuration is the old
+                        free-text field, shown only for listings created before it was removed. */}
+                    {(listing.leaseDuration || listing.rentDuration) && (
                       <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                        <span className="text-sm text-textSecondary">Rent Duration</span>
-                        <span className="text-sm font-semibold text-textPrimary text-right">{listing.rentDuration}</span>
+                        <span className="text-sm text-textSecondary">Lease Duration</span>
+                        <span className="text-sm font-semibold text-textPrimary text-right capitalize">{listing.leaseDuration || listing.rentDuration}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">

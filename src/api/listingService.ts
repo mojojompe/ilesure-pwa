@@ -24,7 +24,10 @@ export interface Listing {
   title: string;
   description: string;
   rentAnnual: number;
+  /** Free-text rent period from older listings; no longer collected. */
   rentDuration?: string;
+  /** Lease term label, e.g. "2 years" (regular rentals only). */
+  leaseDuration?: string;
   areaCluster: string;
   distanceBucket: string;
   distance?: string;
