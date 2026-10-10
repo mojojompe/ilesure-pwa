@@ -127,6 +127,16 @@ export default function App() {
     return () => { socketService.disconnect(); };
   }, [isAuthenticated]);
 
+  // Send a constant ping to the backend to keep the Render free plan active
+  useEffect(() => {
+    const pingBackend = () => {
+      fetch('https://api.ilesure.com/api/v1/health').catch(() => {});
+    };
+    pingBackend();
+    const interval = setInterval(pingBackend, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <CallProvider>
       <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">

@@ -56,7 +56,8 @@ export function Discover() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
-  const ITEMS_PER_PAGE = 10;
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
   /**
    * Translates the chips and the filter modal into the API's query parameters.
@@ -141,17 +142,9 @@ export function Discover() {
 
       const [listingsData, savedData, chatsData] = await Promise.all(promises);
 
+      setListings(listingsData.listings);
       if (page === 1) {
-        setListings(listingsData.listings);
         useListingStore.getState().setListings(listingsData.listings);
-      } else {
-        setListings(prev => {
-          const newIds = new Set(listingsData.listings.map((l: any) => l.id || l._id));
-          const filteredPrev = prev.filter(l => !newIds.has(l.id || l._id));
-          const newList = [...filteredPrev, ...listingsData.listings];
-          useListingStore.getState().setListings(newList);
-          return newList;
-        });
       }
 
       // Sync saved listings
@@ -162,6 +155,8 @@ export function Discover() {
       const unreadChats = chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
       setUnreadCount(unreadChats);
 
+      // Pagination metadata
+      setTotalPages(Math.ceil((listingsData.total || 0) / ITEMS_PER_PAGE) || 1);
       setHasMoreServer(listingsData.listings.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error('Failed to fetch data', error);
@@ -346,17 +341,33 @@ export function Discover() {
                 </motion.div>
               ))}
 
-              {hasMore && (
-                <div className="px-5 mt-4 mb-8">
-                  <button
-                    onClick={handleLoadMore}
-                    disabled={loading}
-                    className="w-full py-4 rounded-xl bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight flex items-center justify-center disabled:opacity-50"
-                  >
-                    {loading && currentPage > 1 ? 'Loading...' : 'Load More'}
-                  </button>
-                </div>
-              )}
+              <div className="px-5 mt-6 mb-8 flex items-center justify-center gap-2">
+                <button
+                  onClick={() => {
+                    const prevPage = Math.max(1, currentPage - 1);
+                    setCurrentPage(prevPage);
+                    fetchInitialData(prevPage);
+                  }}
+                  disabled={currentPage === 1 || loading}
+                  className="px-4 py-2 rounded-lg bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="text-sm font-semibold text-textSecondary px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => {
+                    const nextPage = Math.min(totalPages, currentPage + 1);
+                    setCurrentPage(nextPage);
+                    fetchInitialData(nextPage);
+                  }}
+                  disabled={currentPage === totalPages || loading}
+                  className="px-4 py-2 rounded-lg bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </motion.div>
           ) : (
             <motion.div
