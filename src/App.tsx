@@ -95,6 +95,7 @@ import { socketService } from './api/socketService';
 import { useAuthStore } from './stores/authStore';
 import { authService } from './api/authService';
 
+
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
 export default function App() {
