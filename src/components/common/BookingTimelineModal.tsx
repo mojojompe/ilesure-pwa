@@ -4,6 +4,8 @@ import { Button } from '../ui/Button';
 import { CheckmarkBadge01Icon, Time02Icon, InformationCircleIcon, Cancel01Icon, Home01Icon } from '@hugeicons/react';
 import { customAlert } from '../../stores/alertStore';
 import { deriveBookingProgress } from '../../utils/bookingProgress';
+import { InfoTip } from '../ui/InfoTip';
+import { BOOKING_INFO } from '../../constants/bookingInfo';
 
 interface BookingTimelineModalProps {
   visible: boolean;
@@ -32,13 +34,15 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
       id: 1,
       title: 'Booking Requested',
       desc: 'Your request has been submitted.',
-      icon: Time02Icon
+      icon: Time02Icon,
+      info: BOOKING_INFO.stepRequested
     },
     {
       id: 2,
       title: 'Physical Inspection',
       desc: booking?.inspectionDate ? `Scheduled for ${new Date(booking.inspectionDate).toLocaleDateString()} at ${booking.inspectionTime}` : 'Pending inspection schedule.',
-      icon: CheckmarkBadge01Icon
+      icon: CheckmarkBadge01Icon,
+      info: BOOKING_INFO.stepInspection
     },
     {
       id: 3,
@@ -48,19 +52,22 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
         : inspectionFailed
           ? 'You reported the apartment did not match the listing.'
           : 'Pending verification.',
-      icon: InformationCircleIcon
+      icon: InformationCircleIcon,
+      info: BOOKING_INFO.stepVerified
     },
     {
       id: 4,
       title: 'Payment',
       desc: booking?.status === 'completed' ? 'Payment received.' : 'Pending payment.',
-      icon: CheckmarkBadge01Icon
+      icon: CheckmarkBadge01Icon,
+      info: BOOKING_INFO.stepPayment
     },
     {
       id: 5,
       title: 'Move In',
       desc: booking?.status === 'completed' ? 'You have moved in.' : 'Pending move in.',
-      icon: Home01Icon
+      icon: Home01Icon,
+      info: BOOKING_INFO.stepMoveIn
     }
   ];
 
@@ -78,7 +85,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
           className="bg-background w-full max-w-md rounded-[24px] shadow-2xl relative z-10 flex flex-col"
         >
           <div className="flex justify-between items-center px-6 py-4 border-b border-borderLight shrink-0">
-            <h2 className="text-xl font-bold text-textPrimary">Booking Timeline</h2>
+            <h2 className="text-xl font-bold text-textPrimary">Booking Timeline<InfoTip {...BOOKING_INFO.timeline} /></h2>
             <button
               /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
               aria-label="Close" onClick={onClose} className="p-1 rounded-full bg-surfaceLight text-textSecondary active:scale-95 transition-transform">
@@ -169,6 +176,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                       <div className="flex-1 pt-1">
                         <h4 className={`text-sm font-bold mb-1 ${isActive ? 'text-primary' : isCompleted ? 'text-textPrimary' : 'text-textSecondary opacity-50'}`}>
                           {step.title}
+                          <InfoTip {...step.info} />
                         </h4>
                         <p className={`text-xs ${isActive || isCompleted ? 'text-textSecondary' : 'text-textTertiary opacity-50'}`}>{step.desc}</p>
 

@@ -17,6 +17,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { customAlert, customConfirm } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 import { getApiErrorMessage } from '../../api/client';
+import { InfoTip } from '../../components/ui/InfoTip';
+import { BOOKING_INFO } from '../../constants/bookingInfo';
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: any }> = {
   pending_payment: { color: '#E29C45', bg: '#E29C4515', label: 'Awaiting Payment', icon: Time02Icon },
@@ -161,6 +163,7 @@ export function SharedBookingDetail() {
             <StatusIcon size={28} style={{ color: statusConfig.color }} />
             <span className="text-base font-bold flex-1" style={{ color: statusConfig.color }}>
               {statusConfig.label}
+              <InfoTip {...BOOKING_INFO.sharedStatus} />
             </span>
             {['confirmed', 'expired', 'refunded'].indexOf(booking.status) === -1 && (
               <span className="text-sm font-semibold text-textSecondary">
@@ -193,7 +196,7 @@ export function SharedBookingDetail() {
 
           {/* Payment Progress */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PAYMENT PROGRESS</h3>
+            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PAYMENT PROGRESS<InfoTip {...BOOKING_INFO.sharedProgress} /></h3>
             <div className="flex items-baseline gap-1 mb-2">
               <span className="text-xl font-black text-textPrimary">₦{booking.totalPaid?.toLocaleString()}</span>
               <span className="text-base text-textTertiary">/</span>
@@ -209,7 +212,7 @@ export function SharedBookingDetail() {
 
           {/* Participants */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PARTICIPANTS</h3>
+            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PARTICIPANTS<InfoTip {...BOOKING_INFO.sharedParticipants} /></h3>
 
             {/* Me */}
             <div className="flex items-center gap-3 py-3 border-b border-borderLight">
@@ -255,7 +258,7 @@ export function SharedBookingDetail() {
           {/* Deadline */}
           {['confirmed', 'expired', 'refunded'].indexOf(booking.status) === -1 && (
             <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">DEADLINE</h3>
+              <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">DEADLINE<InfoTip {...BOOKING_INFO.sharedDeadline} /></h3>
               <div className="flex items-center gap-2">
                 <Calendar01Icon size={20} className="text-textSecondary" />
                 <span className="text-sm font-bold text-textPrimary">
