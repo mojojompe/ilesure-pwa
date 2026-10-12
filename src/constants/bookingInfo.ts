@@ -82,18 +82,18 @@ export const BOOKING_INFO = {
   },
   sharedStatus: {
     title: 'Shared booking status',
-    body: 'A shared booking is confirmed only when every roommate has paid their share. The countdown shows how long is left to finish paying.',
+    body: 'Each roommate pays for their own place, and paying confirms that place straight away. The countdown shows how long is left for anyone who has not paid yet.',
   },
   sharedProgress: {
     title: 'Payment progress',
-    body: 'The amount paid so far by all roommates, out of the total needed to secure the apartment.',
+    body: 'The amount paid so far by all roommates, out of the total for every place in the apartment.',
   },
   sharedParticipants: {
     title: 'Participants',
-    body: 'Each roommate pays only their own share. You can see who has paid and who is still pending.',
+    body: 'Each roommate pays only their own share. Paid means that place is confirmed. Released means it was not paid for in time, or was given up, so it went back on the market.',
   },
   sharedDeadline: {
     title: 'Payment deadline',
-    body: 'Everyone must pay before this date. If the booking is not fully paid by then it expires and any share already paid is refunded.',
+    body: 'Pay your share before this date to keep your place. A place that is not paid for by then is released. Anyone who has already paid keeps their confirmed place.',
   },
 } satisfies Record<string, InfoCopy>;

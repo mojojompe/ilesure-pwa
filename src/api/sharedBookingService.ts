@@ -13,7 +13,7 @@ export interface SharedBookingParticipant {
   } | string;
   amountDue: number;
   amountPaid: number;
-  status: 'pending' | 'paid';
+  status: 'pending' | 'paid' | 'released' | 'refunded';
   paystackReference?: string;
   paidAt?: string;
 }

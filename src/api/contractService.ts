@@ -35,11 +35,14 @@ export interface SignPlatformAgreementRequest {
   signatureBase64: string;
 }
 
-export interface SignTenancyAgreementRequest {
+/** Draw with a finger, or type the full name on the account. */
+export type SignTenancyAgreementRequest = {
   bookingId: string;
-  signatureBase64: string;
   party: 'tenant' | 'landlord' | 'agent';
-}
+} & (
+  | { signatureType: 'drawn'; signatureBase64: string }
+  | { signatureType: 'typed'; typedName: string }
+);
 
 export interface GenerateTenancyAgreementRequest {
   bookingId: string;
