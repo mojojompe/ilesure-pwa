@@ -39,6 +39,15 @@ export const SCHOOLS = [
     isDefault: false,
   },
   {
+    id: 'fuhsi',
+    name: 'Federal University of Health Sciences, Ila-Orangun',
+    shortName: 'FUHSI',
+    location: 'Ora Road, Ila-Orangun, Osun State',
+    // No logo yet; add public/images/schools/fuhsi.png and set `logo` to it.
+    icon: '🏥',
+    isDefault: false,
+  },
+  {
     id: 'others',
     name: 'Other Universities',
     shortName: 'OTHERS',
