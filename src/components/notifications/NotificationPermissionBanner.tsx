@@ -7,6 +7,7 @@ import { notificationService } from '../../api/notificationService';
 export function NotificationPermissionBanner() {
   const [isVisible, setIsVisible] = useState(false);
   const [doNotRemind, setDoNotRemind] = useState(false);
+  const [isEnabling, setIsEnabling] = useState(false);
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -37,19 +38,33 @@ export function NotificationPermissionBanner() {
   }, []);
 
   const handleEnable = async () => {
-    const permission = await pushNotificationService.requestPermission();
-    if (permission === 'granted') {
-      await pushNotificationService.subscribeUserToPush();
-      // Update backend settings to enable push
-      await notificationService.updateSettings({ push: true });
+    setIsEnabling(true);
+    // Mark as suppressed immediately so that page changes or re-renders never show the modal again
+    localStorage.setItem('push-banner-suppressed', 'true');
+    try {
+      const permission = await pushNotificationService.requestPermission();
+      if (permission === 'granted') {
+        try {
+          await pushNotificationService.subscribeUserToPush();
+        } catch (subErr) {
+          console.warn('Failed to subscribe user to push notifications:', subErr);
+        }
+        try {
+          await notificationService.updateSettings({ push: true });
+        } catch (setErr) {
+          console.warn('Failed to update push settings in backend:', setErr);
+        }
+      }
+    } catch (err) {
+      console.error('Error during notification request:', err);
+    } finally {
+      setIsEnabling(false);
+      setIsVisible(false);
     }
-    setIsVisible(false);
   };
 
   const handleDismiss = () => {
-    if (doNotRemind) {
-      localStorage.setItem('push-banner-suppressed', 'true');
-    }
+    localStorage.setItem('push-banner-suppressed', 'true');
     setIsVisible(false);
   };
 
@@ -124,13 +139,22 @@ export function NotificationPermissionBanner() {
             {/* Action Buttons */}
             <button
               onClick={handleEnable}
-              className="w-full py-4 bg-primary text-white text-[15px] font-bold rounded-[50px] shadow-sm active:opacity-90 transition-opacity mb-3"
+              disabled={isEnabling}
+              className="w-full py-4 bg-primary text-white text-[15px] font-bold rounded-[50px] shadow-sm active:opacity-90 transition-opacity mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              Enable Notifications
+              {isEnabling ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Enabling...</span>
+                </>
+              ) : (
+                'Enable Notifications'
+              )}
             </button>
             <button
               onClick={handleDismiss}
-              className="w-full py-3 text-[15px] font-semibold text-[#6B7280] active:opacity-70 transition-opacity"
+              disabled={isEnabling}
+              className="w-full py-3 text-[15px] font-semibold text-[#6B7280] active:opacity-70 transition-opacity disabled:opacity-50"
             >
               Not Now
             </button>

@@ -25,7 +25,12 @@ export const pushNotificationService = {
       console.warn('Notifications not supported in this browser.');
       return 'denied';
     }
-    return await Notification.requestPermission();
+    try {
+      return await Notification.requestPermission();
+    } catch (error) {
+      console.warn('Failed to request notification permission:', error);
+      return 'denied';
+    }
   },
 
   /**
@@ -37,7 +42,15 @@ export const pushNotificationService = {
         return false;
       }
 
-      const registration = await navigator.serviceWorker.ready;
+      // Add a 4s timeout race so registration.ready never hangs indefinitely
+      const readyPromise = navigator.serviceWorker.ready;
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000));
+      const registration = await Promise.race([readyPromise, timeoutPromise]);
+
+      if (!registration) {
+        console.warn('Service worker not ready within timeout.');
+        return false;
+      }
       
       // Attempt to get existing subscription
       let subscription = await registration.pushManager.getSubscription();
