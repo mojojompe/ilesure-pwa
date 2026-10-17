@@ -8,6 +8,8 @@ import { Calendar01Icon, Tick01Icon } from '@hugeicons/react';
 import { bookingService, BookingSummaryResponse } from '../../api/bookingService';
 import { clsx } from 'clsx';
 import { platformFeeLabel, resolvePlatformFeePercent } from '../../constants/fees';
+import { InfoTip } from '../../components/ui/InfoTip';
+import { BOOKING_INFO, InfoCopy } from '../../constants/bookingInfo';
 
 export function Checkout() {
   const { id } = useParams<{ id: string }>();
@@ -79,9 +81,9 @@ export function Checkout() {
     navigate(`/booking/signature/${id}`);
   };
 
-  const Row = ({ label, value, bold, highlight }: { label: string; value?: number; bold?: boolean; highlight?: boolean }) => (
+  const Row = ({ label, value, bold, highlight, info }: { label: string; value?: number; bold?: boolean; highlight?: boolean; info?: InfoCopy }) => (
     <div className="flex justify-between items-center mb-3 last:mb-0">
-      <span className={clsx("text-sm text-textSecondary", bold && "font-bold text-textPrimary")}>{label}</span>
+      <span className={clsx("text-sm text-textSecondary", bold && "font-bold text-textPrimary")}>{label}{info && <InfoTip {...info} />}</span>
       <span className={clsx(
         "text-sm font-semibold text-textPrimary",
         bold && "font-bold",
@@ -151,7 +153,7 @@ export function Checkout() {
           </div>
 
           {/* Fee Breakdown */}
-          <h3 className="text-base font-bold text-textPrimary mb-4">Fee Breakdown</h3>
+          <h3 className="text-base font-bold text-textPrimary mb-4">Fee Breakdown<InfoTip {...BOOKING_INFO.feeBreakdown} /></h3>
           <div className="bg-surface rounded-2xl p-4 mb-6 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
 
             {summary.paymentFrequency && !summary.isShortlet && (
@@ -169,21 +171,21 @@ export function Checkout() {
               value={summary.rentAmount}
             />
 
-            {!summary.isShortlet && <Row label="Caution Fee" value={summary.cautionFee} />}
-            {!summary.isShortlet && <Row label="Agency Fee" value={summary.agencyFee} />}
-            <Row label={platformFeeLabel(resolvePlatformFeePercent(summary))} value={summary.platformFee} />
+            {!summary.isShortlet && <Row label="Caution Fee" value={summary.cautionFee} info={BOOKING_INFO.cautionFee} />}
+            {!summary.isShortlet && <Row label="Agency Fee" value={summary.agencyFee} info={BOOKING_INFO.agencyFee} />}
+            <Row label={platformFeeLabel(resolvePlatformFeePercent(summary))} value={summary.platformFee} info={BOOKING_INFO.serviceFee} />
             
             {summary.roommateMatchingFee > 0 && (
-              <Row label="Roommate Matching Fee (1%)" value={summary.roommateMatchingFee} />
+              <Row label="Roommate Matching Fee (1%)" value={summary.roommateMatchingFee} info={BOOKING_INFO.roommateMatchingFee} />
             )}
 
             <div className="w-full h-px bg-borderLight my-3" />
 
-            <Row label="Total to Pay" value={summary.total} bold highlight />
+            <Row label="Total to Pay" value={summary.total} bold highlight info={BOOKING_INFO.totalToPay} />
           </div>
 
           {/* Confirmation Steps */}
-          <h3 className="text-base font-bold text-textPrimary mb-4">Confirmations</h3>
+          <h3 className="text-base font-bold text-textPrimary mb-4">Confirmations<InfoTip {...BOOKING_INFO.confirmations} /></h3>
           <div className="bg-surface rounded-2xl p-4 mb-6 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-1">
             <CheckItem
               checked={agreedTerms}

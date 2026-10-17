@@ -12,6 +12,8 @@ import { chatService } from '../../api/chatService';
 import { clsx } from 'clsx';
 import { customAlert, customConfirm } from '../../stores/alertStore';
 import { getBookingShortletSummary } from '../../utils/shortlet';
+import { InfoTip } from '../../components/ui/InfoTip';
+import { BOOKING_INFO, InfoCopy } from '../../constants/bookingInfo';
 
 export function BookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -136,9 +138,9 @@ export function BookingDetail() {
     bgStatusColor = '#FEF3C7';
   }
 
-  const DetailRow = ({ label, value }: { label: string; value: string }) => (
+  const DetailRow = ({ label, value, info }: { label: string; value: string; info?: InfoCopy }) => (
     <div className="flex justify-between items-center py-3 border-b border-borderLight last:border-0">
-      <span className="text-sm text-textSecondary">{label}</span>
+      <span className="text-sm text-textSecondary">{label}{info && <InfoTip {...info} />}</span>
       <span className="text-sm font-semibold text-textPrimary capitalize">{value}</span>
     </div>
   );
@@ -173,12 +175,13 @@ export function BookingDetail() {
             <span className="text-sm font-extrabold tracking-wide uppercase" style={{ color: statusColor }}>
               {booking.status}
             </span>
+            <InfoTip {...BOOKING_INFO.bookingStatus} />
           </div>
 
           {/* Payment Progress */}
           {totalInstallments > 1 && (
             <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <h3 className="text-base font-bold text-textPrimary mb-3">Payment Progress</h3>
+              <h3 className="text-base font-bold text-textPrimary mb-3">Payment Progress<InfoTip {...BOOKING_INFO.paymentProgress} /></h3>
               <div className="h-2 rounded-full bg-borderLight overflow-hidden mb-2">
                 <div className="h-full bg-accent rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
@@ -192,7 +195,7 @@ export function BookingDetail() {
           {/* Rent Renewal */}
           {!isShortlet && booking.nextRentDue && (
             <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <h3 className="text-base font-bold text-textPrimary mb-3">Rent Renewal</h3>
+              <h3 className="text-base font-bold text-textPrimary mb-3">Rent Renewal<InfoTip {...BOOKING_INFO.rentRenewal} /></h3>
               <RentRenewal bookingId={booking._id} nextRentDue={booking.nextRentDue} />
             </div>
           )}
@@ -200,7 +203,7 @@ export function BookingDetail() {
           {/* Details */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-base font-bold text-textPrimary">Details</h3>
+              <h3 className="text-base font-bold text-textPrimary">Details<InfoTip {...BOOKING_INFO.bookingDetails} /></h3>
               <button
                 /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
                 aria-label="Open chat"
@@ -230,6 +233,7 @@ export function BookingDetail() {
             {payFreq && (
               <DetailRow
                 label="Payment"
+                info={BOOKING_INFO.paymentPlan}
                 value={payFreq === 'custom' ? `${customPlan?.installments} x ₦${customPlan?.amountPerInstallment?.toLocaleString()} (${customPlan?.interval})` : payFreq}
               />
             )}

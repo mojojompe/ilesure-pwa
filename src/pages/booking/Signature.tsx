@@ -8,6 +8,9 @@ import { customAlert } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 import { contractService } from '../../api/contractService';
 import { getApiErrorMessage } from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
+
+type SignatureMode = 'drawn' | 'typed';
 
 export function Signature() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +26,10 @@ export function Signature() {
   const [signing, setSigning] = useState(false);
   const [hasOpenedDocument, setHasOpenedDocument] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  // Typing the account name is an alternative for anyone who would rather not draw.
+  const [mode, setMode] = useState<SignatureMode>('drawn');
+  const [typedName, setTypedName] = useState('');
+  const accountName = useAuthStore((s) => s.user?.fullName) || '';
 
   // Loads the actual agreement for this booking. Tenancy terms differ per
   // property - a landlord or agent may have attached their own document to the
@@ -72,7 +79,8 @@ export function Signature() {
   };
 
   const handleClear = () => {
-    sigCanvas.current?.clear();
+    if (mode === 'typed') setTypedName('');
+    else sigCanvas.current?.clear();
   };
 
   const handleSign = async () => {
@@ -80,8 +88,12 @@ export function Signature() {
       customAlert('Your tenancy agreement has not loaded yet.', 'Warning', 'warning');
       return;
     }
-    if (sigCanvas.current?.isEmpty()) {
+    if (mode === 'drawn' && sigCanvas.current?.isEmpty()) {
       customAlert('Please sign the document first', 'Warning', 'warning');
+      return;
+    }
+    if (mode === 'typed' && typedName.trim().length < 2) {
+      customAlert('Please type your full name to sign', 'Warning', 'warning');
       return;
     }
     if (!id) return;
@@ -93,12 +105,11 @@ export function Signature() {
     // authenticated tenant + bookingId and store the executed agreement.
     setSigning(true);
     try {
-      const signatureBase64 = sigCanvas.current!.toDataURL();
-      const res = await contractService.signTenancyAgreement({
-        bookingId: id,
-        signatureBase64,
-        party: 'tenant',
-      });
+      const res = await contractService.signTenancyAgreement(
+        mode === 'typed'
+          ? { bookingId: id, party: 'tenant', signatureType: 'typed', typedName: typedName.trim() }
+          : { bookingId: id, party: 'tenant', signatureType: 'drawn', signatureBase64: sigCanvas.current!.toDataURL() }
+      );
       if (res?.success) {
         navigate(`/booking/payment/${id}`);
       } else {
@@ -203,21 +214,64 @@ export function Signature() {
 
         {/* Signature Section */}
         <div className="bg-surface border-t border-border p-4 z-30">
-          <h3 className="text-[15px] font-bold text-textPrimary mb-2">Your Signature</h3>
-
-          <div
-            className="h-[180px] bg-background rounded-xl mb-4 overflow-hidden border border-[#E2E8F0]"
-            onMouseEnter={() => setScrollEnabled(false)}
-            onMouseLeave={() => setScrollEnabled(true)}
-            onTouchStart={() => setScrollEnabled(false)}
-            onTouchEnd={() => setScrollEnabled(true)}
-          >
-            <SignatureCanvas
-              ref={sigCanvas}
-              penColor="#000000"
-              canvasProps={{ className: 'w-full h-full cursor-crosshair' }}
-            />
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-[15px] font-bold text-textPrimary">Your Signature</h3>
+            <div className="flex rounded-lg border border-border overflow-hidden" role="tablist" aria-label="Signature method">
+              {(['drawn', 'typed'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  onClick={() => setMode(m)}
+                  className={clsx(
+                    'px-3 py-1.5 text-[13px] font-semibold',
+                    mode === m ? 'bg-primary text-white' : 'bg-background text-textSecondary'
+                  )}
+                >
+                  {m === 'drawn' ? 'Draw' : 'Type name'}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {mode === 'drawn' ? (
+            <div
+              className="h-[180px] bg-background rounded-xl mb-4 overflow-hidden border border-[#E2E8F0]"
+              onMouseEnter={() => setScrollEnabled(false)}
+              onMouseLeave={() => setScrollEnabled(true)}
+              onTouchStart={() => setScrollEnabled(false)}
+              onTouchEnd={() => setScrollEnabled(true)}
+            >
+              <SignatureCanvas
+                ref={sigCanvas}
+                penColor="#000000"
+                canvasProps={{ className: 'w-full h-full cursor-crosshair' }}
+              />
+            </div>
+          ) : (
+            <div className="mb-4">
+              <input
+                type="text"
+                value={typedName}
+                onChange={(e) => setTypedName(e.target.value)}
+                placeholder={accountName || 'Your full name'}
+                autoComplete="name"
+                maxLength={120}
+                aria-label="Type your full name to sign"
+                className="w-full h-12 px-4 bg-background rounded-xl border border-[#E2E8F0] text-[15px] text-textPrimary"
+              />
+              <div className="h-[72px] mt-3 flex items-center justify-center rounded-xl bg-background border border-dashed border-border">
+                <span className="font-serif italic text-[26px] text-textPrimary truncate px-4">
+                  {typedName.trim() || ' '}
+                </span>
+              </div>
+              <p className="text-[12px] text-textSecondary mt-2">
+                Type your full name exactly as it appears on your account{accountName ? ` (${accountName})` : ''}.
+                Typing your name signs the agreement just as drawing would.
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-4">
             <button

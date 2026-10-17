@@ -21,7 +21,7 @@ export const RequestUpgradeModal: React.FC<RequestUpgradeModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const categories = [
-    { id: 'payments', label: 'Payments & Escrow' },
+    { id: 'payments', label: 'Payments & Refunds' },
     { id: 'listings', label: 'Listings & Tours' },
     { id: 'inspections', label: 'Inspections & Safety' },
     { id: 'roommates', label: 'Roommates' },

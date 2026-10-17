@@ -17,6 +17,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { customAlert, customConfirm } from '../../stores/alertStore';
 import { clsx } from 'clsx';
 import { getApiErrorMessage } from '../../api/client';
+import { InfoTip } from '../../components/ui/InfoTip';
+import { BOOKING_INFO } from '../../constants/bookingInfo';
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: any }> = {
   pending_payment: { color: '#E29C45', bg: '#E29C4515', label: 'Awaiting Payment', icon: Time02Icon },
@@ -29,6 +31,16 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; 
   // telling a renter their money is back when it is not is the worst thing this screen can do.
   cancelled: { color: '#C62828', bg: '#C6282815', label: 'Cancelled', icon: CancelCircleIcon },
 };
+
+// Each roommate's place stands on its own: paid is a confirmed place, released is one that
+// was not paid for in time (or was given up) and went back on the market.
+const PLACE_BADGE: Record<string, { label: string; className: string; avatar: string }> = {
+  paid: { label: 'Paid', className: 'bg-[#2E7D3215] text-[#2E7D32]', avatar: 'bg-[#2E7D32]' },
+  pending: { label: 'Pending', className: 'bg-[#E29C4515] text-[#E29C45]', avatar: 'bg-textTertiary' },
+  released: { label: 'Released', className: 'bg-[#75757515] text-[#757575]', avatar: 'bg-textTertiary' },
+  refunded: { label: 'Refunded', className: 'bg-[#75757515] text-[#757575]', avatar: 'bg-textTertiary' },
+};
+const placeBadge = (status?: string) => PLACE_BADGE[status || 'pending'] || PLACE_BADGE.pending;
 
 export function SharedBookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -96,11 +108,14 @@ export function SharedBookingDetail() {
   };
 
   const handleCancel = async () => {
-    const isConfirmed = await customConfirm('This will cancel the shared booking and initiate refunds for any payments made. Are you sure?');
+    const otherHasPaid = getOtherParticipant()?.status === 'paid';
+    const isConfirmed = await customConfirm(otherHasPaid
+      ? 'This will give up your place in this apartment. Your roommate has paid, so their place stays confirmed. Are you sure?'
+      : 'Nobody has paid yet, so this will cancel the shared booking for both of you. Are you sure?');
     if (isConfirmed) {
       try {
-        await sharedBookingService.cancelSharedBooking(id!);
-        await customAlert('Refunds have been initiated where applicable.', 'Success', 'success');
+        const res: any = await sharedBookingService.cancelSharedBooking(id!);
+        await customAlert(res?.message || 'Your place has been released.', 'Success', 'success');
         navigate(-1);
       } catch (error: any) {
         customAlert(getApiErrorMessage(error, 'Failed to cancel'), 'Error', 'error');
@@ -134,11 +149,21 @@ export function SharedBookingDetail() {
 
   const myParticipant = getMyParticipant();
   const otherParticipant = getOtherParticipant();
-  const statusConfig = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending_payment;
-  const StatusIcon = statusConfig.icon;
   const myPaid = myParticipant?.status === 'paid';
-  const isPayable = !myPaid && (booking.status === 'pending_payment' || booking.status === 'partially_paid');
-  const canCancel = booking.status !== 'confirmed' && booking.status !== 'expired' && booking.status !== 'refunded';
+  const myPlace: string = myParticipant?.status || 'pending';
+  const isOpen = booking.status === 'pending_payment' || booking.status === 'partially_paid';
+  // The banner speaks for MY place: a booking can be confirmed for the roommate who paid
+  // while mine was released, and mine is confirmed as soon as I pay.
+  const statusConfig = myPaid
+    ? { ...STATUS_CONFIG.confirmed, label: 'Your place is confirmed' }
+    : myPlace === 'released'
+      ? { ...STATUS_CONFIG.expired, label: 'Your place was released' }
+      : myPlace === 'refunded'
+        ? { ...STATUS_CONFIG.refunded, label: 'Your payment was refunded' }
+        : STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending_payment;
+  const StatusIcon = statusConfig.icon;
+  const isPayable = myPlace === 'pending' && isOpen;
+  const canCancel = myPlace === 'pending' && isOpen;
 
   const otherName = otherParticipant?.userId && typeof otherParticipant.userId === 'object'
     ? otherParticipant.userId.fullName
@@ -161,8 +186,9 @@ export function SharedBookingDetail() {
             <StatusIcon size={28} style={{ color: statusConfig.color }} />
             <span className="text-base font-bold flex-1" style={{ color: statusConfig.color }}>
               {statusConfig.label}
+              <InfoTip {...BOOKING_INFO.sharedStatus} />
             </span>
-            {['confirmed', 'expired', 'refunded'].indexOf(booking.status) === -1 && (
+            {isOpen && !myPaid && (
               <span className="text-sm font-semibold text-textSecondary">
                 {getTimeRemaining()}
               </span>
@@ -193,7 +219,7 @@ export function SharedBookingDetail() {
 
           {/* Payment Progress */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PAYMENT PROGRESS</h3>
+            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PAYMENT PROGRESS<InfoTip {...BOOKING_INFO.sharedProgress} /></h3>
             <div className="flex items-baseline gap-1 mb-2">
               <span className="text-xl font-black text-textPrimary">₦{booking.totalPaid?.toLocaleString()}</span>
               <span className="text-base text-textTertiary">/</span>
@@ -209,7 +235,7 @@ export function SharedBookingDetail() {
 
           {/* Participants */}
           <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PARTICIPANTS</h3>
+            <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PARTICIPANTS<InfoTip {...BOOKING_INFO.sharedParticipants} /></h3>
 
             {/* Me */}
             <div className="flex items-center gap-3 py-3 border-b border-borderLight">
@@ -223,11 +249,8 @@ export function SharedBookingDetail() {
                 <p className="text-sm font-bold text-textPrimary truncate">{user?.fullName || 'You'} (You)</p>
                 <p className="text-sm text-textSecondary mt-0.5">₦{myParticipant?.amountDue?.toLocaleString() || '—'}</p>
               </div>
-              <div className={clsx(
-                "px-2.5 py-1 rounded-md text-xs font-bold",
-                myPaid ? "bg-[#2E7D3215] text-[#2E7D32]" : "bg-[#E29C4515] text-[#E29C45]"
-              )}>
-                {myPaid ? 'Paid' : 'Pending'}
+              <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold", placeBadge(myPlace).className)}>
+                {placeBadge(myPlace).label}
               </div>
             </div>
 
@@ -235,7 +258,7 @@ export function SharedBookingDetail() {
             <div className="flex items-center gap-3 py-3">
               <div className={clsx(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                otherParticipant?.status === 'paid' ? "bg-[#2E7D32]" : "bg-textTertiary"
+                placeBadge(otherParticipant?.status).avatar
               )}>
                 <span className="text-white font-bold text-lg">{otherName?.charAt(0) || '?'}</span>
               </div>
@@ -243,19 +266,16 @@ export function SharedBookingDetail() {
                 <p className="text-sm font-bold text-textPrimary truncate">{otherName}</p>
                 <p className="text-sm text-textSecondary mt-0.5">₦{otherParticipant?.amountDue?.toLocaleString() || '—'}</p>
               </div>
-              <div className={clsx(
-                "px-2.5 py-1 rounded-md text-xs font-bold",
-                otherParticipant?.status === 'paid' ? "bg-[#2E7D3215] text-[#2E7D32]" : "bg-[#E29C4515] text-[#E29C45]"
-              )}>
-                {otherParticipant?.status === 'paid' ? 'Paid' : 'Pending'}
+              <div className={clsx("px-2.5 py-1 rounded-md text-xs font-bold", placeBadge(otherParticipant?.status).className)}>
+                {placeBadge(otherParticipant?.status).label}
               </div>
             </div>
           </div>
 
           {/* Deadline */}
-          {['confirmed', 'expired', 'refunded'].indexOf(booking.status) === -1 && (
+          {isOpen && (
             <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-              <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">DEADLINE</h3>
+              <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">DEADLINE<InfoTip {...BOOKING_INFO.sharedDeadline} /></h3>
               <div className="flex items-center gap-2">
                 <Calendar01Icon size={20} className="text-textSecondary" />
                 <span className="text-sm font-bold text-textPrimary">
@@ -291,13 +311,20 @@ export function SharedBookingDetail() {
               </div>
             )}
 
-            {myPaid && !booking.status.includes('confirmed') && (
+            {myPaid && otherParticipant?.status === 'pending' && isOpen && (
               <div className="flex items-center gap-3 bg-primary/10 p-4 rounded-2xl border border-primary/20">
                 <Time02Icon size={20} className="text-primary" />
                 <span className="text-sm font-bold text-primary flex-1">
-                  {otherParticipant?.status === 'paid'
-                    ? 'Both payments received! Confirming...'
-                    : `Waiting for ${otherName} to pay`}
+                  Your place is paid for and confirmed. {otherName} has until the deadline to pay for theirs.
+                </span>
+              </div>
+            )}
+
+            {myPaid && otherParticipant?.status === 'released' && (
+              <div className="flex items-center gap-3 bg-primary/10 p-4 rounded-2xl border border-primary/20">
+                <Alert01Icon size={20} className="text-primary" />
+                <span className="text-sm font-bold text-primary flex-1">
+                  {otherName} did not take their place, so it is back on the market. Your own place is not affected.
                 </span>
               </div>
             )}
