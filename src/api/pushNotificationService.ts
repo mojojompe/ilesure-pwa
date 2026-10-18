@@ -18,7 +18,7 @@ export const pushNotificationService = {
   },
 
   /**
-   * Request notification permission from the user
+   * Request notification permission from the browser/OS
    */
   async requestPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) {
@@ -34,7 +34,22 @@ export const pushNotificationService = {
   },
 
   /**
-   * Subscribe user to web push and send the subscription to the backend
+   * Retrieve the server's public VAPID key
+   */
+  async getVapidPublicKey(): Promise<string> {
+    try {
+      const res = await apiClient.get<{ success: boolean; data: { publicKey: string } }>('/notifications/vapid-public-key');
+      if (res.data?.data?.publicKey) {
+        return res.data.data.publicKey;
+      }
+    } catch (err) {
+      console.warn('[Push] Could not fetch VAPID key from backend, using fallback:', err);
+    }
+    return import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BCnW17-pLmhx35RPgU2KoXap1x0ZiPsqzRObks0wG6HTNRVNn7c4eTg-I5dlEkpLUXHHdKDr-sLopd0z0HWgnoY';
+  },
+
+  /**
+   * Subscribe user to web push and register the endpoint with the backend
    */
   async subscribeUserToPush(): Promise<boolean> {
     try {
@@ -51,23 +66,37 @@ export const pushNotificationService = {
         console.warn('Service worker not ready within timeout.');
         return false;
       }
-      
-      // Attempt to get existing subscription
+
+      const vapidKey = await this.getVapidPublicKey();
+      const applicationServerKey = this.urlBase64ToUint8Array(vapidKey);
+
       let subscription = await registration.pushManager.getSubscription();
 
+      if (subscription) {
+        try {
+          // Sync existing subscription with backend
+          await apiClient.post('/notifications/subscribe', subscription);
+          return true;
+        } catch {
+          // Subscription might be stale or from another VAPID key; unsubscribe to renew
+          try {
+            await subscription.unsubscribe();
+            subscription = null;
+          } catch {
+            // ignore
+          }
+        }
+      }
+
       if (!subscription) {
-        // Fallback VAPID key if not in env - ideally replace this with your actual public key
-        const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'; 
-        
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
+          applicationServerKey,
         });
       }
 
       // Send the subscription to the backend
       await apiClient.post('/notifications/subscribe', subscription);
-      
       return true;
     } catch (error) {
       console.error('Failed to subscribe to push notifications:', error);
@@ -76,7 +105,7 @@ export const pushNotificationService = {
   },
 
   /**
-   * Unsubscribe user from web push
+   * Unsubscribe user from web push and notify backend
    */
   async unsubscribeUserFromPush(): Promise<boolean> {
     try {
@@ -98,5 +127,7 @@ export const pushNotificationService = {
       console.error('Failed to unsubscribe from push notifications:', error);
       return false;
     }
-  }
+  },
 };
+
+export default pushNotificationService;

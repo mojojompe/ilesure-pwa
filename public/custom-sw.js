@@ -1,18 +1,28 @@
 self.addEventListener('push', function (event) {
   if (event.data) {
-    let data = {};
+    let payload = {};
     try {
-      data = event.data.json();
+      payload = event.data.json();
     } catch (e) {
-      data = { title: 'New Notification', body: event.data.text() };
+      payload = { title: 'iléSure Notification', body: event.data.text() };
     }
 
-    const title = data.title || 'iléSure';
+    const title = payload.title || 'iléSure';
+    const body = payload.body || 'You have a new update from iléSure.';
+    const data = payload.data || payload;
+
     const options = {
-      body: data.body || 'You have a new notification.',
+      body: body,
       icon: '/pwa-192x192.png',
-      badge: '/masked-icon.svg',
-      data: data
+      badge: '/favicon.png',
+      vibrate: [200, 100, 200],
+      tag: payload.tag || payload.type || (data && data.type) || 'ilesure-notification',
+      renotify: true,
+      data: {
+        ...data,
+        type: payload.type || (data && data.type) || 'system',
+        url: payload.url || (data && data.url),
+      },
     };
 
     event.waitUntil(self.registration.showNotification(title, options));
@@ -23,35 +33,50 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 
   const data = event.notification.data || {};
-  let url = '/notifications';
+  let targetPath = '/notifications';
 
-  if (data.type) {
-    if (data.type.startsWith('booking_')) {
-      url = data.data?.bookingId ? `/booking/${data.data.bookingId}` : '/bookings';
-    } else if (data.type.startsWith('listing_')) {
-      url = data.data?.listingId ? `/listing/${data.data.listingId}` : '/explore';
-    } else if (data.type.startsWith('match_')) {
-      url = '/matches';
-    } else if (data.type === 'message' || data.type === 'match_message') {
-      url = data.data?.chatId ? `/chat/${data.data.chatId}` : '/messages';
-    } else if (data.type.startsWith('account_') || data.type.startsWith('kyc_')) {
-      url = '/settings/verification';
+  if (data.url && typeof data.url === 'string') {
+    targetPath = data.url;
+  } else if (data.type) {
+    const type = String(data.type);
+    if (type.startsWith('booking_') || type === 'booking') {
+      const bId = data.bookingId || data.data?.bookingId;
+      targetPath = bId ? `/booking/${bId}` : '/bookings';
+    } else if (type.startsWith('listing_') || type === 'listing') {
+      const lId = data.listingId || data.data?.listingId;
+      targetPath = lId ? `/listing/${lId}` : '/explore';
+    } else if (type.startsWith('match_') || type === 'match') {
+      targetPath = '/matches';
+    } else if (type === 'message' || type === 'match_message' || type === 'chat') {
+      const cId = data.chatId || data.data?.chatId;
+      targetPath = cId ? `/chat/${cId}` : '/messages';
+    } else if (type.startsWith('account_') || type.startsWith('kyc_') || type === 'verification') {
+      targetPath = '/settings/verification';
+    } else if (type === 'rent_reminder') {
+      targetPath = '/bookings';
     }
   }
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((windowClients) => {
-      // Check if there is already a window/tab open with the target URL
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Focus existing window if open
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
-        // If so, just focus it.
-        if (client.url.includes(url) && 'focus' in client) {
-          return client.focus();
+        if (client.url && 'focus' in client) {
+          if (client.url.includes(targetPath)) {
+            return client.focus();
+          }
+          // Navigate existing client
+          if ('navigate' in client) {
+            return client.navigate(targetPath).then((focusedClient) => {
+              return focusedClient ? focusedClient.focus() : client.focus();
+            });
+          }
         }
       }
-      // If not, open a new window/tab.
+      // If no window is open, open a new window
       if (clients.openWindow) {
-        return clients.openWindow(url);
+        return clients.openWindow(targetPath);
       }
     })
   );
