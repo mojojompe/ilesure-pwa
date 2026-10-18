@@ -7,7 +7,7 @@ export interface AppNotification {
   userId: string;
   type: 
     | 'match_found' | 'match_accepted' | 'match_declined' | 'match_message'
-    | 'listing_approved' | 'listing_rejected' | 'listing_expired'
+    | 'listing' | 'listing_new' | 'listing_approved' | 'listing_rejected' | 'listing_expired'
     | 'booking_requested' | 'booking_accepted' | 'booking_declined' | 'booking_payment_received' | 'booking_cancelled'
     | 'rent_reminder'
     | 'account_verified' | 'account_suspended' | 'account_deleted'

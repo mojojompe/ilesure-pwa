@@ -12,7 +12,7 @@ import { pushNotificationService } from '../../api/pushNotificationService';
 const NOTIFICATION_SETTINGS = [
   { id: 'bookings', title: 'Booking Updates', description: 'Get notified about booking status changes', hasSwitch: true },
   { id: 'messages', title: 'New Messages', description: 'Receive alerts when you get new messages', hasSwitch: true },
-  { id: 'listings', title: 'Listing Updates', description: 'Alerts for listing approvals, rejections, or expiry', hasSwitch: true },
+  { id: 'listings', title: 'New Listings & Updates', description: 'Instant alerts for new verified listings in your area', hasSwitch: true },
   { id: 'matches', title: 'Roommate Matches', description: 'Alerts about new roommate compatibility', hasSwitch: true },
   { id: 'security', title: 'Account Security', description: 'Alerts for verifications, suspensions, and KYC', hasSwitch: true },
   { id: 'reminders', title: 'Payment Reminders', description: 'Reminders for upcoming payments', hasSwitch: true },
@@ -26,7 +26,7 @@ const PUSH_NOTIFICATIONS = [
 const DEFAULTS: Record<string, boolean> = {
   bookings: true,
   messages: true,
-  listings: false,
+  listings: true,
   matches: true,
   security: true,
   reminders: true,

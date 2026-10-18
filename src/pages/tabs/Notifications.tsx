@@ -31,6 +31,7 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string }> = {
   match_declined: { icon: CancelCircleIcon, color: '#F44336', bg: '#FFEBEE' },
   match_message: { icon: Comment01Icon, color: '#3E1F0A', bg: '#F2F0EC' },
   // Listings
+  listing_new: { icon: Home01Icon, color: '#3E1F0A', bg: '#F2F0EC' },
   listing_approved: { icon: Home01Icon, color: '#4CAF50', bg: '#E8F5E9' },
   listing_rejected: { icon: Alert02Icon, color: '#F44336', bg: '#FFEBEE' },
   listing_expired: { icon: Time02Icon, color: '#FF9800', bg: '#FFF3E0' },
@@ -128,10 +129,10 @@ export function Notifications() {
     const type = notif.type;
     const data = notif.data || {};
 
-    if (type.startsWith('booking_')) {
+    if (type.startsWith('booking_') || type === 'booking') {
       if (data.bookingId) navigate(`/booking/${data.bookingId}`);
       else navigate('/bookings');
-    } else if (type.startsWith('listing_')) {
+    } else if (type.startsWith('listing_') || type === 'listing') {
       if (data.listingId) navigate(`/listing/${data.listingId}`);
       else navigate('/explore');
     } else if (type.startsWith('match_')) {
