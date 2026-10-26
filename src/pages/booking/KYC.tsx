@@ -163,18 +163,44 @@ export function KYC() {
       // explanation they could connect to this.
       //
       // Report what the server actually said.
+      //
+      // BUGFIX (2026-10-26): the server marks each check `synced: true` when the result was
+      // applied, or `synced: false` with a `reason` when Dojah's result was refused (a name
+      // mismatch, still processing). This read a `verified` field the server never sends, so
+      // ANY check that ran counted as a pass: a refused verification got a green "Sync
+      // complete / Verified: NIN" while the page still said Not Started. One user passed
+      // Dojah five times in sixteen minutes trying to make the two agree.
       const results = res?.data?.results ?? {};
       const checks = Object.entries(results) as Array<[string, any]>;
-      const verified = checks.filter(([, r]) => r?.checked && r?.verified !== false);
+      const synced = checks.filter(([, r]) => r?.checked && r?.synced === true);
+      const refused = checks.filter(([, r]) => r?.checked && r?.synced !== true);
       const notChecked = checks.filter(([, r]) => !r?.checked);
 
-      if (verified.length > 0) {
+      if (synced.length > 0) {
         // Nothing left outstanding on the types that just came back verified.
         awaitingSync.current = false;
         customAlert(
-          `Verified: ${verified.map(([k]) => k.toUpperCase()).join(', ')}.`,
+          `Verified: ${synced.map(([k]) => k.toUpperCase()).join(', ')}.`,
           'Sync complete',
           'success'
+        );
+        return;
+      }
+
+      // Dojah finished but the result was refused: say why, or the user is left staring at
+      // Not Started with no idea what to change. A name mismatch is shown even on the
+      // automatic pass, because it is final and only they can fix it; "still processing" on
+      // that pass stays quiet, since it fires on every return to the tab mid-flow.
+      if (refused.length > 0) {
+        const [kind, r] = refused[0];
+        const isMismatch = r?.code === 'NAME_MISMATCH';
+        if (silent && !isMismatch) return;
+        customAlert(
+          `${r?.reason || 'The verification could not be applied.'}${isMismatch
+            ? ' Update your profile name to match your ID, then tap "Sync with Dojah" again.'
+            : ' Tap "Sync with Dojah" again in a moment.'}`,
+          isMismatch ? 'Name does not match' : `${kind.toUpperCase()} not applied`,
+          'error'
         );
         return;
       }
