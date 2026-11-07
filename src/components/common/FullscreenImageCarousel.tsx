@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { isVideoUrl } from '../../utils/listingMedia';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/react';
 
@@ -66,20 +67,31 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
           </button>
 
           <div className="relative w-full h-full flex items-center justify-center p-4">
-            <motion.img
-              key={currentIndex}
-              src={images[currentIndex]}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ type: 'tween', duration: 0.2 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.8}
-              onDragEnd={handleDragEnd}
-              className="max-w-full max-h-full object-contain cursor-grab active:cursor-grabbing"
-              alt={`Image ${currentIndex + 1}`}
-            />
+            {isVideoUrl(images[currentIndex]) ? (
+              <video
+                key={currentIndex}
+                src={images[currentIndex]}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-full object-contain"
+              />
+            ) : (
+              <motion.img
+                key={currentIndex}
+                src={images[currentIndex]}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'tween', duration: 0.2 }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.8}
+                onDragEnd={handleDragEnd}
+                className="max-w-full max-h-full object-contain cursor-grab active:cursor-grabbing"
+                alt={`Image ${currentIndex + 1}`}
+              />
+            )}
             
             {currentIndex > 0 && (
               <button
