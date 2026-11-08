@@ -5,22 +5,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton, NotificationSkeleton } from '../../components/ui/SkeletonLoader';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Notification01Icon, 
-  Cancel01Icon,
-  Home01Icon,
-  UserMultipleIcon,
-  CheckmarkBadge01Icon,
-  Alert02Icon,
-  InformationCircleIcon,
-  UserCheck01Icon,
-  Book01Icon,
-  Time02Icon,
-  CreditCardIcon,
-  CancelCircleIcon,
-  SecurityCheckIcon,
-  Comment01Icon
-} from '@hugeicons/react';
+import { Cancel01Icon, Home01Icon, UserMultipleIcon, CheckmarkBadge01Icon, Alert02Icon, InformationCircleIcon, UserCheck01Icon, Book01Icon, Time02Icon, CreditCardIcon, CancelCircleIcon, SecurityCheckIcon, Comment01Icon } from '@hugeicons/react';
 import { notificationService } from '../../api/notificationService';
 import { socketService } from '../../api/socketService';
 
@@ -297,13 +282,11 @@ export function Notifications() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center text-center py-12"
             >
-              <div className="w-20 h-20 rounded-full bg-surfaceLight flex items-center justify-center mb-4">
-                <Notification01Icon size={32} className="text-textTertiary" />
-              </div>
-              <h3 className="text-lg font-bold text-textPrimary mb-1">No notifications</h3>
-              <p className="text-sm text-textSecondary px-8">
-                You're all caught up! New notifications will appear here.
-              </p>
+              <EmptyState
+                illustration="notifications"
+                title="You're all caught up"
+                description="Booking updates, messages and new listings that match what you're looking for will appear here."
+              />
             </motion.div>
           )}
         </div>

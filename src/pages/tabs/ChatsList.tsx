@@ -5,7 +5,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton, ChatItemSkeleton } from '../../components/ui/SkeletonLoader';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
-import { Search01Icon, BubbleChatIcon } from '@hugeicons/react';
+import { Search01Icon } from '@hugeicons/react';
 import { chatService, Conversation } from '../../api/chatService';
 import { formatDistanceToNow, format } from 'date-fns';
 
@@ -20,7 +20,7 @@ export function ChatsList() {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
-      
+
       const response = await chatService.getConversations();
       if (response.success && response.data) {
         // Map to match RN ChatPreview
@@ -52,8 +52,8 @@ export function ChatsList() {
   }, []);
 
   const filteredChats = useMemo(() => {
-    return chats.filter(chat => 
-      chat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    return chats.filter(chat =>
+      chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.propertyTitle?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [chats, searchQuery]);
@@ -79,7 +79,7 @@ export function ChatsList() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[100px] -z-10" />
 
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="pt-4 mb-6"
@@ -91,9 +91,9 @@ export function ChatsList() {
         {/* Search Bar */}
         <div className="flex flex-row items-center bg-surfaceLight rounded-xl px-4 py-3 mb-6 shadow-sm">
           <Search01Icon size={18} className="text-textTertiary mr-3 shrink-0" />
-          <input 
-            type="text" 
-            placeholder="Search chats..." 
+          <input
+            type="text"
+            placeholder="Search chats..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none text-base text-textPrimary placeholder:text-textTertiary"
@@ -102,7 +102,7 @@ export function ChatsList() {
 
         {/* Content */}
         <RefreshIndicator isRefreshing={refreshing} />
-        
+
         <div className="flex-1">
           {loading && !refreshing ? (
             <div className="flex flex-col">
@@ -112,15 +112,15 @@ export function ChatsList() {
               <ChatItemSkeleton />
             </div>
           ) : filteredChats.length > 0 ? (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="pb-[20px] flex flex-col gap-3"
             >
               {filteredChats.map((item) => (
-                <motion.div 
-                  key={item.id} 
+                <motion.div
+                  key={item.id}
                   variants={itemVariants}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate(`/chat/${item.id}`)}
@@ -164,20 +164,18 @@ export function ChatsList() {
               ))}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center text-center py-12"
             >
-              <div className="w-20 h-20 rounded-full bg-surfaceLight flex items-center justify-center mb-4">
-                <BubbleChatIcon size={32} className="text-textTertiary" />
-              </div>
-              <h3 className="text-lg font-bold text-textPrimary mb-1">No chats found</h3>
-              <p className="text-sm text-textSecondary px-8">
-                {searchQuery 
+              <EmptyState
+                illustration={searchQuery ? 'search' : 'chats'}
+                title={searchQuery ? 'No matching chats' : 'No chats yet'}
+                description={searchQuery
                   ? "We couldn't find any chats matching your search."
-                  : "Reach out to a landlord from a listing to start chatting."}
-              </p>
+                  : 'Message an agent from any listing to ask questions or arrange an inspection.'}
+              />
             </motion.div>
           )}
         </div>

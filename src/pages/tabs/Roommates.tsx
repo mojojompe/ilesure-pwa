@@ -7,14 +7,7 @@ import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
-import {
-  UserMultipleIcon,
-  Settings02Icon,
-  Mail01Icon,
-  Home01Icon,
-  ArrowRight01Icon,
-  Search01Icon
-} from '@hugeicons/react';
+import { UserMultipleIcon, Settings02Icon, Mail01Icon, Home01Icon, ArrowRight01Icon } from '@hugeicons/react';
 import roommateService, { MatchResult } from '../../api/roommateService';
 import { apiClient } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
@@ -227,11 +220,11 @@ export function Roommates() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center text-center py-12"
             >
-              <div className="w-20 h-20 rounded-full bg-surfaceLight flex items-center justify-center mb-4">
-                <Search01Icon size={32} className="text-textTertiary" />
-              </div>
-              <h3 className="text-lg font-bold text-textPrimary mb-1">No matches yet</h3>
-              <p className="text-sm text-textSecondary">Check back as more people join</p>
+              <EmptyState
+                illustration="roommates"
+                title="No matches yet"
+                description="We'll show people looking to share a place as they join. Check back soon."
+              />
             </motion.div>
           )}
         </div>

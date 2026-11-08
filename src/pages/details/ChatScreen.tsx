@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { customAlert } from '../../stores/alertStore';
 import { getApiErrorMessage } from '../../api/apiError';
 import { getSocket, socketService } from '../../api/socketService';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 /** A message shown before the server confirmed it (optimistic send). */
 type LocalMessage = ChatMessage & { _pending?: boolean };
@@ -410,7 +411,7 @@ export function ChatScreen() {
           {loading ? (
             <div className="text-center text-sm text-textSecondary mt-8">Loading messages...</div>
           ) : messages.length === 0 ? (
-            <div className="text-center text-sm text-textSecondary mt-8">No messages yet. Say hi!</div>
+            <EmptyState compact illustration="chats" title="No messages yet" description="Say hi and ask anything about the property." className="mt-6" />
           ) : (
             messages.map(msg => {
               const isMe = msg.senderId === user?.id;

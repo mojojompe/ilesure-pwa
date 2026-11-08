@@ -3,19 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
-import { 
-  CheckmarkBadge01Icon, 
-  CallIcon,
-  StarIcon,
-  Alert02Icon,
-  Home01Icon
-} from '@hugeicons/react';
+import { CheckmarkBadge01Icon, CallIcon, StarIcon, Alert02Icon } from '@hugeicons/react';
 import { listingService, Listing } from '../../api/listingService';
 import { userService } from '../../api/userService';
 import { customAlert } from '../../stores/alertStore';
 import { ERROR_CODE, getApiError } from '../../api/client';
 import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { AddRatingModal } from '../../components/common/AddRatingModal';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 export function AgentProfile() {
   const { id } = useParams<{ id: string }>();
@@ -195,10 +190,7 @@ export function AgentProfile() {
                 <h3 className="text-lg font-bold text-textPrimary mb-4">Listings by {agent.fullName?.split(' ')[0] || 'Agent'}</h3>
                 
                 {listings.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 gap-3">
-                    <Home01Icon size={48} className="text-textTertiary" />
-                    <p className="text-sm text-textSecondary">No active listings found</p>
-                  </div>
+                  <EmptyState compact illustration="listings" title="No active listings" description="This agent has nothing listed right now. Check back later." />
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
                     {listings.map(listing => (
@@ -238,7 +230,7 @@ export function AgentProfile() {
                 <h3 className="text-lg font-bold text-textPrimary mb-4">Reviews</h3>
                 
                 {reviews.length === 0 ? (
-                  <p className="text-sm text-textSecondary text-center py-6">No reviews yet. Be the first to review!</p>
+                  <EmptyState compact illustration="reviews" title="No reviews yet" description="Renters who have dealt with this agent can leave the first review." />
                 ) : (
                   <div className="space-y-4">
                     {reviews.map((review, i) => (

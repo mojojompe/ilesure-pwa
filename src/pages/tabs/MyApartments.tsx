@@ -5,8 +5,8 @@ import { AppShell } from '../../components/layout/AppShell';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ApartmentCardSkeleton } from '../../components/ui/SkeletonLoader';
-import { 
-  Home01Icon, 
+import {
+  Home01Icon,
   Chatting01Icon
 } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
@@ -24,7 +24,7 @@ export function MyApartments() {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
-      
+
       const response = await bookingService.getMyApartments();
       if (response.success && response.data) {
         setApartments({
@@ -60,22 +60,22 @@ export function MyApartments() {
     e.stopPropagation();
     const listing = item.listingId;
     if (!listing || typeof listing !== 'object') return;
-    
+
     const listingId = listing._id || listing.id;
     let participantId: string | null = null;
-    
+
     if (listing.agentId?._id) participantId = listing.agentId._id;
     else if (typeof listing.agentId === 'string') participantId = listing.agentId;
     else if (listing.companyId?._id) participantId = listing.companyId._id;
     else if (typeof listing.companyId === 'string') participantId = listing.companyId;
     else if (listing.landlordId?._id) participantId = listing.landlordId._id;
     else if (typeof listing.landlordId === 'string') participantId = listing.landlordId;
-    
-    if (!participantId) { 
-      navigate('/chats'); 
-      return; 
+
+    if (!participantId) {
+      navigate('/chats');
+      return;
     }
-    
+
     try {
       // Assuming chatService.startChat is available in PWA similar to RN
       const { chatService } = await import('../../api/chatService');
@@ -85,8 +85,8 @@ export function MyApartments() {
       } else {
         navigate('/chats');
       }
-    } catch { 
-      navigate('/chats'); 
+    } catch {
+      navigate('/chats');
     }
   };
 
@@ -121,7 +121,7 @@ export function MyApartments() {
     const priceKey = durationUnit ? unitToPriceKey[durationUnit] : null;
     const listingRent = listing?.rentAnnual;
     const payFreq = listing?.paymentFrequency;
-    
+
     const progress = item.totalInstallments > 1 ? Math.round((item.installmentsPaid / item.totalInstallments) * 100) : null;
 
     let statusColor = '#EF4444'; // error
@@ -153,8 +153,8 @@ export function MyApartments() {
               <Home01Icon size={32} className="text-textTertiary" />
             </div>
           )}
-          
-          <div 
+
+          <div
             className="absolute top-3 right-3 px-2.5 py-1 rounded-full backdrop-blur-md"
             style={{ backgroundColor: bgStatusColor }}
           >
@@ -167,7 +167,7 @@ export function MyApartments() {
         <div className="p-4">
           <h3 className="text-lg font-bold text-textPrimary leading-tight truncate">{listingTitle}</h3>
           <p className="text-sm text-textSecondary mt-1 truncate">{listingArea}</p>
-          
+
           <div className="flex flex-row justify-between items-center mt-4">
             <div className="flex-1">
               {isShortlet && selectedRate ? (
@@ -185,14 +185,14 @@ export function MyApartments() {
                 </p>
               )}
             </div>
-            
-            <button 
+
+            <button
               onClick={(e) => handleChatWithListing(item, e)}
               className="w-9 h-9 rounded-full bg-surfaceLight flex items-center justify-center mr-3 active:scale-95 transition-transform"
             >
               <Chatting01Icon size={20} className="text-primary" />
             </button>
-            
+
             <span className="text-sm text-textSecondary">
               {new Date(item.moveInDate || item.createdAt).toLocaleDateString()}
             </span>
@@ -238,7 +238,7 @@ export function MyApartments() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#F2F0EC] rounded-bl-[100px] -z-10" />
 
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="pt-4 mb-6"
@@ -264,8 +264,8 @@ export function MyApartments() {
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                 className={`px-4 py-2.5 rounded-full border text-sm font-semibold transition-all duration-300 ${
-                  isActive 
-                    ? 'bg-primary border-primary text-white shadow-md' 
+                  isActive
+                    ? 'bg-primary border-primary text-white shadow-md'
                     : 'bg-surface border-border text-textSecondary hover:bg-surfaceLight'
                 }`}
               >
@@ -287,7 +287,7 @@ export function MyApartments() {
               <ApartmentCardSkeleton />
             </div>
           ) : displayedData.length > 0 ? (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
@@ -296,22 +296,24 @@ export function MyApartments() {
               {displayedData.map(renderBooking)}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center text-center py-12"
             >
-              <div className="w-20 h-20 rounded-full bg-surfaceLight flex items-center justify-center mb-4">
-                <Home01Icon size={32} className="text-textTertiary" />
-              </div>
-              <h3 className="text-lg font-bold text-textPrimary mb-1">No bookings yet</h3>
-              <p className="text-sm text-textSecondary mb-6">You don't have any apartments in this category.</p>
-              <button 
-                onClick={() => navigate('/discover')}
-                className="px-6 py-3 bg-primary rounded-xl"
-              >
-                <span className="text-white font-bold">Browse Listings</span>
-              </button>
+              <EmptyState
+                illustration="bookings"
+                title="No bookings yet"
+                description="You don't have any apartments in this category. Find a place you like and book an inspection."
+                action={
+                  <button
+                    onClick={() => navigate('/discover')}
+                    className="px-6 py-3 bg-primary rounded-xl"
+                  >
+                    <span className="text-white font-bold">Browse Listings</span>
+                  </button>
+                }
+              />
             </motion.div>
           )}
         </div>

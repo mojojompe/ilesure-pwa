@@ -6,7 +6,7 @@ import { ListingCard } from '../../components/listing/ListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { FavouriteIcon } from '@hugeicons/react';
+
 import { listingService, Listing } from '../../api/listingService';
 
 export function SavedListings() {
@@ -72,7 +72,7 @@ export function SavedListings() {
         ) : (
           <div className="flex-1 flex items-center justify-center -mt-10">
             <EmptyState 
-              icon={<FavouriteIcon size={32} />}
+              illustration="saved"
               title="No saved listings"
               description="You haven't saved any apartments yet. Tap the heart icon on any listing to save it here for later."
             />

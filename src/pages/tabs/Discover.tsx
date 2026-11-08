@@ -6,13 +6,7 @@ import { ListingCard } from '../../components/listing/ListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
-import {
-  Search01Icon,
-  FilterIcon,
-  Building03Icon,
-  Chatting01Icon,
-  UserCircleIcon
-} from '@hugeicons/react';
+import { Search01Icon, FilterIcon, Chatting01Icon, UserCircleIcon } from '@hugeicons/react';
 import { listingService, Listing, ListingFilter } from '../../api/listingService';
 import {
   CHIP_PROPERTY_TYPES,
@@ -376,7 +370,7 @@ export function Discover() {
               className="mt-12 px-5"
             >
               <EmptyState
-                icon={<Building03Icon size={48} className="text-textMuted" />}
+                illustration="search"
                 title="No properties found"
                 description="Try adjusting your filters or searching a different area."
               />
