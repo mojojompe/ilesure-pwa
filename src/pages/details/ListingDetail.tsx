@@ -36,6 +36,7 @@ import { AgentReportModal } from '../../components/common/AgentReportModal';
 import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
 import { FullscreenImageCarousel } from '../../components/common/FullscreenImageCarousel';
 import { isVideoUrl } from '../../utils/listingMedia';
+import { ListingVideoThumb } from '../../components/common/ListingVideo';
 import { InquiryModal } from '../../components/common/InquiryModal';
 import { customAlert } from '../../stores/alertStore';
 import { getApiErrorMessage } from '../../api/apiError';
@@ -347,13 +348,7 @@ export function ListingDetail() {
                 }}
               >
                 {isVideoUrl(img) ? (
-                  <div className="relative w-full h-full bg-black">
-                    <video src={img} muted playsInline preload="metadata" className="w-full h-full object-cover" />
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center text-white text-xl" aria-hidden>▶</span>
-                    </span>
-                    <span className="sr-only">Play video</span>
-                  </div>
+                  <ListingVideoThumb src={img} />
                 ) : (
                   <img
                     src={img}

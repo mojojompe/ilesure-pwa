@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { isVideoUrl } from '../../utils/listingMedia';
+import { ListingVideoPlayer } from './ListingVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cancel01Icon, ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/react';
 
@@ -68,13 +69,10 @@ export function FullscreenImageCarousel({ images, initialIndex = 0, visible, onC
 
           <div className="relative w-full h-full flex items-center justify-center p-4">
             {isVideoUrl(images[currentIndex]) ? (
-              <video
+              <ListingVideoPlayer
                 key={currentIndex}
                 src={images[currentIndex]}
-                controls
-                autoPlay
-                playsInline
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-[85vh] object-contain"
               />
             ) : (
               <motion.img
