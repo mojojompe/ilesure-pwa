@@ -357,7 +357,7 @@ export function Discover() {
               </div>
 
               {/* Redesigned Pagination */}
-              <div className="px-5 mt-6 mb-4 flex flex-col items-center gap-3">
+              <div className="px-5 mt-6 mb-4 flex flex-col items-center gap-2">
                 <div className="flex items-center justify-between w-full max-w-xs bg-surfaceLight/80 backdrop-blur-md p-1.5 rounded-full border border-borderLight shadow-sm">
                   <button
                     onClick={() => {
@@ -368,9 +368,9 @@ export function Discover() {
                     }}
                     disabled={currentPage === 1 || loading}
                     aria-label="Previous Page"
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-textPrimary text-xs font-bold shadow-sm border border-borderLight/60 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#E1AD01] text-white text-xs font-bold shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
                   >
-                    <ArrowLeft01Icon size={16} className="text-primary" />
+                    <ArrowLeft01Icon size={16} className="text-white" />
                     <span>Prev</span>
                   </button>
 
@@ -389,20 +389,17 @@ export function Discover() {
                     }}
                     disabled={currentPage === totalPages || loading}
                     aria-label="Next Page"
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-textPrimary text-xs font-bold shadow-sm border border-borderLight/60 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#E1AD01] text-white text-xs font-bold shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
                   >
                     <span>Next</span>
-                    <ArrowRight01Icon size={16} className="text-primary" />
+                    <ArrowRight01Icon size={16} className="text-white" />
                   </button>
                 </div>
 
                 {/* Sponsored by Waltik Labs */}
-                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surfaceLight border border-borderLight/70 shadow-sm mt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E1AD01] animate-pulse" />
-                  <span className="text-xs font-semibold text-textTertiary tracking-wide">
-                    Sponsored by <span className="text-textPrimary font-bold">Waltik Labs</span>
-                  </span>
-                </div>
+                <p className="text-xs font-semibold text-textTertiary tracking-wide mt-1">
+                  Sponsored by <span className="text-textPrimary font-bold">Waltik Labs</span>
+                </p>
               </div>
             </motion.div>
           ) : (
