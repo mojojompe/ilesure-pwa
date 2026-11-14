@@ -24,6 +24,10 @@ export interface Listing {
   title: string;
   description: string;
   rentAnnual: number;
+  /** Yearly service charge the lister declared; informational, not collected at checkout. */
+  serviceCharge?: number;
+  /** One-off viewing fee the lister declared; informational, not collected at checkout. */
+  inspectionFee?: number;
   /** Free-text rent period from older listings; no longer collected. */
   rentDuration?: string;
   /** Lease term label, e.g. "2 years" (regular rentals only). */

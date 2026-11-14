@@ -435,6 +435,23 @@ export function ListingDetail() {
                   })()}
                 </p>
               </div>
+              {/* Fees the lister declares but iléSure does not collect: shown so the renter
+                  knows the full cost before booking an inspection. */}
+              {(() => {
+                const serviceCharge = Number(listing.serviceCharge) || 0;
+                const inspectionFee = Number(listing.inspectionFee) || 0;
+                if (listing.propertyType === 'shortlet' || (!serviceCharge && !inspectionFee)) return null;
+                return (
+                  <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-textSecondary">
+                    {serviceCharge > 0 && (
+                      <span>Service charge: <strong className="text-textPrimary">₦{serviceCharge.toLocaleString()}/yr</strong></span>
+                    )}
+                    {inspectionFee > 0 && (
+                      <span>Inspection fee: <strong className="text-textPrimary">₦{inspectionFee.toLocaleString()}</strong></span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Tags Row */}

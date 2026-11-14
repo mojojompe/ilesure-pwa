@@ -107,6 +107,10 @@ export interface Listing {
   wifi?: boolean;
   cautionFee?: number;
   agencyFee?: number;
+  /** Yearly service charge (informational). */
+  serviceCharge?: number;
+  /** One-off viewing fee (informational). */
+  inspectionFee?: number;
   leaseDuration?: string;
   paymentFrequency?: PaymentFrequency;
   customPaymentPlan?: {
