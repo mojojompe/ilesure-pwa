@@ -24,10 +24,10 @@ const AMENITY_CONFIG = {
     label: 'Power',
     icon: FlashIcon,
     color: {
-      good: 'text-accent', // #E1AD01
-      partial: 'text-orange-500',
-      poor: 'text-red-500',
-      unavailable: 'text-gray-400',
+      good: 'text-[#E1AD01]', // Mustard yellow
+      partial: 'text-amber-400',
+      poor: 'text-rose-400',
+      unavailable: 'text-white/40',
     },
     bg: 'bg-transparent',
   },
@@ -35,10 +35,10 @@ const AMENITY_CONFIG = {
     label: 'Water',
     icon: DropletIcon,
     color: {
-      good: 'text-[#29B6F6]', // #29B6F6
-      partial: 'text-orange-500',
-      poor: 'text-red-500',
-      unavailable: 'text-gray-400',
+      good: 'text-[#38BDF8]', // Bright Sky Blue
+      partial: 'text-amber-400',
+      poor: 'text-rose-400',
+      unavailable: 'text-white/40',
     },
     bg: 'bg-transparent',
   },
@@ -46,10 +46,10 @@ const AMENITY_CONFIG = {
     label: 'WiFi',
     icon: Wifi01Icon,
     color: {
-      good: 'text-primary', // #3E1F0A
-      partial: 'text-orange-500',
-      poor: 'text-red-500',
-      unavailable: 'text-gray-400',
+      good: 'text-[#A78BFA]', // Vivid Violet (not brown)
+      partial: 'text-amber-400',
+      poor: 'text-rose-400',
+      unavailable: 'text-white/40',
     },
     bg: 'bg-transparent',
   },
@@ -57,10 +57,10 @@ const AMENITY_CONFIG = {
     label: 'Security',
     icon: SecurityIcon,
     color: {
-      good: 'text-green-500', // #4CAF50
-      partial: 'text-orange-500',
-      poor: 'text-red-500',
-      unavailable: 'text-gray-400',
+      good: 'text-[#4ADE80]', // Bright Emerald
+      partial: 'text-amber-400',
+      poor: 'text-rose-400',
+      unavailable: 'text-white/40',
     },
     bg: 'bg-transparent',
   },
@@ -68,10 +68,10 @@ const AMENITY_CONFIG = {
     label: 'Parking',
     icon: Car01Icon,
     color: {
-      good: 'text-purple-500', // #9C27B0
+      good: 'text-[#C084FC]', // Bright Purple
       partial: 'text-purple-300',
-      poor: 'text-red-500',
-      unavailable: 'text-gray-400',
+      poor: 'text-rose-400',
+      unavailable: 'text-white/40',
     },
     bg: 'bg-transparent',
   },
@@ -82,22 +82,18 @@ export function AmenityIcon({ type, status = 'good', size = 'medium', showLabel 
   const IconComponent = config.icon;
 
   const sizeClasses = {
-    small: { circle: 'w-9 h-9', icon: 16 },
-    medium: { circle: 'w-11 h-11', icon: 20 },
-    large: { circle: 'w-13 h-13', icon: 24 },
+    small: 16,
+    medium: 20,
+    large: 24,
   };
 
   return (
     <div className={clsx('flex flex-col items-center gap-1', className)}>
-      <div className={clsx(
-        'rounded-full flex items-center justify-center bg-transparent',
-        sizeClasses[size].circle,
-        config.color[status]
-      )}>
-        <IconComponent size={sizeClasses[size].icon} className="currentColor" />
+      <div className={clsx('flex items-center justify-center', config.color[status])}>
+        <IconComponent size={sizeClasses[size]} className="currentColor" />
       </div>
       {showLabel && (
-        <span className="text-[10px] font-medium text-textSecondary uppercase tracking-wider">
+        <span className="text-[10px] font-medium text-white/90 uppercase tracking-wider">
           {config.label}
         </span>
       )}
@@ -125,7 +121,7 @@ export function AmenityRow({
   className
 }: AmenityRowProps) {
   return (
-    <div className={clsx('flex flex-row items-center gap-2', className)}>
+    <div className={clsx('flex flex-row items-center gap-3', className)}>
       <AmenityIcon type="power" status={power} size={size} showLabel={showLabels} />
       <AmenityIcon type="water" status={water} size={size} showLabel={showLabels} />
       <AmenityIcon type="wifi" status={wifi} size={size} showLabel={showLabels} />

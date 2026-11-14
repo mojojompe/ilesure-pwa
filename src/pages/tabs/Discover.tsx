@@ -6,7 +6,14 @@ import { ListingCard } from '../../components/listing/ListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
 import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { Search01Icon, FilterIcon, Chatting01Icon, UserCircleIcon } from '@hugeicons/react';
+import {
+  Search01Icon,
+  FilterIcon,
+  Chatting01Icon,
+  UserCircleIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+} from '@hugeicons/react';
 import { listingService, Listing, ListingFilter } from '../../api/listingService';
 import {
   CHIP_PROPERTY_TYPES,
@@ -51,7 +58,7 @@ export function Discover() {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
   const [totalPages, setTotalPages] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 5;
 
   /**
    * Translates the chips and the filter modal into the API's query parameters.
@@ -93,11 +100,14 @@ export function Discover() {
       if (activeFilters.powerStable) filters.power = [...STABLE_POWER_VALUES];
       if (activeFilters.excludeStudentsOnly) filters.excludeStudentsOnly = true;
 
-      // Proximity around whatever the renter anchored to. A seeded place goes by
+      // Proximity around whatever the renter anchored to. An area cluster from
+      // active listings filters directly by location name; a seeded place goes by
       // name so the server applies its curated radius; a geocoded address goes
       // as a point.
       const anchor = activeFilters.anchor;
-      if (anchor?.landmark) {
+      if (anchor?.areaCluster) {
+        filters.areaCluster = anchor.areaCluster;
+      } else if (anchor?.landmark) {
         filters.landmark = anchor.landmark;
         filters.maxDistance = activeFilters.radiusMetres;
       } else if (anchor?.coordinates) {
@@ -206,7 +216,7 @@ export function Discover() {
 
   return (
     <AppShell>
-      <div className="flex flex-col min-h-full bg-background pt-safe-top pb-6 overflow-x-hidden">
+      <div className="flex flex-col min-h-full bg-background pt-safe-top pb-6 overflow-x-clip">
 
         {/* Header Section */}
         <motion.div
@@ -322,45 +332,77 @@ export function Discover() {
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              className="pb-[20px]"
+              className="pb-[20px] relative"
             >
-              {listings.map((listing: any) => (
-                <motion.div key={listing._id || listing.id} variants={itemVariants}>
-                  <ListingCard
-                    listing={listing}
-                    onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
-                    isSaved={savedListings.includes(listing._id || listing.id)}
-                    onSave={() => toggleSave(listing._id || listing.id)}
-                  />
-                </motion.div>
-              ))}
+              <div className="relative">
+                {listings.map((listing: any, index: number) => (
+                  <motion.div
+                    key={listing._id || listing.id}
+                    variants={itemVariants}
+                    className="sticky transition-all duration-300"
+                    style={{
+                      top: `${72 + index * 12}px`,
+                      zIndex: index + 1,
+                      marginBottom: index === listings.length - 1 ? '16px' : '20px',
+                    }}
+                  >
+                    <ListingCard
+                      listing={listing}
+                      onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
+                      isSaved={savedListings.includes(listing._id || listing.id)}
+                      onSave={() => toggleSave(listing._id || listing.id)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
 
-              <div className="px-5 mt-6 mb-8 flex items-center justify-center gap-2">
-                <button
-                  onClick={() => {
-                    const prevPage = Math.max(1, currentPage - 1);
-                    setCurrentPage(prevPage);
-                    fetchInitialData(prevPage);
-                  }}
-                  disabled={currentPage === 1 || loading}
-                  className="px-4 py-2 rounded-lg bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                <span className="text-sm font-semibold text-textSecondary px-2">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() => {
-                    const nextPage = Math.min(totalPages, currentPage + 1);
-                    setCurrentPage(nextPage);
-                    fetchInitialData(nextPage);
-                  }}
-                  disabled={currentPage === totalPages || loading}
-                  className="px-4 py-2 rounded-lg bg-surfaceLight text-textSecondary font-bold active:bg-surface transition-colors border border-borderLight disabled:opacity-50"
-                >
-                  Next
-                </button>
+              {/* Redesigned Pagination */}
+              <div className="px-5 mt-6 mb-4 flex flex-col items-center gap-3">
+                <div className="flex items-center justify-between w-full max-w-xs bg-surfaceLight/80 backdrop-blur-md p-1.5 rounded-full border border-borderLight shadow-sm">
+                  <button
+                    onClick={() => {
+                      const prevPage = Math.max(1, currentPage - 1);
+                      setCurrentPage(prevPage);
+                      fetchInitialData(prevPage);
+                      document.querySelector('main')?.scrollTo({ top: 320, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === 1 || loading}
+                    aria-label="Previous Page"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-textPrimary text-xs font-bold shadow-sm border border-borderLight/60 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface"
+                  >
+                    <ArrowLeft01Icon size={16} className="text-primary" />
+                    <span>Prev</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5 px-3">
+                    <span className="text-xs font-black text-textPrimary">{currentPage}</span>
+                    <span className="text-[11px] font-semibold text-textTertiary">/</span>
+                    <span className="text-xs font-semibold text-textTertiary">{totalPages}</span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const nextPage = Math.min(totalPages, currentPage + 1);
+                      setCurrentPage(nextPage);
+                      fetchInitialData(nextPage);
+                      document.querySelector('main')?.scrollTo({ top: 320, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === totalPages || loading}
+                    aria-label="Next Page"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-textPrimary text-xs font-bold shadow-sm border border-borderLight/60 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-surface"
+                  >
+                    <span>Next</span>
+                    <ArrowRight01Icon size={16} className="text-primary" />
+                  </button>
+                </div>
+
+                {/* Sponsored by Waltik Labs */}
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surfaceLight border border-borderLight/70 shadow-sm mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E1AD01] animate-pulse" />
+                  <span className="text-xs font-semibold text-textTertiary tracking-wide">
+                    Sponsored by <span className="text-textPrimary font-bold">Waltik Labs</span>
+                  </span>
+                </div>
               </div>
             </motion.div>
           ) : (

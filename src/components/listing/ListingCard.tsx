@@ -90,7 +90,7 @@ export function ListingCard({
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={!isFullyBooked ? onPress : undefined}
-      className={`mx-4 mb-4 relative rounded-3xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.08)] bg-white cursor-pointer ${isFullyBooked ? 'opacity-60' : ''
+      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-black/5 bg-white cursor-pointer ${isFullyBooked ? 'opacity-60' : ''
         }`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
@@ -174,9 +174,9 @@ export function ListingCard({
               {listing.areaCluster}
             </span>
             {formatDistance((listing as any).distanceMeters) ? (
-              <span className="text-accent text-xs font-semibold">· {formatDistance((listing as any).distanceMeters)}</span>
+              <span className="text-[#E1AD01] text-xs font-bold">· {formatDistance((listing as any).distanceMeters)}</span>
             ) : listing.distanceBucket ? (
-              <span className="text-accent text-xs font-semibold">· {labelFor(listing.distanceBucket)}</span>
+              <span className="text-[#E1AD01] text-xs font-bold">· {labelFor(listing.distanceBucket)}</span>
             ) : null}
           </div>
 
@@ -193,19 +193,19 @@ export function ListingCard({
             <div className="flex flex-row flex-wrap gap-2 mb-2 mt-2">
               {displayRules.includes('pets_allowed') && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
-                  <Alert01Icon size={12} className="text-accent" />
+                  <Alert01Icon size={12} className="text-[#E1AD01]" />
                   <span className="text-white text-xs font-semibold">Pets</span>
                 </div>
               )}
               {displayRules.includes('smoking_allowed') && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
-                  <FireIcon size={12} className="text-accent" />
+                  <FireIcon size={12} className="text-[#E1AD01]" />
                   <span className="text-white text-xs font-semibold">Smoking</span>
                 </div>
               )}
               {displayRules.includes('students_only') && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
-                  <GraduateMaleIcon size={12} className="text-accent" />
+                  <GraduateMaleIcon size={12} className="text-[#E1AD01]" />
                   <span className="text-white text-xs font-semibold">Students</span>
                 </div>
               )}

@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Location01Icon, Search01Icon, Cancel01Icon, Navigation03Icon } from '@hugeicons/react';
-import { mapsService, Landmark, PlacePrediction } from '../../api/mapsService';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Location01Icon, Search01Icon, Cancel01Icon } from '@hugeicons/react';
+import { listingService, AvailableArea } from '../../api/listingService';
+import { useListingStore } from '../../stores/listingStore';
 
 /**
  * Where a renter wants to search from.
- *
- * `landmark` and `coordinates` are two ways of naming the same thing: a seeded
- * place is sent by name so the server can use its own curated radius, while an
- * arbitrary address is geocoded here and sent as a point.
+ * `areaCluster` matches the active listing areas available on the app.
  */
 export interface LocationAnchor {
   label: string;
+  areaCluster?: string;
   landmark?: string;
   /** GeoJSON order: [longitude, latitude]. */
   coordinates?: [number, number];
@@ -19,129 +18,171 @@ export interface LocationAnchor {
 interface LocationAnchorPickerProps {
   value: LocationAnchor | null;
   onChange: (anchor: LocationAnchor | null) => void;
-  /** One-tap option at the top, a student's campus. Null for everyone else. */
+  /** One-tap option at the top, e.g. a student's campus. */
   suggestion?: { label: string; landmark: string } | null;
-  /** Seeded place types to list before the renter types anything. */
+  /** Seeded place types (for backwards compatibility). */
   defaultTypes?: string;
 }
 
-/**
- * Lets any renter anchor their search to a place, a neighbourhood, an estate, a
- * campus, or any address Google knows. This was a student-only "near my school"
- * switch, which left a renter who is not a student with no location filter at
- * all; a campus is now just one of the places you can pick.
- */
 export const LocationAnchorPicker: React.FC<LocationAnchorPickerProps> = ({
   value,
   onChange,
   suggestion,
-  defaultTypes = 'area,estate,market,landmark',
 }) => {
   const [query, setQuery] = useState('');
-  const [places, setPlaces] = useState<Landmark[]>([]);
-  const [addresses, setAddresses] = useState<PlacePrediction[]>([]);
+  const [serverAreas, setServerAreas] = useState<AvailableArea[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Seeded places first: curated, they carry their own radius, and they cost no
-  // Google quota. Autocomplete only fills the gaps.
+  // Fetch locations currently available on the app from backend
   useEffect(() => {
     let ignore = false;
     setLoading(true);
 
-    const timer = setTimeout(async () => {
-      const seeded = await mapsService.landmarks(
-        query.trim() || undefined,
-        query.trim() ? undefined : defaultTypes
-      );
-      if (ignore) return;
-      setPlaces(seeded.slice(0, 6));
-
-      if (query.trim().length >= 3 && seeded.length < 4) {
-        const predictions = await mapsService.autocomplete(query);
-        if (!ignore) setAddresses(predictions.slice(0, 4));
-      } else if (!ignore) {
-        setAddresses([]);
-      }
-      if (!ignore) setLoading(false);
-    }, query.trim() ? 350 : 0);
+    listingService
+      .getAreas()
+      .then(areas => {
+        if (!ignore && Array.isArray(areas)) {
+          setServerAreas(areas);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load available areas', err);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
 
     return () => {
       ignore = true;
-      clearTimeout(timer);
     };
-  }, [query, defaultTypes]);
+  }, []);
 
-  const pickAddress = async (prediction: PlacePrediction) => {
-    setLoading(true);
-    const result = await mapsService.geocode(prediction.description);
-    setLoading(false);
-    if (!result) return;
-    onChange({ label: prediction.description, coordinates: [result.lng, result.lat] });
-    setQuery('');
-  };
+  // Also collect available areas from the listings currently loaded in store as an immediate/fallback cache
+  const availableLocations = useMemo(() => {
+    const areaMap = new Map<string, { name: string; count: number; avgPrice?: number }>();
+
+    // 1. Add server areas
+    serverAreas.forEach(a => {
+      if (a.name && a.name.trim()) {
+        const key = a.name.trim();
+        areaMap.set(key.toLowerCase(), {
+          name: key,
+          count: a.propertyCount || 1,
+          avgPrice: a.avgPrice,
+        });
+      }
+    });
+
+    // 2. Supplement with any listings in local store
+    const storeListings = useListingStore.getState().listings || [];
+    storeListings.forEach(l => {
+      if (l.areaCluster && l.areaCluster.trim()) {
+        const key = l.areaCluster.trim();
+        const lower = key.toLowerCase();
+        const existing = areaMap.get(lower);
+        if (existing) {
+          existing.count = Math.max(existing.count, 1);
+        } else {
+          areaMap.set(lower, {
+            name: key,
+            count: 1,
+          });
+        }
+      }
+    });
+
+    return Array.from(areaMap.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [serverAreas]);
+
+  // Filter locations based on user input
+  const filteredLocations = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return availableLocations;
+    return availableLocations.filter(loc => loc.name.toLowerCase().includes(q));
+  }, [availableLocations, query]);
 
   if (value) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-accent bg-surface px-4 py-3">
-        <Location01Icon size={16} className="text-accent shrink-0" />
-        <span className="flex-1 truncate text-sm font-semibold text-textPrimary">{value.label}</span>
-        <button onClick={() => onChange(null)} className="shrink-0 active:scale-95 transition-transform">
-          <Cancel01Icon size={16} className="text-textTertiary" />
+      <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-surfaceLight px-4 py-3 shadow-sm">
+        <Location01Icon size={18} className="text-primary shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-textPrimary truncate">{value.label}</p>
+          <p className="text-[11px] text-textSecondary font-medium">Filtering by this location</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="p-1 rounded-full hover:bg-black/5 active:scale-90 transition-transform"
+          aria-label="Clear location filter"
+        >
+          <Cancel01Icon size={18} className="text-textTertiary" />
         </button>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-2 rounded-xl border border-borderLight bg-surface px-4 h-11">
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 rounded-xl border border-borderLight bg-surface px-4 h-11 focus-within:border-primary/50 transition-colors">
         <Search01Icon size={16} className="text-textTertiary shrink-0" />
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Area, estate, campus or address"
+          placeholder="Filter by available location..."
           className="flex-1 bg-transparent border-none outline-none text-sm text-textPrimary placeholder:text-textMuted"
         />
-        {loading && <span className="text-xs text-textTertiary">…</span>}
+        {loading && <span className="text-xs text-textTertiary animate-pulse">…</span>}
       </div>
 
       {suggestion && !query.trim() && (
         <button
+          type="button"
           onClick={() => onChange({ label: suggestion.label, landmark: suggestion.landmark })}
-          className="flex w-full items-center gap-2 border-b border-borderLight px-1 py-2.5 text-left"
+          className="flex w-full items-center gap-2 border-b border-borderLight px-1 py-2.5 text-left active:bg-surfaceLight/50 transition-colors"
         >
-          <Location01Icon size={16} className="text-accent shrink-0" />
+          <Location01Icon size={16} className="text-primary shrink-0" />
           <span className="flex-1 truncate text-sm font-bold text-textPrimary">Near {suggestion.label}</span>
+          <span className="text-[11px] font-semibold text-textTertiary bg-surfaceLight px-2 py-0.5 rounded-full">
+            Campus
+          </span>
         </button>
       )}
 
-      {places.map(place => (
-        <button
-          key={place._id}
-          onClick={() => onChange({ label: place.name, landmark: place.shortName || place.name })}
-          className="flex w-full items-center gap-2 border-b border-borderLight px-1 py-2.5 text-left"
-        >
-          <Location01Icon size={16} className="text-textTertiary shrink-0" />
-          <span className="flex-1 truncate text-sm text-textPrimary">{place.name}</span>
-          {!!place.city && <span className="text-xs text-textTertiary shrink-0">{place.city}</span>}
-        </button>
-      ))}
-
-      {addresses.map(prediction => (
-        <button
-          key={prediction.placeId}
-          onClick={() => pickAddress(prediction)}
-          className="flex w-full items-center gap-2 border-b border-borderLight px-1 py-2.5 text-left"
-        >
-          <Navigation03Icon size={16} className="text-textTertiary shrink-0" />
-          <span className="flex-1 text-sm text-textPrimary">{prediction.description}</span>
-        </button>
-      ))}
-
-      {!loading && query.trim().length >= 3 && places.length === 0 && addresses.length === 0 && (
-        <p className="py-2.5 text-sm text-textTertiary">No places found for "{query.trim()}".</p>
-      )}
+      {/* Available locations list */}
+      <div className="max-h-52 overflow-y-auto divide-y divide-borderLight/60 rounded-lg">
+        {filteredLocations.length > 0 ? (
+          filteredLocations.map(location => (
+            <button
+              key={location.name}
+              type="button"
+              onClick={() => onChange({ label: location.name, areaCluster: location.name })}
+              className="flex w-full items-center gap-2.5 px-2 py-2.5 text-left hover:bg-surfaceLight active:bg-surfaceLight/80 transition-colors group"
+            >
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                <Location01Icon size={15} className="text-primary" />
+              </div>
+              <span className="flex-1 truncate text-sm font-medium text-textPrimary">
+                {location.name}
+              </span>
+              <span className="text-[11px] font-semibold text-textSecondary bg-surfaceLight border border-borderLight px-2.5 py-0.5 rounded-full shrink-0">
+                {location.count} {location.count === 1 ? 'property' : 'properties'}
+              </span>
+            </button>
+          ))
+        ) : (
+          <div className="py-4 px-2 text-center">
+            <p className="text-sm font-medium text-textSecondary">
+              {query.trim()
+                ? `No listings currently available in "${query.trim()}"`
+                : 'No locations currently available'}
+            </p>
+            <p className="text-xs text-textTertiary mt-1">
+              Select from areas where properties are currently listed.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

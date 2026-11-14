@@ -149,6 +149,12 @@ export interface ListingResponse {
   };
 }
 
+export interface AvailableArea {
+  name: string;
+  propertyCount?: number;
+  avgPrice?: number;
+}
+
 export interface InquiriesResponse {
   success: boolean;
   data: {
@@ -202,6 +208,15 @@ export const listingService = {
   async getListingById(id: string): Promise<Listing> {
     const response = await apiClient.get<{ success: boolean; data: Listing }>(`/listings/${id}`);
     return response.data.data;
+  },
+
+  async getAreas(): Promise<AvailableArea[]> {
+    try {
+      const response = await apiClient.get<{ success: boolean; data: { areas: AvailableArea[] } }>('/listings/areas');
+      return response.data?.data?.areas || [];
+    } catch {
+      return [];
+    }
   },
 
   async createListing(data: CreateListingRequest): Promise<Listing> {
