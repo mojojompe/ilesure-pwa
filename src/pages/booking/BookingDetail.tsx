@@ -5,7 +5,7 @@ import { AppShell } from '../../components/layout/AppShell';
 import { MobileHeader } from '../../components/layout/MobileHeader';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
-import { Home01Icon, Chatting01Icon } from '@hugeicons/react';
+import { Chatting01Icon } from '@hugeicons/react';
 import { bookingService } from '../../api/bookingService';
 import { RentRenewal } from '../../components/ui/RentRenewal';
 import { chatService } from '../../api/chatService';
@@ -14,6 +14,8 @@ import { customAlert, customConfirm } from '../../stores/alertStore';
 import { getBookingShortletSummary } from '../../utils/shortlet';
 import { InfoTip } from '../../components/ui/InfoTip';
 import { BOOKING_INFO, InfoCopy } from '../../constants/bookingInfo';
+import { ListingMediaStrip } from '../../components/common/ListingMediaStrip';
+import { InspectionFeeCard } from '../../components/common/InspectionFeeCard';
 
 export function BookingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -113,7 +115,6 @@ export function BookingDetail() {
 
   const listing = typeof booking.listingId === 'object' ? booking.listingId : null;
   const listingTitle = listing?.title || 'Property';
-  const listingImage = listing?.images?.[0];
   const payFreq = listing?.paymentFrequency;
   const customPlan = listing?.customPaymentPlan;
   const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
@@ -154,13 +155,8 @@ export function BookingDetail() {
 
           {/* Property Card */}
           <div className="bg-surface rounded-2xl overflow-hidden border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            {listingImage ? (
-              <img src={listingImage} alt="Property" className="w-full h-40 object-cover" />
-            ) : (
-              <div className="w-full h-40 bg-surfaceLight flex items-center justify-center">
-                <Home01Icon size={32} className="text-textTertiary" />
-              </div>
-            )}
+            {/* All the listing's photos and videos, not just the first photo. */}
+            <ListingMediaStrip images={listing?.images} title={listingTitle} />
             <div className="p-4 bg-surface">
               <h2 className="text-lg font-bold text-textPrimary mb-1">{listingTitle}</h2>
               <p className="text-sm text-textSecondary">{listing?.areaCluster || ''}</p>
@@ -177,6 +173,22 @@ export function BookingDetail() {
             </span>
             <InfoTip {...BOOKING_INFO.bookingStatus} />
           </div>
+
+          {/* Inspection: when it is, and the fee to pay before going. */}
+          {(booking.inspectionStatus === 'scheduled' || booking.inspectionFee) && (booking.status === 'pending' || booking.status === 'confirmed') && (
+            <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3">
+              <h3 className="text-base font-bold text-textPrimary">Inspection</h3>
+              {booking.inspectionDate && (
+                <p className="text-sm text-textSecondary">
+                  {booking.inspectionStatus === 'missed' ? 'Missed: ' : 'Scheduled for '}
+                  <span className="font-semibold text-textPrimary">
+                    {new Date(booking.inspectionDate).toLocaleDateString()}{booking.inspectionTime ? ` at ${booking.inspectionTime}` : ''}
+                  </span>
+                </p>
+              )}
+              <InspectionFeeCard booking={booking} />
+            </div>
+          )}
 
           {/* Payment Progress */}
           {totalInstallments > 1 && (

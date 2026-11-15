@@ -19,6 +19,7 @@ import { clsx } from 'clsx';
 import { getApiErrorMessage } from '../../api/client';
 import { InfoTip } from '../../components/ui/InfoTip';
 import { BOOKING_INFO } from '../../constants/bookingInfo';
+import { listingCoverUrl } from '../../utils/listingMedia';
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: any }> = {
   pending_payment: { color: '#E29C45', bg: '#E29C4515', label: 'Awaiting Payment', icon: Time02Icon },
@@ -200,8 +201,8 @@ export function SharedBookingDetail() {
             <div className="bg-surface rounded-2xl p-4 border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
               <h3 className="text-xs font-bold text-textTertiary tracking-wide mb-3">PROPERTY</h3>
               <div className="flex items-center gap-4">
-                {booking.listingId.images?.[0] ? (
-                  <img src={booking.listingId.images[0]} alt="Property" className="w-16 h-16 rounded-xl object-cover" />
+                {listingCoverUrl(booking.listingId.images) ? (
+                  <img src={listingCoverUrl(booking.listingId.images)!} alt="Property" className="w-16 h-16 rounded-xl object-cover" />
                 ) : (
                   <div className="w-16 h-16 rounded-xl bg-surfaceLight flex items-center justify-center">
                     <Home01Icon size={24} className="text-textTertiary" />

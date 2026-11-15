@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/l/:id",
+      "destination": "https://api.ilesure.com/api/v1/share/listing/:id"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

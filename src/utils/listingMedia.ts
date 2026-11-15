@@ -18,3 +18,18 @@ export function videoPosterUrl(url: string | undefined | null): string | null {
   if (!m) return null;
   return `${m[1]}so_1,w_1080,c_limit,q_auto/${m[2]}.jpg`;
 }
+
+/**
+ * The image to show as a listing's cover: its first photo, else a frame from its first video.
+ * `images[0]` can be a video on older listings, and an <img> pointed at a video shows nothing.
+ */
+export function listingCoverUrl(images: Array<string | null | undefined> | undefined | null): string | null {
+  const list = (images || []).filter((u): u is string => typeof u === 'string' && !!u.trim());
+  const photo = list.find((u) => !isVideoUrl(u));
+  if (photo) return photo;
+  for (const u of list) {
+    const poster = videoPosterUrl(u);
+    if (poster) return poster;
+  }
+  return null;
+}

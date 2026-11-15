@@ -79,6 +79,12 @@ export function ListingDetail() {
   const [showInquiryModal, setShowInquiryModal] = useState(false);
 
   const [existingBooking, setExistingBooking] = useState<any>(null);
+  const [shareCount, setShareCount] = useState<number>(Number(initialListing?.shareCount) || 0);
+  const [sharing, setSharing] = useState(false);
+
+  // Someone opened a shared link without signing in: a read-only preview. They can look and
+  // share it on, but not book, chat, save, ask or report.
+  const isPreview = !user;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,10 +94,13 @@ export function ListingDetail() {
         if (!initialListing) setLoading(true);
         const [listingData, savedData] = await Promise.all([
           listingService.getListingById(id),
-          listingService.getSavedListings().catch(() => ({ data: { listings: [] } }))
+          user
+            ? listingService.getSavedListings().catch(() => ({ data: { listings: [] } }))
+            : Promise.resolve({ data: { listings: [] } }),
         ]);
 
         setListing(listingData);
+        setShareCount(Number((listingData as any)?.shareCount) || 0);
 
         const isListingSaved = savedData.data?.listings?.some((s: any) =>
           s._id === id || s.id === id
@@ -136,6 +145,42 @@ export function ListingDetail() {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  /**
+   * Share the listing's link through the phone's share sheet (WhatsApp, Instagram, SMS...),
+   * or copy it where there is no share sheet. The link is `/l/<id>`, which shows a preview
+   * card (photo, title, price) when pasted into a chat app.
+   */
+  const handleShare = async () => {
+    if (!listing || sharing) return;
+    const listingId = listing._id || id;
+    const url = `${window.location.origin}/l/${listingId}`;
+    const area = listing.areaCluster || listing.city || '';
+    const text = `Check out ${listing.title}${area ? ` in ${area}` : ''} on iléSure`;
+    setSharing(true);
+    try {
+      let shared = false;
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title: listing.title, text, url });
+          shared = true;
+        } catch (err: any) {
+          // Closing the share sheet is not an error, and not a share.
+          if (err?.name === 'AbortError') return;
+        }
+      }
+      if (!shared) {
+        await navigator.clipboard.writeText(url);
+        customAlert('Link copied. Paste it anywhere to share this place.', 'Link copied', 'success');
+      }
+      const count = await listingService.recordShare(listingId!).catch(() => null);
+      setShareCount((c) => (typeof count === 'number' ? count : c + 1));
+    } catch {
+      customAlert(`Copy this link to share: ${url}`, 'Share', 'info');
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -218,7 +263,13 @@ export function ListingDetail() {
       if (res.success) {
         setExistingBooking(res.data);
         setShowInspectionBooking(false);
-        customAlert('Inspection scheduled successfully.', 'Success', 'success');
+        if ((res.data as any)?.inspectionFeeDue) {
+          // The fee is paid before the viewing: take them straight to the Pay button.
+          await customAlert('Inspection scheduled. Pay the inspection fee to confirm it.', 'Almost done', 'success');
+          setShowTimelineModal(true);
+        } else {
+          customAlert('Inspection scheduled successfully.', 'Success', 'success');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -310,12 +361,21 @@ export function ListingDetail() {
           <button
             /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
             aria-label="Go back"
-            onClick={() => navigate(-1)}
+            onClick={() => (isPreview ? navigate('/') : window.history.length > 1 ? navigate(-1) : navigate('/discover'))}
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform pointer-events-auto"
           >
             <ArrowLeft01Icon size={20} />
           </button>
           <div className="flex gap-2 pointer-events-auto">
+            <button
+              aria-label="Share this listing"
+              onClick={handleShare}
+              disabled={sharing}
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform disabled:opacity-60"
+            >
+              <Share01Icon size={20} />
+            </button>
+            {!isPreview && (
             <button
               /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
               aria-label={isSaved ? 'Remove from saved' : 'Save this listing'}
@@ -328,6 +388,7 @@ export function ListingDetail() {
             >
               <FavouriteIcon size={20} variant={isSaved ? "solid" : "stroke"} />
             </button>
+            )}
           </div>
         </div>
 
@@ -387,7 +448,11 @@ export function ListingDetail() {
                 <Location01Icon size={14} className="mr-1 shrink-0" />
                 <span className="truncate">{listing.areaCluster || listing.address}</span>
               </div>
-              <p className="text-xs font-medium text-textTertiary mb-3">Listed by {agentName}</p>
+              <p className="text-xs font-medium text-textTertiary mb-1">Listed by {agentName}</p>
+              <p className="text-[11px] text-textTertiary mb-3 flex items-center gap-1">
+                <Share01Icon size={12} />
+                {shareCount === 1 ? 'Shared 1 time' : `Shared ${shareCount.toLocaleString()} times`}
+              </p>
 
               <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
                 {/* BUGFIX (QA-PWAJ2-006): a shortlet stores rentAnnual 0 and keeps its real
@@ -430,8 +495,8 @@ export function ListingDetail() {
                   })()}
                 </p>
               </div>
-              {/* Fees the lister declares but iléSure does not collect: shown so the renter
-                  knows the full cost before booking an inspection. */}
+              {/* Service charge is informational. The inspection fee is paid to iléSure (+1.5%)
+                  before the viewing; shown so the renter knows the full cost up front. */}
               {(() => {
                 const serviceCharge = Number(listing.serviceCharge) || 0;
                 const inspectionFee = Number(listing.inspectionFee) || 0;
@@ -442,7 +507,7 @@ export function ListingDetail() {
                       <span>Service charge: <strong className="text-textPrimary">₦{serviceCharge.toLocaleString()}/yr</strong></span>
                     )}
                     {inspectionFee > 0 && (
-                      <span>Inspection fee: <strong className="text-textPrimary">₦{inspectionFee.toLocaleString()}</strong></span>
+                      <span>Inspection fee: <strong className="text-textPrimary">₦{inspectionFee.toLocaleString()}</strong> <span className="text-textTertiary">+1.5%</span></span>
                     )}
                   </div>
                 );
@@ -494,6 +559,7 @@ export function ListingDetail() {
 
                   <div
                     onClick={() => {
+                      if (isPreview) return;
                       const participantId = l.agentId?._id || l.agentId?.id || l.landlordId?._id || l.landlordId?.id || l.agent?._id || l.agent?.id || l.companyId?._id || l.companyId?.id;
                       if (participantId) navigate(`/agent/${participantId}`);
                     }}
@@ -513,6 +579,7 @@ export function ListingDetail() {
                       </div>
                       <p className="text-xs text-textSecondary">Property Manager</p>
                     </div>
+                    {!isPreview && (
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
@@ -529,6 +596,7 @@ export function ListingDetail() {
                         <BubbleChatIcon size={16} className="text-primary" />
                       </button>
                     </div>
+                    )}
                   </div>
 
                   {/* Safety Banner */}
@@ -727,12 +795,14 @@ export function ListingDetail() {
                     </div>
                   )}
 
+                  {!isPreview && (
                   <button
                     className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
                     onClick={() => setShowInquiryModal(true)}
                   >
                     <span className="text-sm font-semibold text-primary">Ask a Question</span>
                   </button>
+                  )}
                 </motion.div>
               )}
 
@@ -745,7 +815,8 @@ export function ListingDetail() {
           </div>
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom CTA. Not in the signed-out preview: a shared link is for looking, not booking. */}
+        {!isPreview && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-borderLight z-30 pb-safe-bottom">
           <Button
             fullWidth
@@ -755,6 +826,7 @@ export function ListingDetail() {
             {cta.title}
           </Button>
         </div>
+        )}
 
       </div>
 

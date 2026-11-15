@@ -6,6 +6,7 @@ import { customAlert } from '../../stores/alertStore';
 import { deriveBookingProgress } from '../../utils/bookingProgress';
 import { InfoTip } from '../ui/InfoTip';
 import { BOOKING_INFO } from '../../constants/bookingInfo';
+import { InspectionFeeCard } from './InspectionFeeCard';
 
 interface BookingTimelineModalProps {
   visible: boolean;
@@ -201,7 +202,13 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                             <div className="p-3 bg-surfaceLight rounded-xl border border-borderLight text-xs text-textSecondary font-medium">
                               Inspection scheduled for {booking?.inspectionDate ? new Date(booking.inspectionDate).toLocaleDateString() : 'the agreed date'} at {booking?.inspectionTime}.
                             </div>
-                            {onVerifyInspection && !booking?.isVerified && (
+                            {booking?.inspectionFee && (
+                              <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                                <InspectionFeeCard booking={booking} compact />
+                              </div>
+                            )}
+                            {/* The fee is paid before the viewing, so the outcome cannot be confirmed first. */}
+                            {onVerifyInspection && !booking?.isVerified && !booking?.inspectionFeeDue && (
                               <div className="mt-3">
                                 <p className="text-xs text-textSecondary mb-2">
                                   Seen the apartment? Confirm it matches the listing to continue.

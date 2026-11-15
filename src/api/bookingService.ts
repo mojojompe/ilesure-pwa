@@ -1,3 +1,4 @@
+import type { BookingInspectionFee } from '../contracts/generated';
 import type {
   BookingStatus,
   BookingSummaryResponse as ContractBookingSummary,
@@ -33,6 +34,10 @@ export interface NextRentDue {
 
 export interface Booking {
   id: string;
+  /** Inspection fee (+1.5%) the renter pays iléSure before the viewing; absent when none. */
+  inspectionFee?: BookingInspectionFee;
+  /** The renter must pay the inspection fee now (owed, and payments are live). */
+  inspectionFeeDue?: boolean;
   listingId: {
     _id: string;
     title: string;
@@ -228,6 +233,17 @@ export const bookingService = {
   },
 
   // ── Timeline & Inspection ──────────────────────────────────────────────────
+
+  /** Open a Paystack checkout for the inspection fee (fee + 1.5%), paid to iléSure. */
+  async payInspectionFee(id: string): Promise<{
+    success: boolean;
+    data: { authorizationUrl: string; reference: string; amount: number };
+  }> {
+    const response = await apiClient.post(`/bookings/${id}/inspection/pay`, {
+      callbackUrl: window.location.origin + '/payment/callback',
+    });
+    return response.data as any;
+  },
 
   /** Schedule an inspection for a booking */
   async scheduleInspection(id: string, data: { inspectionDate: string; inspectionTime: string; inspectorName: string }): Promise<{ success: boolean; data: Booking }> {

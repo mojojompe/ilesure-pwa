@@ -34,7 +34,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       path === '/register' ||
       path === '/onboarding' ||
       path.startsWith('/auth');
+    // Shared listing links open for signed-out visitors as a read-only preview. Not part of
+    // isPublicRoute: a signed-in renter on these pages must stay on them, not go to /discover.
+    const isSharedListing = path.startsWith('/listing/') || path.startsWith('/l/');
     if (!isLoading) {
+      if (!isAuthenticated && isSharedListing) return;
       if (!isAuthenticated && !isPublicRoute) {
         navigate('/auth/choice', { replace: true });
       } else if (isAuthenticated && isPublicRoute && user) {

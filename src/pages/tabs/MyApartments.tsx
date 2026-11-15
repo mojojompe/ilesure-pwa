@@ -12,6 +12,7 @@ import {
 import { bookingService } from '../../api/bookingService';
 import { customConfirm } from '../../stores/alertStore';
 import { RentRenewal } from '../../components/ui/RentRenewal';
+import { listingCoverUrl } from '../../utils/listingMedia';
 
 export function MyApartments() {
   const navigate = useNavigate();
@@ -146,8 +147,8 @@ export function MyApartments() {
         className="bg-surface rounded-[24px] mb-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-borderLight overflow-hidden cursor-pointer"
       >
         <div className="relative h-[150px] w-full">
-          {listing?.images?.[0] ? (
-            <img src={listing.images[0]} alt={listingTitle} className="w-full h-full object-cover" />
+          {listingCoverUrl(listing?.images) ? (
+            <img src={listingCoverUrl(listing?.images)!} alt={listingTitle} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-surfaceLight flex items-center justify-center">
               <Home01Icon size={32} className="text-textTertiary" />

@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 
 import { Splash } from './pages/auth/Splash';
@@ -98,6 +98,11 @@ import { authService } from './api/authService';
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
+function SharedListingRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/listing/${id}`} replace />;
+}
+
 export default function App() {
   useEffect(() => {
     // Refresh the cached user from the server on launch so profile edits made elsewhere
@@ -155,6 +160,13 @@ export default function App() {
           <Route path="/auth/otp" element={<OTP />} />
           <Route path="/auth/reactivate" element={<ReactivateAccount />} />
 
+          {/* Public: a shared listing link opens as a read-only preview for signed-out
+              visitors (ListingDetail hides booking, chat and save for them). */}
+          <Route path="/listing/:id" element={<ListingDetail />} />
+          {/* Shared links are /l/:id. In production the host proxies them to the API's
+              link-preview page first; this catches them anywhere that does not (dev). */}
+          <Route path="/l/:id" element={<SharedListingRedirect />} />
+
           {/* Protected Routes - Only for Students and Individuals on PWA */}
           <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
             <Route path="/discover" element={<Discover />} />
@@ -165,7 +177,6 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
 
             {/* Details & Modals */}
-            <Route path="/listing/:id" element={<ListingDetail />} />
             <Route path="/agent/:id" element={<AgentProfile />} />
             <Route path="/match/:id" element={<MatchProfile />} />
             <Route path="/roommate-profile" element={<RoommateProfile />} />

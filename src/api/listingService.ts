@@ -26,8 +26,10 @@ export interface Listing {
   rentAnnual: number;
   /** Yearly service charge the lister declared; informational, not collected at checkout. */
   serviceCharge?: number;
-  /** One-off viewing fee the lister declared; informational, not collected at checkout. */
+  /** One-off viewing fee (max ₦10,000). The renter pays it +1.5% to iléSure before the inspection. */
   inspectionFee?: number;
+  /** How many times this listing's link has been shared. */
+  shareCount?: number;
   /** Free-text rent period from older listings; no longer collected. */
   rentDuration?: string;
   /** Lease term label, e.g. "2 years" (regular rentals only). */
@@ -243,6 +245,12 @@ export const listingService = {
 
   async registerInterest(listingId: string): Promise<void> {
     await apiClient.post(`/listings/${listingId}/interest`);
+  },
+
+  /** Count one share of this listing; returns the new total. */
+  async recordShare(listingId: string): Promise<number | null> {
+    const response = await apiClient.post<{ success: boolean; data?: { shareCount: number } }>(`/listings/${listingId}/share`);
+    return response.data?.data?.shareCount ?? null;
   },
 
   async saveListing(listingId: string): Promise<void> {
