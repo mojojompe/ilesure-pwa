@@ -25,6 +25,8 @@ interface BookAppointmentModalProps {
     rentAnnual: number;
     cautionFee?: number;
     agencyFee?: number;
+    serviceCharge?: number;
+    inspectionFee?: number;
     needsRoommate?: boolean;
     shareable?: boolean;
     propertyType?: string;
@@ -99,6 +101,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   // caution/agency for them, so including here would over-quote the total.
   const cautionFee = isShortlet ? 0 : (listing?.cautionFee || 0);
   const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
+  const serviceCharge = isShortlet ? 0 : (Number(listing?.serviceCharge) || 0);
   
   const isShareable = listing?.shareable === true || listing?.needsRoommate === true || listing?.propertyType === 'shared_apartment';
   const wantsRoommate = isShareable && includeRoommate;
@@ -131,7 +134,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
   const serverQuote = quote && quote.key === quoteKey ? quote.data : null;
 
-  const localSubTotal = rentAmount + cautionFee + agencyFee;
+  const localSubTotal = rentAmount + cautionFee + agencyFee + serviceCharge;
   const localPlatformFee = calculatePlatformFee(localSubTotal);
   const localMatchingFee = calculateRoommateMatchingFee(localSubTotal);
   const localTotal = wantsRoommate
@@ -141,7 +144,11 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const shownRent = serverQuote ? serverQuote.rentAmount : rentAmount;
   const shownCaution = serverQuote ? serverQuote.cautionFee : cautionFee;
   const shownAgency = serverQuote ? serverQuote.agencyFee : agencyFee;
-  const subTotal = shownRent + shownCaution + shownAgency;
+  const shownServiceCharge = serverQuote ? (serverQuote.serviceCharge ?? 0) : serviceCharge;
+  const subTotal = shownRent + shownCaution + shownAgency + shownServiceCharge;
+  // Paid on its own before the viewing, so it is listed but never added to the total.
+  const localInspection = isShortlet ? 0 : (Number(listing?.inspectionFee) || 0);
+  const shownInspection = serverQuote ? (serverQuote.inspectionFee?.total ?? 0) : localInspection;
   const platformFee = serverQuote ? serverQuote.platformFee : localPlatformFee;
   const roommateMatchingFee = serverQuote ? serverQuote.roommateMatchingFee : localMatchingFee;
   const totalToPay = serverQuote ? serverQuote.total : localTotal;
@@ -335,6 +342,12 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                     <span className="text-sm font-semibold text-textPrimary">₦{shownAgency.toLocaleString()}</span>
                   </div>
                 )}
+                {shownServiceCharge > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-textSecondary">Service Charge</span>
+                    <span className="text-sm font-semibold text-textPrimary">₦{shownServiceCharge.toLocaleString()}</span>
+                  </div>
+                )}
                 {subTotal > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-textSecondary">{feeLabel}</span>
@@ -358,6 +371,16 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                     ₦{totalToPay.toLocaleString()}
                   </span>
                 </div>
+
+                {shownInspection > 0 && (
+                  <div className="flex justify-between items-start gap-3 pt-3 mt-1 border-t border-borderLight">
+                    <span className="text-sm text-textSecondary">
+                      Inspection Fee
+                      <span className="block text-xs text-textTertiary">Paid separately before the inspection</span>
+                    </span>
+                    <span className="text-sm font-semibold text-textPrimary whitespace-nowrap">₦{shownInspection.toLocaleString()}</span>
+                  </div>
+                )}
               </div>
 
               {isShareable && (

@@ -64,13 +64,21 @@ export const BOOKING_INFO = {
     title: 'Agency fee',
     body: 'A one-time fee for the agent who handles the property. You pay it on your first payment only, not on renewals.',
   },
+  serviceCharge: {
+    title: 'Service charge',
+    body: 'The yearly estate or facility charge set by the property owner, for things like security, cleaning and shared power. It is paid with your rent.',
+  },
+  inspectionFee: {
+    title: 'Inspection fee',
+    body: 'The fee to view the property, plus 1.5% processing. It is paid on its own before the inspection, so it is not added to the total here.',
+  },
   serviceFee: {
     title: 'Platform fee',
-    body: 'The iléSure fee for verified listings, secure payment and support. It is a percentage of the rent, caution fee and agency fee added together, at the rate shown on this line.',
+    body: 'The iléSure fee for verified listings, secure payment and support. It is a percentage of the rent, caution fee, agency fee and service charge added together, at the rate shown on this line.',
   },
   roommateMatchingFee: {
     title: 'Roommate matching fee',
-    body: 'Charged only because you asked to be matched with a roommate for this apartment. It is 1% of the rent, caution fee and agency fee added together.',
+    body: 'Charged only because you asked to be matched with a roommate for this apartment. It is 1% of the rent, caution fee, agency fee and service charge added together.',
   },
   totalToPay: {
     title: 'Total to pay',

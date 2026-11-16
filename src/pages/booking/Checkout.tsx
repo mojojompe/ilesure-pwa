@@ -173,6 +173,9 @@ export function Checkout() {
 
             {!summary.isShortlet && <Row label="Caution Fee" value={summary.cautionFee} info={BOOKING_INFO.cautionFee} />}
             {!summary.isShortlet && <Row label="Agency Fee" value={summary.agencyFee} info={BOOKING_INFO.agencyFee} />}
+            {!summary.isShortlet && summary.serviceCharge > 0 && (
+              <Row label="Service Charge" value={summary.serviceCharge} info={BOOKING_INFO.serviceCharge} />
+            )}
             <Row label={platformFeeLabel(resolvePlatformFeePercent(summary))} value={summary.platformFee} info={BOOKING_INFO.serviceFee} />
             
             {summary.roommateMatchingFee > 0 && (
@@ -182,6 +185,21 @@ export function Checkout() {
             <div className="w-full h-px bg-borderLight my-3" />
 
             <Row label="Total to Pay" value={summary.total} bold highlight info={BOOKING_INFO.totalToPay} />
+
+            {summary.inspectionFee?.total > 0 && (
+              <div className="mt-4 pt-3 border-t border-borderLight flex justify-between items-start gap-3">
+                <span className="text-sm text-textSecondary">
+                  Inspection Fee<InfoTip {...BOOKING_INFO.inspectionFee} />
+                  <span className="block text-xs text-textTertiary">
+                    {summary.inspectionFee.status === 'paid' ? 'Already paid before your inspection' : 'Paid separately before the inspection'}
+                  </span>
+                </span>
+                <span className="text-sm font-semibold text-textPrimary whitespace-nowrap">
+                  ₦{summary.inspectionFee.total.toLocaleString()}
+                  {summary.inspectionFee.status === 'paid' && <span className="ml-1 text-xs font-semibold text-success">Paid</span>}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Confirmation Steps */}
