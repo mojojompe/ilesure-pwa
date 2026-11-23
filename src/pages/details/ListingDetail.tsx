@@ -246,7 +246,8 @@ export function ListingDetail() {
       setShowTimelineModal(true);
     } catch (err) {
       console.error(err);
-      customAlert('Failed to create booking', 'Error', 'error');
+      // Show the server's reason (dates taken, stay too short, date in the past, ...).
+      customAlert(getApiErrorMessage(err, 'Failed to create booking'), 'Error', 'error');
     } finally {
       bookingInFlight.current = false;
     }

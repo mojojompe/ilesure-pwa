@@ -58,7 +58,7 @@ export function Checkout() {
           bookingId: id,
           requiresRoommate: booking?.requiresRoommate,
           ...(booking?.selectedRate?.id
-            ? { rateId: booking.selectedRate.id, rateQuantity: booking.durationQuantity || 1 }
+            ? { rateId: booking.selectedRate.id, rateQuantity: booking.rateQuantity || 1 }
             : {}),
         });
         if (response.success) {
@@ -76,9 +76,14 @@ export function Checkout() {
     fetchSummary();
   }, [id]);
 
+  // Shortlet guests do not sign the yearly tenancy agreement (the server no longer asks for
+  // it): they go straight to payment.
+  const isShortletStay = Boolean(summary?.isShortlet || booking?.isShortlet || booking?.selectedRate?.id);
+  const ready = agreedTerms && (isShortletStay || agreedContract);
+
   const handlePay = () => {
-    if (!agreedTerms || !agreedContract) return;
-    navigate(`/booking/signature/${id}`);
+    if (!ready) return;
+    navigate(isShortletStay ? `/booking/payment/${id}` : `/booking/signature/${id}`);
   };
 
   const Row = ({ label, value, bold, highlight, info }: { label: string; value?: number; bold?: boolean; highlight?: boolean; info?: InfoCopy }) => (
@@ -210,12 +215,16 @@ export function Checkout() {
               onToggle={() => setAgreedTerms(!agreedTerms)}
               label="I have reviewed the booking details and fee breakdown"
             />
-            <div className="w-full h-px bg-borderLight my-3" />
-            <CheckItem
-              checked={agreedContract}
-              onToggle={() => setAgreedContract(!agreedContract)}
-              label="I agree to review and sign the tenancy agreement"
-            />
+            {!isShortletStay && (
+              <>
+                <div className="w-full h-px bg-borderLight my-3" />
+                <CheckItem
+                  checked={agreedContract}
+                  onToggle={() => setAgreedContract(!agreedContract)}
+                  label="I agree to review and sign the tenancy agreement"
+                />
+              </>
+            )}
           </div>
 
         </div>
@@ -225,10 +234,10 @@ export function Checkout() {
           <Button
             fullWidth
             onClick={handlePay}
-            disabled={!agreedTerms || !agreedContract}
+            disabled={!ready}
             className="shadow-[0_4px_12px_rgba(107,79,58,0.25)]"
           >
-            {summary?.isShortlet ? 'Proceed to Sign & Pay' : 'Proceed to Sign & Pay'}
+            {isShortletStay ? 'Proceed to Pay' : 'Proceed to Sign & Pay'}
           </Button>
         </div>
       </div>
