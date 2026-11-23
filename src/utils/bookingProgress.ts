@@ -43,7 +43,8 @@ export function deriveBookingProgress(booking: any): BookingProgress {
   const isShortlet =
     booking?.isShortlet === true ||
     booking?.listingId?.propertyType === 'shortlet' ||
-    !!booking?.selectedRate;
+    // selectedRate.id, not selectedRate: an unset nested path can come back as {}.
+    !!booking?.selectedRate?.id;
   const isPaid = status === 'completed';
   const isCancelled = status === 'cancelled' || status === 'rejected';
   const inspectionFailed = !isShortlet && rawStep >= 3 && booking?.isVerified === false;
@@ -62,6 +63,8 @@ export function deriveBookingProgress(booking: any): BookingProgress {
   // Step 1 ("Booking Requested") is done the moment the booking exists, so an unpaid booking
   // is never earlier than step 2, which is where the renter schedules and then confirms the
   // viewing. Leaving it on step 1 hid the Schedule Inspection action entirely.
-  const currentStep = isPaid ? 5 : isPayable ? 4 : Math.min(Math.max(rawStep, 2), 3);
+  // A shortlet has no viewing: it goes straight from the request to payment, and a blocked
+  // payment shows its reason on the payment step instead of an inspection step.
+  const currentStep = isPaid ? 5 : (isPayable || isShortlet) ? 4 : Math.min(Math.max(rawStep, 2), 3);
   return { currentStep, rawStep, isShortlet, isPaid, isCancelled, isPayable, blockedMessage, inspectionFailed };
 }

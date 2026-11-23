@@ -13,6 +13,7 @@ import { bookingService } from '../../api/bookingService';
 import { customConfirm } from '../../stores/alertStore';
 import { RentRenewal } from '../../components/ui/RentRenewal';
 import { listingCoverUrl } from '../../utils/listingMedia';
+import { getBookingStayDates, formatStayDate } from '../../utils/shortlet';
 
 export function MyApartments() {
   const navigate = useNavigate();
@@ -195,7 +196,13 @@ export function MyApartments() {
             </button>
 
             <span className="text-sm text-textSecondary">
-              {new Date(item.moveInDate || item.createdAt).toLocaleDateString()}
+              {(() => {
+                // A shortlet shows its stay (check-in – check-out), a long let its move-in day.
+                const stay = isShortlet ? getBookingStayDates(item) : null;
+                return stay
+                  ? `${formatStayDate(stay.checkIn)} – ${formatStayDate(stay.checkOut)}`
+                  : new Date(item.moveInDate || item.createdAt).toLocaleDateString();
+              })()}
             </span>
           </div>
 

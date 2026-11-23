@@ -93,3 +93,59 @@ export function getBookingShortletSummary(booking: any): { label: string; unitPr
   if (!(legacy > 0)) return null;
   return { label: LEGACY_UNIT_LABEL[unit], unitPrice: legacy, quantity, total: legacy * quantity };
 }
+
+const UNIT_HOURS: Record<ShortletUnit, number> = { hour: 1, day: 24, week: 24 * 7, month: 24 * 30 };
+
+/** Hours in `value` × `unit`, the same conversion the server uses for min/max stay. */
+export function stayUnitsToHours(value: number, unit: ShortletUnit): number {
+  return (Number(value) || 0) * (UNIT_HOURS[unit] ?? 0);
+}
+
+/** "2 nights", "1 week": a min/max stay as the guest reads it. */
+export function formatStayLength(value: number, unit: ShortletUnit): string {
+  const n = Number(value) || 0;
+  const word = unit === 'day' ? 'night' : unit;
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
+/**
+ * When a stay ends: the tier's length × how many were booked, from the check-in. Mirrors the
+ * server's computeShortletEndDate, which decides the real check-out.
+ */
+export function computeStayEnd(start: Date, tier: Pick<ShortletTier, 'durationValue' | 'durationUnit'>, quantity: number): Date {
+  const end = new Date(start);
+  const units = (Number(tier.durationValue) || 1) * (Number(quantity) || 1);
+  switch (tier.durationUnit) {
+    case 'hour': end.setHours(end.getHours() + units); break;
+    case 'day': end.setDate(end.getDate() + units); break;
+    case 'week': end.setDate(end.getDate() + units * 7); break;
+    case 'month': end.setMonth(end.getMonth() + units); break;
+  }
+  return end;
+}
+
+/** Today's date as YYYY-MM-DD in the device's own time zone (not UTC). */
+export function localDateString(offsetDays = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** A shortlet booking's check-in and check-out, from the dates the server worked out. */
+export function getBookingStayDates(booking: any): { checkIn: Date; checkOut: Date } | null {
+  const start = booking?.startDate || booking?.moveInDate;
+  if (!start || !booking?.endDate) return null;
+  const checkIn = new Date(start);
+  const checkOut = new Date(booking.endDate);
+  if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) return null;
+  return { checkIn, checkOut };
+}
+
+/** "Wed 26 Nov", with the time for hourly stays. */
+export function formatStayDate(date: Date, withTime = false): string {
+  return date.toLocaleString('en-NG', {
+    weekday: 'short', day: 'numeric', month: 'short',
+    ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}),
+  });
+}

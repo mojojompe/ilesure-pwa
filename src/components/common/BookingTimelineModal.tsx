@@ -28,9 +28,9 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
   // derived from the same facts `payForBooking` checks (status pending/confirmed, and
   // `isVerified` unless the booking is a shortlet); a paid booking is `completed`.
   // `isShortlet`/`isPaid` are part of the shared derivation; only these are needed here.
-  const { currentStep, isPayable, inspectionFailed, isCancelled, blockedMessage } = deriveBookingProgress(booking);
+  const { currentStep, isPayable, inspectionFailed, isCancelled, blockedMessage, isShortlet } = deriveBookingProgress(booking);
 
-  const steps = [
+  const allSteps = [
     {
       id: 1,
       title: 'Booking Requested',
@@ -65,12 +65,16 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
     },
     {
       id: 5,
-      title: 'Move In',
-      desc: booking?.status === 'completed' ? 'You have moved in.' : 'Pending move in.',
+      title: isShortlet ? 'Your Stay' : 'Move In',
+      desc: isShortlet
+        ? (booking?.status === 'completed' ? 'Your stay is booked and paid.' : 'Confirmed once payment is received.')
+        : (booking?.status === 'completed' ? 'You have moved in.' : 'Pending move in.'),
       icon: Home01Icon,
       info: BOOKING_INFO.stepMoveIn
     }
   ];
+  // Shortlets are booked remotely: no viewing, so no inspection steps.
+  const steps = isShortlet ? allSteps.filter((step) => step.id !== 2 && step.id !== 3) : allSteps;
 
   return (
     <AnimatePresence>
@@ -119,7 +123,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                   return (
                     <div
                       key={step.id}
-                      className={`relative flex items-start mb-8 last:mb-0 cursor-pointer active:opacity-70 transition-opacity ${(!isCompleted && !isActive) || step.id > 3 && currentStep < 3 ? 'opacity-50 grayscale' : ''}`}
+                      className={`relative flex items-start mb-8 last:mb-0 cursor-pointer active:opacity-70 transition-opacity ${(!isCompleted && !isActive) || step.id > 3 && currentStep < 3 && !isShortlet ? 'opacity-50 grayscale' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (isCompleted) {
@@ -138,7 +142,7 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
                         if (step.id === 4 && onMakePayment) {
                           if (!isPayable) {
                             customAlert(
-                              blockedMessage ?? (inspectionFailed
+                              blockedMessage ?? (isShortlet ? 'Payment is not available for this booking yet.' : inspectionFailed
                                 ? 'This inspection was recorded as not matching the listing, so payment is unavailable. Please contact support.'
                                 : 'Please complete the physical inspection and verification first.'),
                               'Prerequisite Not Met',
@@ -153,9 +157,9 @@ export function BookingTimelineModal({ visible, onClose, booking, loading, onSch
 
                         if (step.id === 5) {
                           if (currentStep < 5) {
-                            customAlert('Payment must be completed before you can move in.', 'Prerequisite Not Met', 'warning');
+                            customAlert(isShortlet ? 'Your stay is confirmed once payment is received.' : 'Payment must be completed before you can move in.', 'Prerequisite Not Met', 'warning');
                           } else {
-                            customAlert('You have successfully moved in!', 'Status', 'success');
+                            customAlert(isShortlet ? 'Your stay is booked and paid.' : 'You have successfully moved in!', 'Status', 'success');
                           }
                           return;
                         }

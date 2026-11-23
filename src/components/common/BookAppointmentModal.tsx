@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { useAuthStore } from '../../stores/authStore';
 import { calculatePlatformFee, calculateRoommateMatchingFee, platformFeeLabel, resolvePlatformFeePercent } from '../../constants/fees';
 import { bookingService, BookingSummaryResponse } from '../../api/bookingService';
+import { computeStayEnd, formatStayDate, formatStayLength, localDateString, stayUnitsToHours, type ShortletUnit } from '../../utils/shortlet';
 
 interface ShortletRate {
   id: string;
@@ -34,6 +35,10 @@ interface BookAppointmentModalProps {
     city?: string;
     address?: string;
     shortletRates?: ShortletRate[];
+    minStay?: number;
+    minStayUnit?: ShortletUnit;
+    maxStay?: number;
+    maxStayUnit?: ShortletUnit;
     shortletPricing?: {
       hourly?: number;
       daily?: number;
@@ -57,11 +62,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [rateQuantity, setRateQuantity] = useState(1);
   const [selectedRateId, setSelectedRateId] = useState<string>('');
-  const [moveInDate, setMoveInDate] = useState<string>(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  });
+  // Dates in the device's own time zone: toISOString() is UTC, which is a day behind in the
+  // first hour of a Lagos morning.
+  const [moveInDate, setMoveInDate] = useState<string>(() => localDateString(1));
 
   // SECURITY-FIX (M-M4 parity with mobile): a double tap on "Confirm Booking" fired
   // onConfirm twice and created two booking requests. The ref closes the gap between
@@ -74,7 +77,8 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   // Build the tier list from shortletRates, falling back to legacy shortletPricing.
   const shortletTiers = useMemo<ShortletRate[]>(() => {
     if (listing?.shortletRates && listing.shortletRates.length > 0) {
-      return listing.shortletRates;
+      // A zero price means "not offered", not "free": the server refuses to charge it.
+      return listing.shortletRates.filter((r) => Number(r.price) > 0);
     }
     const pricing = listing?.shortletPricing || {};
     const legacy: ShortletRate[] = [];
@@ -94,6 +98,25 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
   const selectedTier = shortletTiers.find(t => t.id === selectedRateId) || null;
 
+  // The stay the guest is choosing: when it ends, and whether it fits the place's min/max stay
+  // (checked by the server too; shown here so the guest finds out before booking).
+  const stayHours = selectedTier ? stayUnitsToHours(selectedTier.durationValue * rateQuantity, selectedTier.durationUnit) : 0;
+  const minStay = Number(listing?.minStay) > 0 && listing?.minStayUnit ? { value: Number(listing.minStay), unit: listing.minStayUnit } : null;
+  const maxStay = Number(listing?.maxStay) > 0 && listing?.maxStayUnit ? { value: Number(listing.maxStay), unit: listing.maxStayUnit } : null;
+  const belowMin = Boolean(selectedTier && minStay && stayHours < stayUnitsToHours(minStay.value, minStay.unit));
+  const aboveMax = Boolean(selectedTier && maxStay && stayHours > stayUnitsToHours(maxStay.value, maxStay.unit));
+  const MAX_QUANTITY = 365; // the server's cap
+  const nextQuantityTooLong = Boolean(selectedTier && maxStay &&
+    stayUnitsToHours(selectedTier.durationValue * (rateQuantity + 1), selectedTier.durationUnit) > stayUnitsToHours(maxStay.value, maxStay.unit));
+  const canAddQuantity = rateQuantity < MAX_QUANTITY && !nextQuantityTooLong;
+  const stayProblem = belowMin
+    ? `This place has a minimum stay of ${formatStayLength(minStay!.value, minStay!.unit)}.`
+    : aboveMax
+      ? `This place has a maximum stay of ${formatStayLength(maxStay!.value, maxStay!.unit)}.`
+      : null;
+  const checkIn = moveInDate ? new Date(`${moveInDate}T00:00:00`) : null;
+  const checkOut = checkIn && selectedTier ? computeStayEnd(checkIn, selectedTier, rateQuantity) : null;
+
   const rentAmount = isShortlet
     ? (selectedTier ? selectedTier.price * rateQuantity : 0)
     : (listing?.rentAnnual || 0);
@@ -103,7 +126,8 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
   const serviceCharge = isShortlet ? 0 : (Number(listing?.serviceCharge) || 0);
   
-  const isShareable = listing?.shareable === true || listing?.needsRoommate === true || listing?.propertyType === 'shared_apartment';
+  // A shortlet stay is never split with a roommate (the server refuses it).
+  const isShareable = !isShortlet && (listing?.shareable === true || listing?.needsRoommate === true || listing?.propertyType === 'shared_apartment');
   const wantsRoommate = isShareable && includeRoommate;
 
   // The server is the authority on what is charged: quote the fees from
@@ -228,11 +252,19 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                 </label>
                 <input
                   type="date"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={localDateString(0)}
                   value={moveInDate}
                   onChange={(e) => setMoveInDate(e.target.value)}
                   className="w-full bg-background border border-borderLight rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                 />
+                {isShortlet && checkOut && (
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-borderLight">
+                    <span className="text-sm text-textSecondary">Check-out</span>
+                    <span className="text-sm font-semibold text-textPrimary">
+                      {formatStayDate(checkOut, selectedTier?.durationUnit === 'hour')}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <h4 className="text-base font-semibold text-textPrimary mb-3">Your Details</h4>
@@ -303,8 +335,10 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                               {rateQuantity}
                             </span>
                             <button
-                              onClick={() => setRateQuantity(rateQuantity + 1)}
-                              className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform"
+                              aria-label="More"
+                              disabled={!canAddQuantity}
+                              onClick={() => canAddQuantity && setRateQuantity(rateQuantity + 1)}
+                              className="w-10 h-10 rounded-full bg-surfaceLight flex items-center justify-center text-textPrimary active:scale-95 transition-transform disabled:opacity-40"
                             >
                               <Add01Icon size={18} />
                             </button>
@@ -315,6 +349,14 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                           <p className="text-xs text-textSecondary mt-3 text-center font-medium">
                             ₦{selectedTier.price.toLocaleString()} × {rateQuantity} = ₦{shownRent.toLocaleString()}
                           </p>
+                        )}
+                        {(minStay || maxStay) && (
+                          <p className="text-xs text-textTertiary mt-2 text-center">
+                            {[minStay && `Minimum stay ${formatStayLength(minStay.value, minStay.unit)}`, maxStay && `Maximum stay ${formatStayLength(maxStay.value, maxStay.unit)}`].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
+                        {stayProblem && (
+                          <p className="text-xs text-red-600 mt-2 text-center font-medium" role="alert">{stayProblem}</p>
                         )}
                       </>
                     ) : (
@@ -431,7 +473,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                 >
                   <Button
                     fullWidth
-                    disabled={submitting || (isShortlet && (shortletTiers.length === 0 || !selectedTier))}
+                    disabled={submitting || (isShortlet && (shortletTiers.length === 0 || !selectedTier || Boolean(stayProblem)))}
                     loading={submitting}
                     onClick={handleConfirm}
                   >

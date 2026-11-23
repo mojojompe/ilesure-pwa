@@ -41,6 +41,7 @@ import { InquiryModal } from '../../components/common/InquiryModal';
 import { customAlert } from '../../stores/alertStore';
 import { getApiErrorMessage } from '../../api/apiError';
 import { labelFor } from '../../constants/listingVocabulary';
+import { getListingShortletTiers } from '../../utils/shortlet';
 
 type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
 
@@ -471,10 +472,13 @@ export function ListingDetail() {
                     // A range cannot carry one honest unit either, because tiers can mix them
                     // (a nightly rate beside a weekly one). So show the CHEAPEST tier with its
                     // own duration, marked "from" when there is more than one.
-                    const tiers = ((listing as any).shortletRates || [])
-                      .filter((r: any) => Number(r.price) > 0);
+                    // Both price shapes (shortletRates, and the older shortletPricing), and a
+                    // shortlet is always shown per its tiers: a stray annual rent saved on one
+                    // used to win and show "/yr".
+                    const isShortletListing = listing.propertyType?.toLowerCase() === 'shortlet';
+                    const tiers = getListingShortletTiers(listing);
                     const annual = Number(listing.price || listing.rentAnnual);
-                    if (!annual && tiers.length) {
+                    if ((isShortletListing || !annual) && tiers.length) {
                       const cheapest = tiers.reduce((a: any, b: any) => (Number(b.price) < Number(a.price) ? b : a));
                       const qty = Number(cheapest.durationValue) || 1;
                       const unit = String(cheapest.durationUnit || 'day');

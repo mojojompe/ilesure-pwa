@@ -11,7 +11,7 @@ import { RentRenewal } from '../../components/ui/RentRenewal';
 import { chatService } from '../../api/chatService';
 import { clsx } from 'clsx';
 import { customAlert, customConfirm } from '../../stores/alertStore';
-import { getBookingShortletSummary } from '../../utils/shortlet';
+import { getBookingShortletSummary, getBookingStayDates, formatStayDate } from '../../utils/shortlet';
 import { InfoTip } from '../../components/ui/InfoTip';
 import { BOOKING_INFO, InfoCopy } from '../../constants/bookingInfo';
 import { ListingMediaStrip } from '../../components/common/ListingMediaStrip';
@@ -117,7 +117,10 @@ export function BookingDetail() {
   const listingTitle = listing?.title || 'Property';
   const payFreq = listing?.paymentFrequency;
   const customPlan = listing?.customPaymentPlan;
-  const isShortlet = listing?.propertyType?.toLowerCase() === 'shortlet';
+  // Judged by the booking itself first: it is what was booked, even if the listing changes.
+  const isShortlet = booking.isShortlet === true || Boolean(booking.selectedRate?.id) || listing?.propertyType?.toLowerCase() === 'shortlet';
+  const stay = isShortlet ? getBookingStayDates(booking) : null;
+  const hourlyStay = booking.selectedRate?.durationUnit === 'hour';
   // Prefers the tier snapshotted at booking time (selectedRate), which is what the backend
   // actually charges, over the legacy shortletPricingUsed map.
   const shortletSummary = isShortlet ? getBookingShortletSummary(booking) : null;
@@ -242,7 +245,7 @@ export function BookingDetail() {
               <DetailRow label="Rent" value={`₦${listing?.rentAnnual?.toLocaleString() || '—'}`} />
             )}
 
-            {payFreq && (
+            {payFreq && !isShortlet && (
               <DetailRow
                 label="Payment"
                 info={BOOKING_INFO.paymentPlan}
@@ -251,8 +254,13 @@ export function BookingDetail() {
             )}
 
             <DetailRow label="Booked on" value={new Date(booking.createdAt).toLocaleDateString()} />
-            {booking.moveInDate && (
-              <DetailRow label="Move-in" value={new Date(booking.moveInDate).toLocaleDateString()} />
+            {stay ? (
+              <>
+                <DetailRow label="Check-in" value={formatStayDate(stay.checkIn, hourlyStay)} />
+                <DetailRow label="Check-out" value={formatStayDate(stay.checkOut, hourlyStay)} />
+              </>
+            ) : booking.moveInDate && (
+              <DetailRow label={isShortlet ? 'Check-in' : 'Move-in'} value={new Date(booking.moveInDate).toLocaleDateString()} />
             )}
           </div>
 
@@ -267,7 +275,9 @@ export function BookingDetail() {
                 </Button>
               ) : (
                 <p className="text-xs text-textSecondary text-center">
-                  {deriveBookingProgress(booking).blockedMessage ?? (deriveBookingProgress(booking).inspectionFailed
+                  {deriveBookingProgress(booking).blockedMessage ?? (isShortlet
+                    ? 'Payment is not available for this booking yet.'
+                    : deriveBookingProgress(booking).inspectionFailed
                     ? 'This inspection was recorded as not matching the listing, so payment is unavailable. Please contact support.'
                     : 'Payment opens once your inspection has been scheduled and confirmed.')}
                 </p>
