@@ -83,14 +83,23 @@ export default defineConfig(({ command }) => ({
             urlPattern: /^https:\/\/api\.ilesure\.com\/api\/v1\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              // Kept in sync with src/utils/purgeApiCache.ts, which deletes this same
-              // cache on logout.
               cacheName: API_CACHE_NAME,
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 day
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
               },
-              networkTimeoutSeconds: 10
+              networkTimeoutSeconds: 4
+            }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
             }
           }
         ]

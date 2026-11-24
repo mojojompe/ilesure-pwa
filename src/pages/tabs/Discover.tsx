@@ -1,25 +1,24 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AppShell } from '../../components/layout/AppShell';
-import { ListingCard } from '../../components/listing/ListingCard';
+import { CategoryPillCard, CATEGORIES } from '../../components/listing/CategoryPillCard';
+import { SummaryListingCard } from '../../components/listing/SummaryListingCard';
 import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
-import { Skeleton, ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
 import { EmptyState } from '../../components/ui/EmptyState';
 import {
   Search01Icon,
   FilterIcon,
   Chatting01Icon,
   UserCircleIcon,
-  ArrowLeft01Icon,
   ArrowRight01Icon,
+  Building01Icon,
+  Home01Icon,
 } from '@hugeicons/react';
 import { listingService, Listing, ListingFilter } from '../../api/listingService';
 import {
-  CHIP_PROPERTY_TYPES,
   FURNISHED_VALUES,
   STABLE_POWER_VALUES,
-  PropertyType,
 } from '../../constants/listingVocabulary';
 import { useAuthStore } from '../../stores/authStore';
 import { useListingStore } from '../../stores/listingStore';
@@ -32,65 +31,36 @@ import {
   PRICE_CEILING,
 } from '../../components/common/FilterModal';
 
-const CHIPS = [
-  { id: 'all', label: 'All' },
-  { id: 'shared', label: 'Shared' },
-  { id: 'hostel', label: 'Hostel' },
-  { id: 'apartment', label: 'Apartment' },
-  { id: 'shortlet', label: 'Shortlet' },
-];
+interface CategoryGroup {
+  key: string;
+  label: string;
+  description: string;
+  items: Listing[];
+}
 
 export function Discover() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const initialListings = useListingStore(state => state.listings);
+  const initialListings = useListingStore((state) => state.listings);
   const [listings, setListings] = useState<Listing[]>(initialListings || []);
-  const [loading, setLoading] = useState(initialListings && initialListings.length > 0 ? false : true);
+  const [loading, setLoading] = useState(
+    initialListings && initialListings.length > 0 ? false : true
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  // Debounced mirror of searchQuery, the value the API is actually queried with.
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeChip, setActiveChip] = useState('all');
-  const [savedListings, setSavedListings] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMoreServer, setHasMoreServer] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
-  const ITEMS_PER_PAGE = 5;
 
-  /**
-   * Translates the chips and the filter modal into the API's query parameters.
-   *
-   * Search and filtering used to run over the array already in memory, so they
-   * only ever saw the 10 listings on the current page, and the modal compared
-   * display labels ('2-Bedroom') against stored values ('2_bed'), which matched
-   * nothing. Both now run on the server against canonical values.
-   */
-  const { listingFilters, hasContradictoryTypes } = useMemo(() => {
+  const { listingFilters } = useMemo(() => {
     const filters: ListingFilter = {};
     if (searchTerm.trim()) filters.q = searchTerm.trim();
 
-    const chipTypes = CHIP_PROPERTY_TYPES[activeChip];
-    let propertyTypes: PropertyType[] = chipTypes ? [...chipTypes] : [];
-    let contradictory = false;
-
-    if (activeChip === 'shared') filters.shareable = true;
-
     if (activeFilters) {
       if (activeFilters.propertyTypes.length > 0) {
-        // A chip and the modal are both type filters, intersect them so the
-        // narrower wins rather than one silently replacing the other.
-        const intersection = propertyTypes.length > 0
-          ? propertyTypes.filter(t => activeFilters.propertyTypes.includes(t))
-          : [...activeFilters.propertyTypes];
-        // The server drops filter values it cannot resolve, so an impossible
-        // combination has to be caught here or it would show everything.
-        contradictory = intersection.length === 0;
-        propertyTypes = intersection;
+        filters.propertyType = [...activeFilters.propertyTypes];
       }
-
       if (activeFilters.priceMin > PRICE_FLOOR) filters.priceMin = activeFilters.priceMin;
       if (activeFilters.priceMax < PRICE_CEILING) filters.priceMax = activeFilters.priceMax;
       if (activeFilters.distance) filters.distanceBucket = [activeFilters.distance];
@@ -100,10 +70,6 @@ export function Discover() {
       if (activeFilters.powerStable) filters.power = [...STABLE_POWER_VALUES];
       if (activeFilters.excludeStudentsOnly) filters.excludeStudentsOnly = true;
 
-      // Proximity around whatever the renter anchored to. An area cluster from
-      // active listings filters directly by location name; a seeded place goes by
-      // name so the server applies its curated radius; a geocoded address goes
-      // as a point.
       const anchor = activeFilters.anchor;
       if (anchor?.areaCluster) {
         filters.areaCluster = anchor.areaCluster;
@@ -117,108 +83,124 @@ export function Discover() {
       }
     }
 
-    if (propertyTypes.length > 0) filters.propertyType = propertyTypes;
-    return { listingFilters: filters, hasContradictoryTypes: contradictory };
-  }, [searchTerm, activeChip, activeFilters]);
+    return { listingFilters: filters };
+  }, [searchTerm, activeFilters]);
 
-  // Debounce keystrokes so typing a place name is one request, not one per letter.
+  // Debounce search keystrokes
   useEffect(() => {
     const timer = setTimeout(() => setSearchTerm(searchQuery), 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const fetchInitialData = useCallback(async (page = 1, isRefresh = false) => {
-    try {
-      if (isRefresh) setRefreshing(true);
-      else if (page === 1) setLoading(true);
+  const fetchInitialData = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (isRefresh) setRefreshing(true);
+        else setLoading(true);
 
-      if (hasContradictoryTypes) {
-        setListings([]);
-        setHasMoreServer(false);
-        return;
+        const promises: any[] = [
+          listingService.getListings(listingFilters, 1, 60),
+          chatService.getConversations().catch(() => ({ data: { chats: [] } })),
+        ];
+
+        const [listingsData, chatsData] = await Promise.all(promises);
+
+        const fetched = listingsData.listings || [];
+        setListings(fetched);
+        useListingStore.getState().setListings(fetched);
+
+        const unreadChats =
+          chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
+        setUnreadCount(unreadChats);
+      } catch (error) {
+        console.error('Failed to fetch home listings', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
+    },
+    [listingFilters]
+  );
 
-      const promises: any[] = [
-        listingService.getListings(listingFilters, page, ITEMS_PER_PAGE),
-        listingService.getSavedListings().catch(() => ({ data: { listings: [] } })),
-        chatService.getConversations().catch(() => ({ data: { chats: [] } }))
-      ];
-
-      const [listingsData, savedData, chatsData] = await Promise.all(promises);
-
-      setListings(listingsData.listings);
-      if (page === 1) {
-        useListingStore.getState().setListings(listingsData.listings);
-      }
-
-      // Sync saved listings
-      const savedIds = savedData.data?.listings?.map((l: any) => l._id || l.id) || [];
-      setSavedListings(savedIds);
-
-      // Sync unread chats
-      const unreadChats = chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
-      setUnreadCount(unreadChats);
-
-      // Pagination metadata
-      setTotalPages(Math.ceil((listingsData.total || 0) / ITEMS_PER_PAGE) || 1);
-      setHasMoreServer(listingsData.listings.length === ITEMS_PER_PAGE);
-    } catch (error) {
-      console.error('Failed to fetch data', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [listingFilters, hasContradictoryTypes]);
-
-  const handleLoadMore = () => {
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    fetchInitialData(nextPage);
-  };
-
-  // A new search, chip or filter is a new result set: back to page 1 and re-query.
   useEffect(() => {
-    setCurrentPage(1);
-    fetchInitialData(1);
+    fetchInitialData();
   }, [fetchInitialData]);
 
-  const toggleSave = (id: string) => {
-    setSavedListings(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
-  };
+  // Group listings into the five specified categories
+  const categoryGroups = useMemo<CategoryGroup[]>(() => {
+    const groups: Record<string, Listing[]> = {
+      shortlet: [],
+      self_con: [],
+      hostel: [],
+      apartment: [],
+      shared: [],
+    };
 
-  // The server has already applied the search, chips and filters.
-  const hasMore = hasMoreServer;
+    listings.forEach((listing) => {
+      const type = (listing.propertyType || '').toLowerCase();
+      const aptType = (listing.apartmentType || '').toLowerCase();
 
-
-  // Framer Motion staggered animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1
+      if (type === 'shortlet' || aptType === 'shortlet' || listing.shortletPricing) {
+        groups.shortlet.push(listing);
+      } else if (type === 'self_con' || aptType === 'self_con') {
+        groups.self_con.push(listing);
+      } else if (type.includes('hostel') || aptType.includes('hostel')) {
+        groups.hostel.push(listing);
+      } else if (
+        (listing as any).shareable ||
+        (listing as any).isShared ||
+        listing.status === 'needs_roommate'
+      ) {
+        groups.shared.push(listing);
+      } else {
+        // Apartment default (1_bed, 2_bed, 3_bed, mini_flat, studio, penthouse, etc.)
+        groups.apartment.push(listing);
       }
-    }
-  };
+    });
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
-  };
+    return [
+      {
+        key: 'shortlet',
+        label: 'Shortlets & Stays',
+        description: 'Flexible daily and weekly serviced apartments',
+        items: groups.shortlet,
+      },
+      {
+        key: 'self_con',
+        label: 'Self-Contained',
+        description: 'Private studios and self-contained units',
+        items: groups.self_con,
+      },
+      {
+        key: 'hostel',
+        label: 'Student Hostels',
+        description: 'Vetted student residences close to campus',
+        items: groups.hostel,
+      },
+      {
+        key: 'apartment',
+        label: 'Standard Apartments',
+        description: '1 to 3 bedroom apartments and flats',
+        items: groups.apartment,
+      },
+      {
+        key: 'shared',
+        label: 'Shared Spaces',
+        description: 'Co-living apartments with verified roommates',
+        items: groups.shared,
+      },
+    ];
+  }, [listings]);
 
   const headerVariants = {
-    hidden: { opacity: 0, y: -40 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+    hidden: { opacity: 0, y: -20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
   };
 
   return (
     <AppShell>
-      <div className="flex flex-col min-h-full bg-background pt-safe-top pb-6 overflow-x-clip">
-
-        {/* Header Section */}
+      <div className="flex flex-col min-h-full bg-background pt-safe-top pb-10 overflow-x-clip">
+        {/* Header Section - Untouched */}
         <motion.div
           initial="hidden"
           animate="show"
@@ -261,7 +243,7 @@ export function Discover() {
             </div>
           </div>
 
-          {/* Search Row */}
+          {/* Search Row - Untouched */}
           <div className="flex flex-row gap-3 mb-2">
             <div className="flex-1 h-[52px] bg-surfaceLight rounded-full flex flex-row items-center px-5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-borderLight">
               <Search01Icon size={20} className="text-textTertiary mr-2" />
@@ -274,17 +256,40 @@ export function Discover() {
               />
             </div>
 
-            <button onClick={() => setShowFilters(true)} className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent">
+            <button
+              onClick={() => setShowFilters(true)}
+              className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent"
+              aria-label="Filter listings"
+            >
               <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
             </button>
           </div>
         </motion.div>
 
-        {/* Ads Carousel & Header */}
+        {/* 1. Category Pills Carousel - Moved BEFORE Ads Carousel */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+          className="w-full overflow-x-auto no-scrollbar py-2 mb-3"
+        >
+          <div className="flex flex-row gap-3 px-5 min-w-max">
+            {CATEGORIES.map((cat) => (
+              <CategoryPillCard
+                key={cat.id}
+                category={cat}
+                onClick={() => navigate(`/category/${cat.id}`)}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* 2. Ads Carousel - Now directly below the Category Cards Carousel */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="mb-6"
         >
           <AdsCarousel
             heroTitle="Find Your Perfect Space"
@@ -292,131 +297,115 @@ export function Discover() {
           />
         </motion.div>
 
-        {/* Chips Row */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="w-full overflow-x-auto no-scrollbar mb-6"
-        >
-          <div className="flex flex-row gap-2 px-5 min-w-max">
-            {CHIPS.map(chip => {
-              const isActive = activeChip === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  onClick={() => setActiveChip(chip.id)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${isActive
-                      ? 'bg-accent text-white shadow-md'
-                      : 'bg-surfaceLight text-textSecondary hover:bg-surface'
-                    }`}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Content Area */}
-        <div className="flex-1">
+        {/* 3. Summary Feed: Browse Listings / For You */}
+        <div className="flex-1 px-5">
           <RefreshIndicator isRefreshing={refreshing} />
 
-          {loading && !refreshing && currentPage === 1 ? (
-            <div className="px-4 space-y-4">
-              <ListingCardSkeleton />
-              <ListingCardSkeleton />
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-black text-textPrimary tracking-tight">For You</h2>
+              <p className="text-xs text-textSecondary font-medium">
+                Browse verified properties by category
+              </p>
             </div>
-          ) : listings.length > 0 ? (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-              className="pb-[20px] relative"
-            >
-              <div className="relative">
-                {listings.map((listing: any, index: number) => (
-                  <motion.div
-                    key={listing._id || listing.id}
-                    variants={itemVariants}
-                    className="sticky transition-all duration-300"
-                    style={{
-                      top: `${72 + index * 12}px`,
-                      zIndex: index + 1,
-                      marginBottom: index === listings.length - 1 ? '16px' : '20px',
-                    }}
-                  >
-                    <ListingCard
-                      listing={listing}
-                      onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
-                      isSaved={savedListings.includes(listing._id || listing.id)}
-                      onSave={() => toggleSave(listing._id || listing.id)}
-                    />
-                  </motion.div>
-                ))}
-              </div>
+            <span className="text-xs font-bold text-[#E1AD01] bg-[#FFF8E7] px-2.5 py-1 rounded-full border border-[#E1AD01]/30">
+              {listings.length} Available
+            </span>
+          </div>
 
-              {/* Redesigned Pagination */}
-              <div className="px-5 mt-6 mb-4 flex flex-col items-center gap-2">
-                <div className="flex items-center justify-between w-full max-w-xs bg-surfaceLight/80 backdrop-blur-md p-1.5 rounded-full border border-borderLight shadow-sm">
-                  <button
-                    onClick={() => {
-                      const prevPage = Math.max(1, currentPage - 1);
-                      setCurrentPage(prevPage);
-                      fetchInitialData(prevPage);
-                      document.querySelector('main')?.scrollTo({ top: 320, behavior: 'smooth' });
-                    }}
-                    disabled={currentPage === 1 || loading}
-                    aria-label="Previous Page"
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#E1AD01] text-white text-xs font-bold shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
-                  >
-                    <ArrowLeft01Icon size={16} className="text-white" />
-                    <span>Prev</span>
-                  </button>
-
-                  <div className="flex items-center gap-1.5 px-3">
-                    <span className="text-xs font-black text-textPrimary">{currentPage}</span>
-                    <span className="text-[11px] font-semibold text-textTertiary">/</span>
-                    <span className="text-xs font-semibold text-textTertiary">{totalPages}</span>
+          {loading && !refreshing ? (
+            <div className="space-y-6">
+              {[1, 2].map((i) => (
+                <div key={i} className="space-y-3">
+                  <div className="h-6 w-36 bg-surfaceLight rounded-md animate-pulse" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="h-44 bg-surfaceLight rounded-2xl animate-pulse" />
+                    <div className="h-44 bg-surfaceLight rounded-2xl animate-pulse" />
                   </div>
-
-                  <button
-                    onClick={() => {
-                      const nextPage = Math.min(totalPages, currentPage + 1);
-                      setCurrentPage(nextPage);
-                      fetchInitialData(nextPage);
-                      document.querySelector('main')?.scrollTo({ top: 320, behavior: 'smooth' });
-                    }}
-                    disabled={currentPage === totalPages || loading}
-                    aria-label="Next Page"
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#E1AD01] text-white text-xs font-bold shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105"
-                  >
-                    <span>Next</span>
-                    <ArrowRight01Icon size={16} className="text-white" />
-                  </button>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {categoryGroups.map((group) => {
+                const previewItems = group.items.slice(0, 2);
+                const hasItems = previewItems.length > 0;
 
-                {/* Sponsored by Waltik Labs */}
-                <p className="text-xs font-semibold text-textTertiary tracking-wide mt-1">
+                return (
+                  <section key={group.key} className="space-y-3">
+                    {/* Category Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-extrabold text-textPrimary">
+                          {group.label}
+                        </h3>
+                        <span className="text-[11px] font-bold text-textTertiary bg-surfaceLight px-2 py-0.5 rounded-full border border-borderLight">
+                          {group.items.length}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => navigate(`/category/${group.key}`)}
+                        className="flex items-center gap-1 text-xs font-bold text-[#6B3A1F] active:opacity-75 group"
+                      >
+                        <span>See more</span>
+                        <ArrowRight01Icon
+                          size={15}
+                          className="text-[#6B3A1F] group-hover:translate-x-0.5 transition-transform"
+                        />
+                      </button>
+                    </div>
+
+                    {/* 2-Column Grid or Empty State */}
+                    {hasItems ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {previewItems.map((item) => (
+                          <SummaryListingCard
+                            key={item._id || item.id}
+                            listing={item}
+                            onClick={() =>
+                              navigate(`/listing/${item._id || item.id}`, {
+                                state: { listing: item },
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      /* Empty state for category with 0 listings */
+                      <div className="bg-[#FFFDF7] border border-borderLight rounded-2xl p-5 flex flex-col items-center text-center shadow-xs">
+                        <div className="w-12 h-12 rounded-xl bg-[#FFF8E7] flex items-center justify-center text-[#E1AD01] mb-2 border border-[#E1AD01]/20">
+                          <Home01Icon size={24} />
+                        </div>
+                        <p className="text-xs font-bold text-textPrimary mb-0.5">
+                          No {group.label.toLowerCase()} yet
+                        </p>
+                        <p className="text-[11px] text-textTertiary mb-3 max-w-[200px]">
+                          Check back soon or explore what’s currently in this category.
+                        </p>
+                        <button
+                          onClick={() => navigate(`/category/${group.key}`)}
+                          className="px-3.5 py-1.5 rounded-full bg-[#6B3A1F] text-white text-[11px] font-bold active:scale-95 transition-transform shadow-xs"
+                        >
+                          View category
+                        </button>
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
+
+              {/* Sponsored by Waltik Labs Footer */}
+              <div className="pt-6 pb-2 text-center border-t border-borderLight">
+                <p className="text-xs font-semibold text-textTertiary tracking-wide">
                   Sponsored by <span className="text-textPrimary font-bold">Waltik Labs</span>
                 </p>
               </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-12 px-5"
-            >
-              <EmptyState
-                illustration="search"
-                title="No properties found"
-                description="Try adjusting your filters or searching a different area."
-              />
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
+
       <FilterModal
         visible={showFilters}
         onClose={() => setShowFilters(false)}

@@ -22,6 +22,7 @@ const ReactivateAccount = lazy(() => import('./pages/auth/ReactivateAccount').th
 
 
 const Discover = lazy(() => import('./pages/tabs/Discover').then(module => ({ default: module.Discover })));
+const CategoryListings = lazy(() => import('./pages/details/CategoryListings').then(module => ({ default: module.CategoryListings })));
 
 const Roommates = lazy(() => import('./pages/tabs/Roommates').then(module => ({ default: module.Roommates })));
 
@@ -94,6 +95,7 @@ import { CallOverlay } from './components/call/CallOverlay';
 import { socketService } from './api/socketService';
 import { useAuthStore } from './stores/authStore';
 import { authService } from './api/authService';
+import { registerPushNotifications } from './utils/pushNotification';
 
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
@@ -133,6 +135,18 @@ export default function App() {
     return () => { socketService.disconnect(); };
   }, [isAuthenticated]);
 
+  // Register push notifications when authenticated or when app is installed
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    registerPushNotifications().catch(() => {});
+
+    const onAppInstalled = () => {
+      registerPushNotifications().catch(() => {});
+    };
+    window.addEventListener('appinstalled', onAppInstalled);
+    return () => window.removeEventListener('appinstalled', onAppInstalled);
+  }, [isAuthenticated]);
+
   // Send a constant ping to the backend to keep the Render free plan active
   useEffect(() => {
     const pingBackend = () => {
@@ -163,6 +177,7 @@ export default function App() {
           {/* Public: a shared listing link opens as a read-only preview for signed-out
               visitors (ListingDetail hides booking, chat and save for them). */}
           <Route path="/listing/:id" element={<ListingDetail />} />
+          <Route path="/category/:categoryKey" element={<CategoryListings />} />
           {/* Shared links are /l/:id. In production the host proxies them to the API's
               link-preview page first; this catches them anywhere that does not (dev). */}
           <Route path="/l/:id" element={<SharedListingRedirect />} />

@@ -72,7 +72,7 @@ export function ListingCard({
       : listing.power === 'solar_backed' || listing.power === 'hybrid' ? 'partial'
         : 'poor';
   const waterStatus = listing.water === 'borehole' ? 'good' : 'partial';
-  const isFullyBooked = listing.status === 'fully_booked';
+  const isFullyBooked = listing.status === 'fully_booked' || listing.status === 'booked';
 
   const displayRules = listing.rules?.length
     ? listing.rules
@@ -90,7 +90,7 @@ export function ListingCard({
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={!isFullyBooked ? onPress : undefined}
-      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-black/5 bg-white cursor-pointer ${isFullyBooked ? 'opacity-60' : ''
+      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-black/5 bg-white ${isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
         }`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
@@ -104,10 +104,10 @@ export function ListingCard({
 
         {/* Fully Booked Overlay */}
         {isFullyBooked && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-            <div className="px-4 py-2 bg-black/70 rounded-md -rotate-12">
-              <span className="text-white text-lg font-extrabold tracking-widest uppercase">
-                Fully Booked
+          <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] flex items-center justify-center z-20">
+            <div className="px-5 py-2 bg-black/80 rounded-xl border border-white/20 shadow-lg -rotate-6">
+              <span className="text-white text-base font-extrabold tracking-widest uppercase">
+                Booked
               </span>
             </div>
           </div>
