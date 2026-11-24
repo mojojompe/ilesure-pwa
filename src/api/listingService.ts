@@ -24,6 +24,9 @@ export interface Listing {
   title: string;
   description: string;
   rentAnnual: number;
+  cautionFee?: number;
+  agencyFee?: number;
+  tenancyAgreementFee?: number;
   /** Yearly service charge the lister declared; informational, not collected at checkout. */
   serviceCharge?: number;
   /** One-off viewing fee (max ₦10,000). The renter pays it +1.5% to iléSure before the inspection. */

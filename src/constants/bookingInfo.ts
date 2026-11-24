@@ -64,6 +64,10 @@ export const BOOKING_INFO = {
     title: 'Agency fee',
     body: 'A one-time fee for the agent who handles the property. You pay it on your first payment only, not on renewals.',
   },
+  tenancyAgreement: {
+    title: 'Tenancy agreement fee',
+    body: 'A one-time legal documentation fee for preparing and issuing the tenancy agreement. Paid on your first payment only.',
+  },
   serviceCharge: {
     title: 'Service charge',
     body: 'The yearly estate or facility charge set by the property owner, for things like security, cleaning and shared power. It is paid with your rent.',

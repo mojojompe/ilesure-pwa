@@ -34,6 +34,7 @@ export interface FeeQuote {
   rentAmount?: number;
   cautionFee?: number;
   agencyFee?: number;
+  tenancyAgreementFee?: number;
   serviceCharge?: number;
 }
 
@@ -46,7 +47,7 @@ export function resolvePlatformFeePercent(quote?: FeeQuote | null): number {
   if (quote) {
     const explicit = Number(quote.platformFeePercent);
     if (quote.platformFeePercent != null && Number.isFinite(explicit) && explicit >= 0) return explicit;
-    const subtotal = Number(quote.subtotal) > 0 ? Number(quote.subtotal) : ((Number(quote.rentAmount) || 0) + (Number(quote.cautionFee) || 0) + (Number(quote.agencyFee) || 0) + (Number(quote.serviceCharge) || 0));
+    const subtotal = Number(quote.subtotal) > 0 ? Number(quote.subtotal) : ((Number(quote.rentAmount) || 0) + (Number(quote.cautionFee) || 0) + (Number(quote.agencyFee) || 0) + (Number(quote.tenancyAgreementFee) || 0) + (Number(quote.serviceCharge) || 0));
     const fee = Number(quote.platformFee);
     if (subtotal > 0 && Number.isFinite(fee) && fee >= 0) return Math.round((fee / subtotal) * 1000) / 10;
   }

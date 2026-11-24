@@ -178,6 +178,9 @@ export function Checkout() {
 
             {!summary.isShortlet && <Row label="Caution Fee" value={summary.cautionFee} info={BOOKING_INFO.cautionFee} />}
             {!summary.isShortlet && <Row label="Agency Fee" value={summary.agencyFee} info={BOOKING_INFO.agencyFee} />}
+            {!summary.isShortlet && (summary as any).tenancyAgreementFee > 0 && (
+              <Row label="Tenancy Agreement" value={(summary as any).tenancyAgreementFee} info={BOOKING_INFO.tenancyAgreement} />
+            )}
             {!summary.isShortlet && summary.serviceCharge > 0 && (
               <Row label="Service Charge" value={summary.serviceCharge} info={BOOKING_INFO.serviceCharge} />
             )}

@@ -26,6 +26,7 @@ interface BookAppointmentModalProps {
     rentAnnual: number;
     cautionFee?: number;
     agencyFee?: number;
+    tenancyAgreementFee?: number;
     serviceCharge?: number;
     inspectionFee?: number;
     needsRoommate?: boolean;
@@ -124,6 +125,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   // caution/agency for them, so including here would over-quote the total.
   const cautionFee = isShortlet ? 0 : (listing?.cautionFee || 0);
   const agencyFee = isShortlet ? 0 : (listing?.agencyFee || 0);
+  const tenancyAgreementFee = isShortlet ? 0 : (listing?.tenancyAgreementFee || 0);
   const serviceCharge = isShortlet ? 0 : (Number(listing?.serviceCharge) || 0);
   
   // A shortlet stay is never split with a roommate (the server refuses it).
@@ -158,7 +160,7 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
 
   const serverQuote = quote && quote.key === quoteKey ? quote.data : null;
 
-  const localSubTotal = rentAmount + cautionFee + agencyFee + serviceCharge;
+  const localSubTotal = rentAmount + cautionFee + agencyFee + tenancyAgreementFee + serviceCharge;
   const localPlatformFee = calculatePlatformFee(localSubTotal);
   const localMatchingFee = calculateRoommateMatchingFee(localSubTotal);
   const localTotal = wantsRoommate
@@ -168,8 +170,9 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
   const shownRent = serverQuote ? serverQuote.rentAmount : rentAmount;
   const shownCaution = serverQuote ? serverQuote.cautionFee : cautionFee;
   const shownAgency = serverQuote ? serverQuote.agencyFee : agencyFee;
+  const shownTenancy = serverQuote ? ((serverQuote as any).tenancyAgreementFee ?? 0) : tenancyAgreementFee;
   const shownServiceCharge = serverQuote ? (serverQuote.serviceCharge ?? 0) : serviceCharge;
-  const subTotal = shownRent + shownCaution + shownAgency + shownServiceCharge;
+  const subTotal = shownRent + shownCaution + shownAgency + shownTenancy + shownServiceCharge;
   // Paid on its own before the viewing, so it is listed but never added to the total.
   const localInspection = isShortlet ? 0 : (Number(listing?.inspectionFee) || 0);
   const shownInspection = serverQuote ? (serverQuote.inspectionFee?.total ?? 0) : localInspection;
@@ -382,6 +385,12 @@ export const BookAppointmentModal: React.FC<BookAppointmentModalProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-textSecondary">Agency Fee</span>
                     <span className="text-sm font-semibold text-textPrimary">₦{shownAgency.toLocaleString()}</span>
+                  </div>
+                )}
+                {shownTenancy > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-textSecondary">Tenancy Agreement</span>
+                    <span className="text-sm font-semibold text-textPrimary">₦{shownTenancy.toLocaleString()}</span>
                   </div>
                 )}
                 {shownServiceCharge > 0 && (

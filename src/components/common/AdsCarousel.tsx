@@ -3,12 +3,41 @@ import { motion } from 'framer-motion';
 import { Megaphone01Icon } from '@hugeicons/react';
 import { adService, Ad } from '../../api/adService';
 
-interface AdsCarouselProps {
-  heroTitle: string;
-  heroImage: string;
+/**
+ * Permanent Header Banner on the Home Page, placed between the Search Bar and Category Cards.
+ */
+export function HomeHeroBanner({
+  title = 'Find Your Perfect Space',
+  image = '/images/ads_carousel_1788617238802.jpg',
+}: {
+  title?: string;
+  image?: string;
+}) {
+  return (
+    <div className="w-full px-5 mb-4">
+      <div className="w-full h-[155px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#2a1406] relative overflow-hidden flex flex-row items-center p-5 shadow-clay">
+        <h2 className="text-[#E8DCC4] text-[22px] font-black tracking-tight leading-[28px] w-[55%] z-10">
+          {title}
+        </h2>
+        <div className="absolute right-[-10px] top-[10%] w-[140px] h-[140px] flex items-center justify-center">
+          <img
+            src={image}
+            alt=""
+            className="w-full h-full object-cover rounded-l-full shadow-lg"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export const AdsCarousel: React.FC<AdsCarouselProps> = ({ heroTitle, heroImage }) => {
+/**
+ * Ads Carousel - Placed between "Shortlets and Stays" and "Self-Contained".
+ */
+export const AdsCarousel: React.FC = () => {
   const [ads, setAds] = useState<Ad[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,31 +56,31 @@ export const AdsCarousel: React.FC<AdsCarouselProps> = ({ heroTitle, heroImage }
     fetchAds();
   }, []);
 
-  const carouselItems: any[] = [
-    { type: 'hero', id: 'hero', title: heroTitle, image: heroImage },
-    ...ads.map(ad => ({ type: 'ad', id: ad._id, ...ad })),
-  ];
-
-  while (carouselItems.length < 4) {
-    carouselItems.push({ type: 'placeholder', id: `placeholder-${carouselItems.length}` });
-  }
+  const carouselItems: any[] =
+    ads.length > 0
+      ? ads.map((ad) => ({ type: 'ad', id: ad._id, ...ad }))
+      : [
+          { type: 'placeholder', id: 'placeholder-1' },
+          { type: 'placeholder', id: 'placeholder-2' },
+        ];
 
   useEffect(() => {
+    if (carouselItems.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentIndex(prev => {
+      setCurrentIndex((prev) => {
         const next = (prev + 1) % carouselItems.length;
         if (containerRef.current) {
           const child = containerRef.current.children[next] as HTMLElement;
           if (child) {
             containerRef.current.scrollTo({
               left: child.offsetLeft,
-              behavior: 'smooth'
+              behavior: 'smooth',
             });
           }
         }
         return next;
       });
-    }, 3000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [carouselItems.length]);
 
@@ -65,58 +94,59 @@ export const AdsCarousel: React.FC<AdsCarouselProps> = ({ heroTitle, heroImage }
   };
 
   return (
-    <div className="w-full mb-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+    <div className="w-full my-6">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.4 }}
+        transition={{ duration: 0.35 }}
         className="w-full overflow-x-auto snap-x snap-mandatory flex flex-row gap-4 px-5 pb-2 no-scrollbar"
         ref={containerRef}
         onScroll={handleScroll}
         style={{ scrollBehavior: 'smooth' }}
       >
         {carouselItems.map((item: any) => {
-          if (item.type === 'hero') {
-            return (
-              <div key={item.id} className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#2a1406] relative overflow-hidden flex flex-row items-center p-5 shadow-md">
-                <h2 className="text-[#E8DCC4] text-[22px] font-black tracking-tight leading-[28px] w-[50%] z-10">
-                  {item.title}
-                </h2>
-                <div className="absolute right-[-10px] top-[10%] w-[140px] h-[140px] flex items-center justify-center">
-                  <img src={item.image} alt="" className="w-full h-full object-cover rounded-l-full shadow-lg" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-                </div>
-              </div>
-            );
-          }
-
           if (item.type === 'placeholder') {
             return (
-              <div key={item.id} className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] bg-surfaceLight border-2 border-dashed border-borderLight flex flex-col items-center justify-center">
-                <Megaphone01Icon size={32} className="text-textTertiary mb-2" />
-                <span className="text-textTertiary font-semibold text-base">Advertisement Space</span>
+              <div
+                key={item.id}
+                className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[150px] rounded-[24px] bg-[#FAF8F5] border-2 border-dashed border-[#E7DCD4] flex flex-col items-center justify-center shadow-xs"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#E1AD01] mb-2">
+                  <Megaphone01Icon size={22} />
+                </div>
+                <span className="text-textSecondary font-bold text-sm">Advertisement Space</span>
+                <span className="text-[11px] text-textTertiary mt-0.5">Contact iléSure to sponsor here</span>
               </div>
             );
           }
 
           return (
-            <a key={item.id} href={item.link} target="_blank" rel="noreferrer" className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[160px] rounded-[24px] overflow-hidden shadow-md block">
+            <a
+              key={item.id}
+              href={item.link}
+              target="_blank"
+              rel="noreferrer"
+              className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[150px] rounded-[24px] overflow-hidden shadow-clay-sm block relative group active:scale-[0.98] transition-transform"
+            >
               <img src={item.imageUrl} alt="Ad" className="w-full h-full object-cover" />
             </a>
           );
         })}
       </motion.div>
-      
+
       {/* Dot Indicators */}
-      <div className="flex flex-row justify-center items-center gap-1.5 mt-2">
-        {carouselItems.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === currentIndex ? 'w-3.5 bg-[#3E1F0A]' : 'w-1.5 bg-[#3E1F0A]/20'
-            }`}
-          />
-        ))}
-      </div>
+      {carouselItems.length > 1 && (
+        <div className="flex flex-row justify-center items-center gap-1.5 mt-2">
+          {carouselItems.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === currentIndex ? 'w-3.5 bg-[#3E1F0A]' : 'w-1.5 bg-[#3E1F0A]/20'
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};

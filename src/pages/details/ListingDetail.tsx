@@ -500,14 +500,25 @@ export function ListingDetail() {
                   })()}
                 </p>
               </div>
-              {/* Service charge is informational. The inspection fee is paid to iléSure (+1.5%)
-                  before the viewing; shown so the renter knows the full cost up front. */}
+              {/* Fees breakdown shown upfront so the renter knows the full cost */}
               {(() => {
+                const cautionFee = Number(listing.cautionFee) || 0;
+                const agencyFee = Number(listing.agencyFee) || 0;
+                const tenancyFee = Number(listing.tenancyAgreementFee) || 0;
                 const serviceCharge = Number(listing.serviceCharge) || 0;
                 const inspectionFee = Number(listing.inspectionFee) || 0;
-                if (listing.propertyType === 'shortlet' || (!serviceCharge && !inspectionFee)) return null;
+                if (listing.propertyType === 'shortlet' || (!cautionFee && !agencyFee && !tenancyFee && !serviceCharge && !inspectionFee)) return null;
                 return (
                   <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-textSecondary">
+                    {cautionFee > 0 && (
+                      <span>Caution: <strong className="text-textPrimary">₦{cautionFee.toLocaleString()}</strong></span>
+                    )}
+                    {agencyFee > 0 && (
+                      <span>Agency: <strong className="text-textPrimary">₦{agencyFee.toLocaleString()}</strong></span>
+                    )}
+                    {tenancyFee > 0 && (
+                      <span>Tenancy Agreement: <strong className="text-textPrimary">₦{tenancyFee.toLocaleString()}</strong></span>
+                    )}
                     {serviceCharge > 0 && (
                       <span>Service charge: <strong className="text-textPrimary">₦{serviceCharge.toLocaleString()}/yr</strong></span>
                     )}
