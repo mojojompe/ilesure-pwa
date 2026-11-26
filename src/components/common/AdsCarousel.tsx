@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Megaphone01Icon } from '@hugeicons/react';
-import { adService, Ad } from '../../api/adService';
+import React, { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { Megaphone01Icon } from "@hugeicons/react";
+import { adService, Ad } from "../../api/adService";
 
 /**
  * Permanent Header Banner on the Home Page, placed between the Search Bar and Category Cards.
  */
 export function HomeHeroBanner({
-  title = 'Find Your Perfect Space',
-  image = '/images/ads_carousel_1788617238802.jpg',
+  title = "Find Your Perfect Space",
+  image = "/images/ads_carousel_1788617238802.jpg",
 }: {
   title?: string;
   image?: string;
@@ -25,7 +25,7 @@ export function HomeHeroBanner({
             alt=""
             className="w-full h-full object-cover rounded-l-full shadow-lg"
             onError={(e) => {
-              e.currentTarget.style.display = 'none';
+              e.currentTarget.style.display = "none";
             }}
           />
         </div>
@@ -50,19 +50,19 @@ export const AdsCarousel: React.FC = () => {
           setAds(response.data);
         }
       } catch (error) {
-        console.error('Failed to fetch ads', error);
+        console.error("Failed to fetch ads", error);
       }
     };
     fetchAds();
   }, []);
 
   const WHATSAPP_AD_URL =
-    'https://wa.me/2348169384301?text=Hello%20il%C3%A9Sure%2C%20I%20want%20to%20place%20an%20Advert%20of%20my%20Trade%2Fbusiness';
+    "https://wa.me/2348169384301?text=Hello%20il%C3%A9Sure%2C%20I%20want%20to%20place%20an%20Advert%20of%20my%20Trade%2Fbusiness";
 
   // Keep exactly one contact placeholder after active ads, including when there are no ads.
   const carouselItems: any[] = [
-    ...ads.map((ad) => ({ type: 'ad', id: ad._id, ...ad })),
-    { type: 'placeholder', id: 'placeholder-ad-slot' },
+    ...ads.map((ad) => ({ type: "ad", id: ad._id, ...ad })),
+    { type: "placeholder", id: "placeholder-ad-slot" },
   ];
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const AdsCarousel: React.FC = () => {
           if (child) {
             containerRef.current.scrollTo({
               left: child.offsetLeft,
-              behavior: 'smooth',
+              behavior: "smooth",
             });
           }
         }
@@ -88,7 +88,8 @@ export const AdsCarousel: React.FC = () => {
   const handleScroll = () => {
     if (containerRef.current) {
       const scrollLeft = containerRef.current.scrollLeft;
-      const childWidth = (containerRef.current.children[0] as HTMLElement)?.offsetWidth || 1;
+      const childWidth =
+        (containerRef.current.children[0] as HTMLElement)?.offsetWidth || 1;
       const newIndex = Math.round(scrollLeft / childWidth);
       if (newIndex !== currentIndex) setCurrentIndex(newIndex);
     }
@@ -103,10 +104,10 @@ export const AdsCarousel: React.FC = () => {
         className="w-full overflow-x-auto snap-x snap-mandatory flex flex-row gap-4 px-5 pb-2 no-scrollbar"
         ref={containerRef}
         onScroll={handleScroll}
-        style={{ scrollBehavior: 'smooth' }}
+        style={{ scrollBehavior: "smooth" }}
       >
         {carouselItems.map((item: any) => {
-          if (item.type === 'placeholder') {
+          if (item.type === "placeholder") {
             return (
               <a
                 key={item.id}
@@ -118,8 +119,12 @@ export const AdsCarousel: React.FC = () => {
                 <div className="w-10 h-10 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#E1AD01] mb-2 group-hover:scale-110 transition-transform">
                   <Megaphone01Icon size={22} />
                 </div>
-                <span className="text-textSecondary font-bold text-sm">Place Your Advert Here</span>
-                <span className="text-[11px] text-textTertiary mt-0.5">Tap to chat with iléSure on WhatsApp</span>
+                <span className="text-textSecondary font-bold text-sm">
+                  Place Your Advert Here
+                </span>
+                <span className="text-[11px] text-textTertiary mt-0.5">
+                  Tap to chat with iléSure on WhatsApp
+                </span>
               </a>
             );
           }
@@ -132,7 +137,11 @@ export const AdsCarousel: React.FC = () => {
               rel="noreferrer"
               className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[150px] rounded-[24px] overflow-hidden shadow-clay-sm block relative group active:scale-[0.98] transition-transform"
             >
-              <img src={item.imageUrl} alt="Ad" className="w-full h-full object-cover" />
+              <img
+                src={item.imageUrl}
+                alt="Ad"
+                className="w-full h-full object-cover"
+              />
             </a>
           );
         })}
@@ -145,7 +154,9 @@ export const AdsCarousel: React.FC = () => {
             <div
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === currentIndex ? 'w-3.5 bg-[#3E1F0A]' : 'w-1.5 bg-[#3E1F0A]/20'
+                i === currentIndex
+                  ? "w-3.5 bg-[#3E1F0A]"
+                  : "w-1.5 bg-[#3E1F0A]/20"
               }`}
             />
           ))}

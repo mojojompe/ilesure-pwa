@@ -1,11 +1,14 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { AppShell } from '../../components/layout/AppShell';
-import { CategoryPillCard, CATEGORIES } from '../../components/listing/CategoryPillCard';
-import { SummaryListingCard } from '../../components/listing/SummaryListingCard';
-import { RefreshIndicator } from '../../components/ui/RefreshIndicator';
-import { EmptyState } from '../../components/ui/EmptyState';
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { AppShell } from "../../components/layout/AppShell";
+import {
+  CategoryPillCard,
+  CATEGORIES,
+} from "../../components/listing/CategoryPillCard";
+import { SummaryListingCard } from "../../components/listing/SummaryListingCard";
+import { RefreshIndicator } from "../../components/ui/RefreshIndicator";
+import { EmptyState } from "../../components/ui/EmptyState";
 import {
   Search01Icon,
   FilterIcon,
@@ -15,23 +18,30 @@ import {
   Building01Icon,
   Home01Icon,
   Wrench01Icon,
-} from '@hugeicons/react';
-import { listingService, Listing, ListingFilter } from '../../api/listingService';
+} from "@hugeicons/react";
+import {
+  listingService,
+  Listing,
+  ListingFilter,
+} from "../../api/listingService";
 import {
   FURNISHED_VALUES,
   STABLE_POWER_VALUES,
-} from '../../constants/listingVocabulary';
-import { useAuthStore } from '../../stores/authStore';
-import { useListingStore } from '../../stores/listingStore';
-import { chatService } from '../../api/chatService';
-import { AdsCarousel, HomeHeroBanner } from '../../components/common/AdsCarousel';
-import { ServiceComingSoonModal } from '../../components/services/ServiceComingSoonModal';
+} from "../../constants/listingVocabulary";
+import { useAuthStore } from "../../stores/authStore";
+import { useListingStore } from "../../stores/listingStore";
+import { chatService } from "../../api/chatService";
+import {
+  AdsCarousel,
+  HomeHeroBanner,
+} from "../../components/common/AdsCarousel";
+import { ServiceComingSoonModal } from "../../components/services/ServiceComingSoonModal";
 import {
   FilterModal,
   FilterState,
   PRICE_FLOOR,
   PRICE_CEILING,
-} from '../../components/common/FilterModal';
+} from "../../components/common/FilterModal";
 
 interface CategoryGroup {
   key: string;
@@ -46,11 +56,11 @@ export function Discover() {
   const initialListings = useListingStore((state) => state.listings);
   const [listings, setListings] = useState<Listing[]>(initialListings || []);
   const [loading, setLoading] = useState(
-    initialListings && initialListings.length > 0 ? false : true
+    initialListings && initialListings.length > 0 ? false : true,
   );
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
@@ -64,10 +74,14 @@ export function Discover() {
       if (activeFilters.propertyTypes.length > 0) {
         filters.propertyType = [...activeFilters.propertyTypes];
       }
-      if (activeFilters.priceMin > PRICE_FLOOR) filters.priceMin = activeFilters.priceMin;
-      if (activeFilters.priceMax < PRICE_CEILING) filters.priceMax = activeFilters.priceMax;
-      if (activeFilters.distance) filters.distanceBucket = [activeFilters.distance];
-      if (activeFilters.genderRestriction) filters.gender = [activeFilters.genderRestriction];
+      if (activeFilters.priceMin > PRICE_FLOOR)
+        filters.priceMin = activeFilters.priceMin;
+      if (activeFilters.priceMax < PRICE_CEILING)
+        filters.priceMax = activeFilters.priceMax;
+      if (activeFilters.distance)
+        filters.distanceBucket = [activeFilters.distance];
+      if (activeFilters.genderRestriction)
+        filters.gender = [activeFilters.genderRestriction];
       if (activeFilters.shareable) filters.shareable = true;
       if (activeFilters.furnished) filters.furnishing = [...FURNISHED_VALUES];
       if (activeFilters.powerStable) filters.power = [...STABLE_POWER_VALUES];
@@ -113,16 +127,17 @@ export function Discover() {
         useListingStore.getState().setListings(fetched);
 
         const unreadChats =
-          chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length || 0;
+          chatsData.data?.chats?.filter((c: any) => c.unreadCount > 0).length ||
+          0;
         setUnreadCount(unreadChats);
       } catch (error) {
-        console.error('Failed to fetch home listings', error);
+        console.error("Failed to fetch home listings", error);
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [listingFilters]
+    [listingFilters],
   );
 
   useEffect(() => {
@@ -140,19 +155,23 @@ export function Discover() {
     };
 
     listings.forEach((listing) => {
-      const type = (listing.propertyType || '').toLowerCase();
-      const aptType = (listing.apartmentType || '').toLowerCase();
+      const type = (listing.propertyType || "").toLowerCase();
+      const aptType = (listing.apartmentType || "").toLowerCase();
 
-      if (type === 'shortlet' || aptType === 'shortlet' || listing.shortletPricing) {
+      if (
+        type === "shortlet" ||
+        aptType === "shortlet" ||
+        listing.shortletPricing
+      ) {
         groups.shortlet.push(listing);
-      } else if (type === 'self_con' || aptType === 'self_con') {
+      } else if (type === "self_con" || aptType === "self_con") {
         groups.self_con.push(listing);
-      } else if (type.includes('hostel') || aptType.includes('hostel')) {
+      } else if (type.includes("hostel") || aptType.includes("hostel")) {
         groups.hostel.push(listing);
       } else if (
         (listing as any).shareable ||
         (listing as any).isShared ||
-        listing.status === 'needs_roommate'
+        listing.status === "needs_roommate"
       ) {
         groups.shared.push(listing);
       } else {
@@ -163,33 +182,33 @@ export function Discover() {
 
     return [
       {
-        key: 'shortlet',
-        label: 'Shortlets & Stays',
-        description: 'Flexible daily and weekly serviced apartments',
+        key: "shortlet",
+        label: "Shortlets & Stays",
+        description: "Flexible daily and weekly serviced apartments",
         items: groups.shortlet,
       },
       {
-        key: 'self_con',
-        label: 'Self-Contained',
-        description: 'Private studios and self-contained units',
+        key: "self_con",
+        label: "Self-Contained",
+        description: "Private studios and self-contained units",
         items: groups.self_con,
       },
       {
-        key: 'hostel',
-        label: 'Student Hostels',
-        description: 'Vetted student residences close to campus',
+        key: "hostel",
+        label: "Student Hostels",
+        description: "Vetted student residences close to campus",
         items: groups.hostel,
       },
       {
-        key: 'apartment',
-        label: 'Standard Apartments',
-        description: '1 to 3 bedroom apartments and flats',
+        key: "apartment",
+        label: "Standard Apartments",
+        description: "1 to 3 bedroom apartments and flats",
         items: groups.apartment,
       },
       {
-        key: 'shared',
-        label: 'Shared Spaces',
-        description: 'Co-living apartments with verified roommates',
+        key: "shared",
+        label: "Shared Spaces",
+        description: "Co-living apartments with verified roommates",
         items: groups.shared,
       },
     ];
@@ -197,7 +216,11 @@ export function Discover() {
 
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring" as const, stiffness: 300, damping: 24 },
+    },
   };
 
   return (
@@ -216,29 +239,35 @@ export function Discover() {
                 Good Day,
               </span>
               <h1 className="text-3xl font-black text-textPrimary tracking-tight">
-                {user?.fullName?.split(' ')[0] || 'Student'}
+                {user?.fullName?.split(" ")[0] || "Student"}
               </h1>
             </div>
 
             <div className="flex flex-row items-center gap-3">
               <button
-                onClick={() => navigate('/chats')}
+                onClick={() => navigate("/chats")}
                 className="w-11 h-11 rounded-full bg-surfaceLight flex items-center justify-center relative active:scale-95 transition-transform"
               >
                 <Chatting01Icon size={24} className="text-textPrimary" />
                 {unreadCount > 0 && (
                   <div className="absolute top-0 right-0 w-5 h-5 bg-error rounded-full flex items-center justify-center border-2 border-background">
-                    <span className="text-[10px] text-white font-bold">{unreadCount}</span>
+                    <span className="text-[10px] text-white font-bold">
+                      {unreadCount}
+                    </span>
                   </div>
                 )}
               </button>
 
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate("/profile")}
                 className="w-11 h-11 rounded-full flex items-center justify-center active:scale-95 transition-transform border-2 border-primary overflow-hidden"
               >
                 {user?.avatar ? (
-                  <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                  <img
+                    src={user.avatar}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <UserCircleIcon size={32} className="text-primary" />
                 )}
@@ -264,7 +293,11 @@ export function Discover() {
               className="w-[52px] h-[52px] flex items-center justify-center active:scale-95 transition-transform bg-transparent"
               aria-label="Filter listings"
             >
-              <FilterIcon size={24} className="text-textPrimary" variant="stroke" />
+              <FilterIcon
+                size={24}
+                className="text-textPrimary"
+                variant="stroke"
+              />
             </button>
           </div>
         </motion.div>
@@ -308,7 +341,9 @@ export function Discover() {
 
           {/* Section Header: Removed the Available pill as requested */}
           <div className="mb-5">
-            <h2 className="text-xl font-black text-textPrimary tracking-tight">For You</h2>
+            <h2 className="text-xl font-black text-textPrimary tracking-tight">
+              For You
+            </h2>
             <p className="text-xs text-textSecondary font-medium">
               Browse verified properties by category
             </p>
@@ -383,7 +418,8 @@ export function Discover() {
                             No {group.label.toLowerCase()} yet
                           </p>
                           <p className="text-[11px] text-textTertiary mb-3 max-w-[200px]">
-                            Check back soon or explore what’s currently in this category.
+                            Check back soon or explore what’s currently in this
+                            category.
                           </p>
                           <button
                             onClick={() => navigate(`/category/${group.key}`)}
@@ -396,22 +432,25 @@ export function Discover() {
                     </section>
 
                     {/* Ads Carousel placed permanently in-between "Shortlets and Stays" and "Self-Contained" */}
-                    {group.key === 'shortlet' && (
+                    {group.key === "shortlet" && (
                       <div className="-mx-5">
                         <AdsCarousel />
                       </div>
                     )}
 
                     {/* Services Promo Banner – shown below "Standard Apartments" */}
-                    {group.key === 'apartment' && (
+                    {group.key === "apartment" && (
                       <div
-                        onClick={() => navigate('/services')}
+                        onClick={() => navigate("/services")}
                         className="w-full h-[130px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#5C2D10] relative overflow-hidden flex flex-row items-center px-5 shadow-clay cursor-pointer active:scale-[0.98] transition-transform"
                       >
                         {/* Services icon LEFT */}
                         <div className="w-[108px] h-[108px] shrink-0 flex items-center justify-center mr-4 relative">
                           <div className="absolute inset-2 rounded-full bg-[#E1AD01]/20" />
-                          <Wrench01Icon size={64} className="relative text-[#E8DCC4]" />
+                          <Wrench01Icon
+                            size={64}
+                            className="relative text-[#E8DCC4]"
+                          />
                         </div>
                         {/* Text RIGHT */}
                         <div className="flex-1">
@@ -421,9 +460,14 @@ export function Discover() {
                           <h3 className="text-[#E8DCC4] text-[17px] font-black leading-snug">
                             Home Services
                           </h3>
-                          <p className="text-[#C4A88A] text-[11px] mt-0.5">Vetted artisans at your doorstep</p>
+                          <p className="text-[#C4A88A] text-[11px] mt-0.5">
+                            Vetted artisans at your doorstep
+                          </p>
                         </div>
-                        <ArrowRight01Icon size={18} className="text-[#E8DCC4] ml-2 shrink-0" />
+                        <ArrowRight01Icon
+                          size={18}
+                          className="text-[#E8DCC4] ml-2 shrink-0"
+                        />
                       </div>
                     )}
                   </React.Fragment>
@@ -433,7 +477,10 @@ export function Discover() {
               {/* Sponsored by Waltik Labs Footer */}
               <div className="pt-6 pb-2 text-center border-t border-borderLight">
                 <p className="text-xs font-semibold text-textTertiary tracking-wide">
-                  Sponsored by <span className="text-textPrimary font-bold">Waltik Labs</span>
+                  Sponsored by{" "}
+                  <span className="text-textPrimary font-bold">
+                    Waltik Labs
+                  </span>
                 </p>
               </div>
             </div>

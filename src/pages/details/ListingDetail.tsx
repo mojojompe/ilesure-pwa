@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { AppShell } from '../../components/layout/AppShell';
-import { Button } from '../../components/ui/Button';
-import { Tag } from '../../components/ui/Tag';
-import { Skeleton } from '../../components/ui/SkeletonLoader';
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { AppShell } from "../../components/layout/AppShell";
+import { Button } from "../../components/ui/Button";
+import { Tag } from "../../components/ui/Tag";
+import { Skeleton } from "../../components/ui/SkeletonLoader";
 import {
   Building03Icon,
   Location01Icon,
@@ -20,37 +20,37 @@ import {
   BubbleChatIcon,
   InformationCircleIcon,
   HelpCircleIcon,
-  Wifi01Icon
-} from '@hugeicons/react';
-import { motion } from 'framer-motion';
-import { listingService, Listing } from '../../api/listingService';
-import { bookingService } from '../../api/bookingService';
-import { paymentService } from '../../api/paymentService';
-import { chatService } from '../../api/chatService';
-import { useAuthStore } from '../../stores/authStore';
-import { clsx } from 'clsx';
-import { BookAppointmentModal } from '../../components/common/BookAppointmentModal';
-import { InspectionBookingModal } from '../../components/common/InspectionBookingModal';
-import { InspectionVerificationModal } from '../../components/common/InspectionVerificationModal';
-import { AgentReportModal } from '../../components/common/AgentReportModal';
-import { BookingTimelineModal } from '../../components/common/BookingTimelineModal';
-import { FullscreenImageCarousel } from '../../components/common/FullscreenImageCarousel';
-import { isVideoUrl } from '../../utils/listingMedia';
-import { ListingVideoThumb } from '../../components/common/ListingVideo';
-import { InquiryModal } from '../../components/common/InquiryModal';
-import { customAlert } from '../../stores/alertStore';
-import { getApiErrorMessage } from '../../api/apiError';
-import { labelFor } from '../../constants/listingVocabulary';
-import { getListingShortletTiers } from '../../utils/shortlet';
+  Wifi01Icon,
+} from "@hugeicons/react";
+import { motion } from "framer-motion";
+import { listingService, Listing } from "../../api/listingService";
+import { bookingService } from "../../api/bookingService";
+import { paymentService } from "../../api/paymentService";
+import { chatService } from "../../api/chatService";
+import { useAuthStore } from "../../stores/authStore";
+import { clsx } from "clsx";
+import { BookAppointmentModal } from "../../components/common/BookAppointmentModal";
+import { InspectionBookingModal } from "../../components/common/InspectionBookingModal";
+import { InspectionVerificationModal } from "../../components/common/InspectionVerificationModal";
+import { AgentReportModal } from "../../components/common/AgentReportModal";
+import { BookingTimelineModal } from "../../components/common/BookingTimelineModal";
+import { FullscreenImageCarousel } from "../../components/common/FullscreenImageCarousel";
+import { isVideoUrl } from "../../utils/listingMedia";
+import { ListingVideoThumb } from "../../components/common/ListingVideo";
+import { InquiryModal } from "../../components/common/InquiryModal";
+import { customAlert } from "../../stores/alertStore";
+import { getApiErrorMessage } from "../../api/apiError";
+import { labelFor } from "../../constants/listingVocabulary";
+import { getListingShortletTiers } from "../../utils/shortlet";
 
-type TabId = 'overview' | 'amenities' | 'location' | 'details' | 'inquiries';
+type TabId = "overview" | "amenities" | "location" | "details" | "inquiries";
 
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'amenities', label: 'Amenities' },
-  { id: 'location', label: 'Location' },
-  { id: 'details', label: 'Details' },
-  { id: 'inquiries', label: 'Inquiries' },
+  { id: "overview", label: "Overview" },
+  { id: "amenities", label: "Amenities" },
+  { id: "location", label: "Location" },
+  { id: "details", label: "Details" },
+  { id: "inquiries", label: "Inquiries" },
 ];
 
 export function ListingDetail() {
@@ -63,7 +63,7 @@ export function ListingDetail() {
   const [listing, setListing] = useState<Listing | null>(initialListing);
   const [loading, setLoading] = useState(!initialListing);
   const [isSaved, setIsSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [inquiries, setInquiries] = useState<any[]>([]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -80,7 +80,9 @@ export function ListingDetail() {
   const [showInquiryModal, setShowInquiryModal] = useState(false);
 
   const [existingBooking, setExistingBooking] = useState<any>(null);
-  const [shareCount, setShareCount] = useState<number>(Number(initialListing?.shareCount) || 0);
+  const [shareCount, setShareCount] = useState<number>(
+    Number(initialListing?.shareCount) || 0,
+  );
   const [sharing, setSharing] = useState(false);
 
   // Someone opened a shared link without signing in: a read-only preview. They can look and
@@ -96,15 +98,17 @@ export function ListingDetail() {
         const [listingData, savedData] = await Promise.all([
           listingService.getListingById(id),
           user
-            ? listingService.getSavedListings().catch(() => ({ data: { listings: [] } }))
+            ? listingService
+                .getSavedListings()
+                .catch(() => ({ data: { listings: [] } }))
             : Promise.resolve({ data: { listings: [] } }),
         ]);
 
         setListing(listingData);
         setShareCount(Number((listingData as any)?.shareCount) || 0);
 
-        const isListingSaved = savedData.data?.listings?.some((s: any) =>
-          s._id === id || s.id === id
+        const isListingSaved = savedData.data?.listings?.some(
+          (s: any) => s._id === id || s.id === id,
         );
         setIsSaved(!!isListingSaved);
 
@@ -112,11 +116,13 @@ export function ListingDetail() {
         try {
           const inqRes = await listingService.getInquiries(id);
           setInquiries(inqRes.data?.inquiries || []);
-        } catch (e) { }
+        } catch (e) {}
 
         // Fetch bookings if user is logged in
         if (user) {
-          const bookingsData = await bookingService.getMyBookings().catch(() => ({ data: { bookings: [] } }));
+          const bookingsData = await bookingService
+            .getMyBookings()
+            .catch(() => ({ data: { bookings: [] } }));
           const bookings = bookingsData?.data?.bookings || [];
           const match = bookings.find((b: any) => {
             const bid = b.listingId?._id ?? b.listingId;
@@ -124,9 +130,8 @@ export function ListingDetail() {
           });
           setExistingBooking(match ?? null);
         }
-
       } catch (error) {
-        console.error('Failed to fetch listing data', error);
+        console.error("Failed to fetch listing data", error);
       } finally {
         setLoading(false);
       }
@@ -158,28 +163,34 @@ export function ListingDetail() {
     if (!listing || sharing) return;
     const listingId = listing._id || id;
     const url = `${window.location.origin}/l/${listingId}`;
-    const area = listing.areaCluster || listing.city || '';
-    const text = `Check out ${listing.title}${area ? ` in ${area}` : ''} on iléSure`;
+    const area = listing.areaCluster || listing.city || "";
+    const text = `Check out ${listing.title}${area ? ` in ${area}` : ""} on iléSure`;
     setSharing(true);
     try {
       let shared = false;
-      if (typeof navigator.share === 'function') {
+      if (typeof navigator.share === "function") {
         try {
           await navigator.share({ title: listing.title, text, url });
           shared = true;
         } catch (err: any) {
           // Closing the share sheet is not an error, and not a share.
-          if (err?.name === 'AbortError') return;
+          if (err?.name === "AbortError") return;
         }
       }
       if (!shared) {
         await navigator.clipboard.writeText(url);
-        customAlert('Link copied. Paste it anywhere to share this place.', 'Link copied', 'success');
+        customAlert(
+          "Link copied. Paste it anywhere to share this place.",
+          "Link copied",
+          "success",
+        );
       }
-      const count = await listingService.recordShare(listingId!).catch(() => null);
-      setShareCount((c) => (typeof count === 'number' ? count : c + 1));
+      const count = await listingService
+        .recordShare(listingId!)
+        .catch(() => null);
+      setShareCount((c) => (typeof count === "number" ? count : c + 1));
     } catch {
-      customAlert(`Copy this link to share: ${url}`, 'Share', 'info');
+      customAlert(`Copy this link to share: ${url}`, "Share", "info");
     } finally {
       setSharing(false);
     }
@@ -190,24 +201,32 @@ export function ListingDetail() {
     try {
       const l = listing as any;
       const participantId =
-        l.agentId?._id || l.agentId?.id ||
-        l.landlordId?._id || l.landlordId?.id ||
-        l.agent?._id || l.agent?.id ||
-        l.companyId?._id || l.companyId?.id;
+        l.agentId?._id ||
+        l.agentId?.id ||
+        l.landlordId?._id ||
+        l.landlordId?.id ||
+        l.agent?._id ||
+        l.agent?.id ||
+        l.companyId?._id ||
+        l.companyId?.id;
 
       if (participantId) {
-        const res = await chatService.startChat(participantId, listing._id, 'Hi, I\'m interested in this property. Can we chat?');
+        const res = await chatService.startChat(
+          participantId,
+          listing._id,
+          "Hi, I'm interested in this property. Can we chat?",
+        );
         if (res.success && res.data) {
           // Open the conversation itself rather than the inbox.
           const chatId = (res.data as any).id || (res.data as any)._id;
-          navigate(chatId ? `/chat/${chatId}` : '/chats');
+          navigate(chatId ? `/chat/${chatId}` : "/chats");
         }
       } else {
-        customAlert('Agent information is not available.', 'Error', 'error');
+        customAlert("Agent information is not available.", "Error", "error");
       }
     } catch (err) {
       console.error(err);
-      customAlert('Failed to start chat', 'Error', 'error');
+      customAlert("Failed to start chat", "Error", "error");
     }
   };
 
@@ -226,29 +245,43 @@ export function ListingDetail() {
 
     bookingInFlight.current = true;
     try {
-      const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
+      const isShortlet = listing.propertyType?.toLowerCase() === "shortlet";
       const rateQuantity = data.rateQuantity || 1;
-      const selectedRate = listing.shortletRates?.find((r) => r.id === data.rateId);
+      const selectedRate = listing.shortletRates?.find(
+        (r) => r.id === data.rateId,
+      );
       const duration = isShortlet
-        ? (selectedRate ? `${rateQuantity} x ${selectedRate.label}` : `${rateQuantity} booking period${rateQuantity > 1 ? 's' : ''}`)
-        : '1 year';
+        ? selectedRate
+          ? `${rateQuantity} x ${selectedRate.label}`
+          : `${rateQuantity} booking period${rateQuantity > 1 ? "s" : ""}`
+        : "1 year";
       const result = await bookingService.createBooking({
         listingId: listing._id,
-        moveInDate: data.moveInDate ? new Date(data.moveInDate).toISOString() : new Date().toISOString(),
+        moveInDate: data.moveInDate
+          ? new Date(data.moveInDate).toISOString()
+          : new Date().toISOString(),
         duration,
-        message: 'Booking request from app',
+        message: "Booking request from app",
         requiresRoommate: data.requiresRoommate,
         userDetails: data.userDetails,
         ...(isShortlet ? { rateId: data.rateId, rateQuantity } : {}),
       });
       setShowBookModal(false);
       setExistingBooking(result.data);
-      await customAlert('Booking request created! Your request is pending landlord approval.', 'Success', 'success');
+      await customAlert(
+        "Booking request created! Your request is pending landlord approval.",
+        "Success",
+        "success",
+      );
       setShowTimelineModal(true);
     } catch (err) {
       console.error(err);
       // Show the server's reason (dates taken, stay too short, date in the past, ...).
-      customAlert(getApiErrorMessage(err, 'Failed to create booking'), 'Error', 'error');
+      customAlert(
+        getApiErrorMessage(err, "Failed to create booking"),
+        "Error",
+        "error",
+      );
     } finally {
       bookingInFlight.current = false;
     }
@@ -260,22 +293,30 @@ export function ListingDetail() {
       const res = await bookingService.scheduleInspection(existingBooking._id, {
         inspectionDate: data.date,
         inspectionTime: data.time,
-        inspectorName: data.name
+        inspectorName: data.name,
       });
       if (res.success) {
         setExistingBooking(res.data);
         setShowInspectionBooking(false);
         if ((res.data as any)?.inspectionFeeDue) {
           // The fee is paid before the viewing: take them straight to the Pay button.
-          await customAlert('Inspection scheduled. Pay the inspection fee to confirm it.', 'Almost done', 'success');
+          await customAlert(
+            "Inspection scheduled. Pay the inspection fee to confirm it.",
+            "Almost done",
+            "success",
+          );
           setShowTimelineModal(true);
         } else {
-          customAlert('Inspection scheduled successfully.', 'Success', 'success');
+          customAlert(
+            "Inspection scheduled successfully.",
+            "Success",
+            "success",
+          );
         }
       }
     } catch (err) {
       console.error(err);
-      customAlert('Failed to schedule inspection', 'Error', 'error');
+      customAlert("Failed to schedule inspection", "Error", "error");
     }
   };
 
@@ -283,21 +324,28 @@ export function ListingDetail() {
     if (!existingBooking?._id) return;
     try {
       setVerifyLoading(true);
-      const res = await bookingService.verifyInspection(existingBooking._id, isVerified);
+      const res = await bookingService.verifyInspection(
+        existingBooking._id,
+        isVerified,
+      );
       if (res.success) {
         setExistingBooking(res.data);
         setShowInspectionVerify(false);
         customAlert(
           isVerified
-            ? 'Inspection confirmed. You can now proceed to payment.'
-            : 'Thanks, we have recorded that the apartment did not match the listing.',
-          isVerified ? 'Success' : 'Recorded',
-          isVerified ? 'success' : 'error',
+            ? "Inspection confirmed. You can now proceed to payment."
+            : "Thanks, we have recorded that the apartment did not match the listing.",
+          isVerified ? "Success" : "Recorded",
+          isVerified ? "success" : "error",
         );
       }
     } catch (err: any) {
       console.error(err);
-      customAlert(getApiErrorMessage(err, 'Failed to confirm inspection'), 'Error', 'error');
+      customAlert(
+        getApiErrorMessage(err, "Failed to confirm inspection"),
+        "Error",
+        "error",
+      );
     } finally {
       setVerifyLoading(false);
     }
@@ -313,18 +361,27 @@ export function ListingDetail() {
 
   const getBookingCTA = () => {
     if (!existingBooking) {
-      return { title: 'Book Appointment', action: () => setShowBookModal(true) };
+      return {
+        title: "Book Appointment",
+        action: () => setShowBookModal(true),
+      };
     }
     switch (existingBooking.status) {
-      case 'pending':
-      case 'confirmed':
-      case 'completed':
-        return { title: 'View Booking Progress', action: () => setShowTimelineModal(true) };
-      case 'cancelled':
-      case 'rejected':
-        return { title: 'Book Again', action: () => setShowBookModal(true) };
+      case "pending":
+      case "confirmed":
+      case "completed":
+        return {
+          title: "View Booking Progress",
+          action: () => setShowTimelineModal(true),
+        };
+      case "cancelled":
+      case "rejected":
+        return { title: "Book Again", action: () => setShowBookModal(true) };
       default:
-        return { title: 'View Timeline', action: () => setShowTimelineModal(true) };
+        return {
+          title: "View Timeline",
+          action: () => setShowTimelineModal(true),
+        };
     }
   };
 
@@ -348,14 +405,28 @@ export function ListingDetail() {
     );
   }
 
-  const images = listing.images?.length > 0 ? listing.images : ['https://via.placeholder.com/800x400'];
+  const images =
+    listing.images?.length > 0
+      ? listing.images
+      : ["https://via.placeholder.com/800x400"];
   const l = listing as any;
-  const agentName = l.companyId?.name || l.agentId?.fullName || l.landlordId?.fullName || l.agentName || l.companyName || l.agent?.fullName || 'Property Manager';
-  const agentAvatar = l.companyId?.logo || l.agentId?.avatar || l.landlordId?.avatar || l.agent?.avatar;
+  const agentName =
+    l.companyId?.name ||
+    l.agentId?.fullName ||
+    l.landlordId?.fullName ||
+    l.agentName ||
+    l.companyName ||
+    l.agent?.fullName ||
+    "Property Manager";
+  const agentAvatar =
+    l.companyId?.logo ||
+    l.agentId?.avatar ||
+    l.landlordId?.avatar ||
+    l.agent?.avatar;
   const cta = getBookingCTA();
   const handleBottomCTA = () => {
     if (isPreview) {
-      navigate('/auth/choice');
+      navigate("/auth/choice");
       return;
     }
     cta.action();
@@ -364,13 +435,18 @@ export function ListingDetail() {
   return (
     <AppShell hideTabBar>
       <div className="flex flex-col h-full bg-background relative pb-[80px]">
-
         {/* Floating Header Actions */}
         <div className="absolute top-0 left-0 right-0 z-20 p-4 pt-6 flex justify-between items-center pointer-events-none">
           <button
             /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
             aria-label="Go back"
-            onClick={() => (isPreview ? navigate('/') : window.history.length > 1 ? navigate(-1) : navigate('/discover'))}
+            onClick={() =>
+              isPreview
+                ? navigate("/")
+                : window.history.length > 1
+                  ? navigate(-1)
+                  : navigate("/discover")
+            }
             className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform pointer-events-auto"
           >
             <ArrowLeft01Icon size={20} />
@@ -385,18 +461,21 @@ export function ListingDetail() {
               <Share01Icon size={20} />
             </button>
             {!isPreview && (
-            <button
-              /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
-              aria-label={isSaved ? 'Remove from saved' : 'Save this listing'}
-              aria-pressed={isSaved}
-              onClick={handleSave}
-              className={clsx(
-                "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all active:scale-95",
-                isSaved ? "bg-red-500 text-white" : "bg-black/30 text-white"
-              )}
-            >
-              <FavouriteIcon size={20} variant={isSaved ? "solid" : "stroke"} />
-            </button>
+              <button
+                /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
+                aria-label={isSaved ? "Remove from saved" : "Save this listing"}
+                aria-pressed={isSaved}
+                onClick={handleSave}
+                className={clsx(
+                  "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all active:scale-95",
+                  isSaved ? "bg-red-500 text-white" : "bg-black/30 text-white",
+                )}
+              >
+                <FavouriteIcon
+                  size={20}
+                  variant={isSaved ? "solid" : "stroke"}
+                />
+              </button>
             )}
           </div>
         </div>
@@ -433,8 +512,9 @@ export function ListingDetail() {
             {images.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50'
-                  }`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === currentImageIndex ? "w-4 bg-white" : "w-1.5 bg-white/50"
+                }`}
               />
             ))}
           </div>
@@ -455,12 +535,18 @@ export function ListingDetail() {
               </h1>
               <div className="flex items-center text-textSecondary text-xs mb-1">
                 <Location01Icon size={14} className="mr-1 shrink-0" />
-                <span className="truncate">{listing.areaCluster || listing.address}</span>
+                <span className="truncate">
+                  {listing.areaCluster || listing.address}
+                </span>
               </div>
-              <p className="text-xs font-medium text-textTertiary mb-1">Listed by {agentName}</p>
+              <p className="text-xs font-medium text-textTertiary mb-1">
+                Listed by {agentName}
+              </p>
               <p className="text-[11px] text-textTertiary mb-3 flex items-center gap-1">
                 <Share01Icon size={12} />
-                {shareCount === 1 ? 'Shared 1 time' : `Shared ${shareCount.toLocaleString()} times`}
+                {shareCount === 1
+                  ? "Shared 1 time"
+                  : `Shared ${shareCount.toLocaleString()} times`}
               </p>
 
               <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
@@ -482,17 +568,24 @@ export function ListingDetail() {
                     // Both price shapes (shortletRates, and the older shortletPricing), and a
                     // shortlet is always shown per its tiers: a stray annual rent saved on one
                     // used to win and show "/yr".
-                    const isShortletListing = listing.propertyType?.toLowerCase() === 'shortlet';
+                    const isShortletListing =
+                      listing.propertyType?.toLowerCase() === "shortlet";
                     const tiers = getListingShortletTiers(listing);
                     const annual = Number(listing.price || listing.rentAnnual);
                     if ((isShortletListing || !annual) && tiers.length) {
-                      const cheapest = tiers.reduce((a: any, b: any) => (Number(b.price) < Number(a.price) ? b : a));
+                      const cheapest = tiers.reduce((a: any, b: any) =>
+                        Number(b.price) < Number(a.price) ? b : a,
+                      );
                       const qty = Number(cheapest.durationValue) || 1;
-                      const unit = String(cheapest.durationUnit || 'day');
+                      const unit = String(cheapest.durationUnit || "day");
                       const unitLabel = qty > 1 ? `${qty} ${unit}s` : unit;
                       return (
                         <>
-                          {tiers.length > 1 && <span className="text-xs font-semibold text-primary/70">from </span>}
+                          {tiers.length > 1 && (
+                            <span className="text-xs font-semibold text-primary/70">
+                              from{" "}
+                            </span>
+                          )}
                           {`₦${Number(cheapest.price).toLocaleString()}`}
                           <span className="text-xs font-semibold text-primary/70">{`/${unitLabel}`}</span>
                         </>
@@ -501,7 +594,9 @@ export function ListingDetail() {
                     return (
                       <>
                         ₦{(annual || 0).toLocaleString()}
-                        <span className="text-xs font-semibold text-primary/70">/yr</span>
+                        <span className="text-xs font-semibold text-primary/70">
+                          /yr
+                        </span>
                       </>
                     );
                   })()}
@@ -514,23 +609,57 @@ export function ListingDetail() {
                 const tenancyFee = Number(listing.tenancyAgreementFee) || 0;
                 const serviceCharge = Number(listing.serviceCharge) || 0;
                 const inspectionFee = Number(listing.inspectionFee) || 0;
-                if (listing.propertyType === 'shortlet' || (!cautionFee && !agencyFee && !tenancyFee && !serviceCharge && !inspectionFee)) return null;
+                if (
+                  listing.propertyType === "shortlet" ||
+                  (!cautionFee &&
+                    !agencyFee &&
+                    !tenancyFee &&
+                    !serviceCharge &&
+                    !inspectionFee)
+                )
+                  return null;
                 return (
                   <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-textSecondary">
                     {cautionFee > 0 && (
-                      <span>Caution: <strong className="text-textPrimary">₦{cautionFee.toLocaleString()}</strong></span>
+                      <span>
+                        Caution:{" "}
+                        <strong className="text-textPrimary">
+                          ₦{cautionFee.toLocaleString()}
+                        </strong>
+                      </span>
                     )}
                     {agencyFee > 0 && (
-                      <span>Agency: <strong className="text-textPrimary">₦{agencyFee.toLocaleString()}</strong></span>
+                      <span>
+                        Agency:{" "}
+                        <strong className="text-textPrimary">
+                          ₦{agencyFee.toLocaleString()}
+                        </strong>
+                      </span>
                     )}
                     {tenancyFee > 0 && (
-                      <span>Tenancy Agreement: <strong className="text-textPrimary">₦{tenancyFee.toLocaleString()}</strong></span>
+                      <span>
+                        Tenancy Agreement:{" "}
+                        <strong className="text-textPrimary">
+                          ₦{tenancyFee.toLocaleString()}
+                        </strong>
+                      </span>
                     )}
                     {serviceCharge > 0 && (
-                      <span>Service charge: <strong className="text-textPrimary">₦{serviceCharge.toLocaleString()}/yr</strong></span>
+                      <span>
+                        Service charge:{" "}
+                        <strong className="text-textPrimary">
+                          ₦{serviceCharge.toLocaleString()}/yr
+                        </strong>
+                      </span>
                     )}
                     {inspectionFee > 0 && (
-                      <span>Inspection fee: <strong className="text-textPrimary">₦{inspectionFee.toLocaleString()}</strong> <span className="text-textTertiary">+1.5%</span></span>
+                      <span>
+                        Inspection fee:{" "}
+                        <strong className="text-textPrimary">
+                          ₦{inspectionFee.toLocaleString()}
+                        </strong>{" "}
+                        <span className="text-textTertiary">+1.5%</span>
+                      </span>
                     )}
                   </div>
                 );
@@ -539,19 +668,26 @@ export function ListingDetail() {
 
             {/* Tags Row */}
             <div className="flex flex-wrap justify-center gap-2 mb-6">
-              {listing.propertyType && <Tag label={labelFor(listing.propertyType)} />}
-              {listing.furnishing && <Tag label={labelFor(listing.furnishing)} />}
-              {listing.genderRestriction && <Tag label={labelFor(listing.genderRestriction)} />}
+              {listing.propertyType && (
+                <Tag label={labelFor(listing.propertyType)} />
+              )}
+              {listing.furnishing && (
+                <Tag label={labelFor(listing.furnishing)} />
+              )}
+              {listing.genderRestriction && (
+                <Tag label={labelFor(listing.genderRestriction)} />
+              )}
             </div>
 
             {/* Tab Navigation */}
             <div className="flex overflow-x-auto hide-scrollbar gap-4 mb-6 border-b border-borderLight pb-1">
-              {TABS.map(tab => (
+              {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`pb-2 shrink-0 text-sm font-semibold transition-colors relative ${activeTab === tab.id ? 'text-primary' : 'text-textSecondary'
-                    }`}
+                  className={`pb-2 shrink-0 text-sm font-semibold transition-colors relative ${
+                    activeTab === tab.id ? "text-primary" : "text-textSecondary"
+                  }`}
                 >
                   {tab.label}
                   {activeTab === tab.id && (
@@ -566,148 +702,268 @@ export function ListingDetail() {
 
             {/* Tab Content */}
             <div className="pb-8">
-              {activeTab === 'overview' && (
+              {activeTab === "overview" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 className="text-sm font-bold text-textPrimary mb-2">Description</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-2">
+                    Description
+                  </h3>
                   <p className="text-sm text-textSecondary leading-relaxed mb-4">
-                    {listing.description || 'No description available.'}
+                    {listing.description || "No description available."}
                   </p>
 
                   {listing.additionalNotes && (
                     <div className="bg-surface p-4 rounded-xl border border-borderLight mb-5">
-                      <h4 className="text-sm font-bold text-textPrimary mb-1">Additional Notes</h4>
-                      <p className="text-sm text-textSecondary">{listing.additionalNotes}</p>
+                      <h4 className="text-sm font-bold text-textPrimary mb-1">
+                        Additional Notes
+                      </h4>
+                      <p className="text-sm text-textSecondary">
+                        {listing.additionalNotes}
+                      </p>
                     </div>
                   )}
 
                   <div
                     onClick={() => {
                       if (isPreview) return;
-                      const participantId = l.agentId?._id || l.agentId?.id || l.landlordId?._id || l.landlordId?.id || l.agent?._id || l.agent?.id || l.companyId?._id || l.companyId?.id;
+                      const participantId =
+                        l.agentId?._id ||
+                        l.agentId?.id ||
+                        l.landlordId?._id ||
+                        l.landlordId?.id ||
+                        l.agent?._id ||
+                        l.agent?.id ||
+                        l.companyId?._id ||
+                        l.companyId?.id;
                       if (participantId) navigate(`/agent/${participantId}`);
                     }}
                     className="flex flex-row items-center p-4 bg-surface rounded-2xl border border-borderLight shadow-sm mb-5 cursor-pointer active:scale-[0.98] transition-transform"
                   >
                     <div className="w-12 h-12 rounded-full bg-btn-primary/10 flex items-center justify-center shrink-0 mr-3 border border-borderLight">
                       {agentAvatar ? (
-                        <img src={agentAvatar} alt="Agent" className="w-full h-full object-cover rounded-full" />
+                        <img
+                          src={agentAvatar}
+                          alt="Agent"
+                          className="w-full h-full object-cover rounded-full"
+                        />
                       ) : (
-                        <span className="font-bold text-primary">{agentName.charAt(0)}</span>
+                        <span className="font-bold text-primary">
+                          {agentName.charAt(0)}
+                        </span>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-1">
-                        <h4 className="font-bold text-sm text-textPrimary">{agentName}</h4>
-                        <CheckmarkBadge01Icon size={14} className="text-accent" variant="solid" />
+                        <h4 className="font-bold text-sm text-textPrimary">
+                          {agentName}
+                        </h4>
+                        <CheckmarkBadge01Icon
+                          size={14}
+                          className="text-accent"
+                          variant="solid"
+                        />
                       </div>
-                      <p className="text-xs text-textSecondary">Property Manager</p>
+                      <p className="text-xs text-textSecondary">
+                        Property Manager
+                      </p>
                     </div>
                     {!isPreview && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
-                        aria-label="Report this agent"
-                        className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center"
-                      >
-                        <Alert02Icon size={16} className="text-error" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleChat(); }}
-                        aria-label="Message this agent"
-                        className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
-                      >
-                        <BubbleChatIcon size={16} className="text-primary" />
-                      </button>
-                    </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowReportModal(true);
+                          }}
+                          aria-label="Report this agent"
+                          className="w-8 h-8 rounded-full bg-error/10 flex items-center justify-center"
+                        >
+                          <Alert02Icon size={16} className="text-error" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleChat();
+                          }}
+                          aria-label="Message this agent"
+                          className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
+                        >
+                          <BubbleChatIcon size={16} className="text-primary" />
+                        </button>
+                      </div>
                     )}
                   </div>
 
                   {/* Safety Banner */}
                   <div
-                    onClick={() => navigate('/safety-tips')}
+                    onClick={() => navigate("/safety-tips")}
                     className="flex items-center gap-3 p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl mb-6 cursor-pointer active:scale-[0.98] transition-transform"
                   >
-                    <CheckmarkBadge01Icon size={24} className="text-[#16A34A] shrink-0" variant="solid" />
+                    <CheckmarkBadge01Icon
+                      size={24}
+                      className="text-[#16A34A] shrink-0"
+                      variant="solid"
+                    />
                     <div className="flex-1">
-                      <h4 className="text-sm font-bold text-[#166534]">House Hunting Safety Tips</h4>
-                      <p className="text-xs text-[#15803D]">Learn how to avoid scams and inspect safely</p>
+                      <h4 className="text-sm font-bold text-[#166534]">
+                        House Hunting Safety Tips
+                      </h4>
+                      <p className="text-xs text-[#15803D]">
+                        Learn how to avoid scams and inspect safely
+                      </p>
                     </div>
                   </div>
 
-                  <h3 className="text-sm font-bold text-textPrimary mb-3">Quick Info</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-3">
+                    Quick Info
+                  </h3>
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
                       <Building03Icon size={20} className="text-primary mb-1" />
-                      <span className="text-[10px] text-textSecondary mb-0.5">Type</span>
-                      <span className="text-xs font-bold text-textPrimary truncate w-full">{labelFor(listing.propertyType) || 'N/A'}</span>
+                      <span className="text-[10px] text-textSecondary mb-0.5">
+                        Type
+                      </span>
+                      <span className="text-xs font-bold text-textPrimary truncate w-full">
+                        {labelFor(listing.propertyType) || "N/A"}
+                      </span>
                     </div>
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
-                      <InformationCircleIcon size={20} className="text-primary mb-1" />
-                      <span className="text-[10px] text-textSecondary mb-0.5">Max People</span>
-                      <span className="text-xs font-bold text-textPrimary truncate w-full">{listing.maxOccupants || '1'}</span>
+                      <InformationCircleIcon
+                        size={20}
+                        className="text-primary mb-1"
+                      />
+                      <span className="text-[10px] text-textSecondary mb-0.5">
+                        Max People
+                      </span>
+                      <span className="text-xs font-bold text-textPrimary truncate w-full">
+                        {listing.maxOccupants || "1"}
+                      </span>
                     </div>
                     <div className="bg-surface border border-borderLight rounded-xl p-3 flex flex-col items-center justify-center text-center">
                       <Location01Icon size={20} className="text-primary mb-1" />
-                      <span className="text-[10px] text-textSecondary mb-0.5">Distance</span>
-                      <span className="text-xs font-bold text-textPrimary truncate w-full">{labelFor(listing.distanceBucket) || 'N/A'}</span>
+                      <span className="text-[10px] text-textSecondary mb-0.5">
+                        Distance
+                      </span>
+                      <span className="text-xs font-bold text-textPrimary truncate w-full">
+                        {labelFor(listing.distanceBucket) || "N/A"}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {activeTab === 'amenities' && (
+              {activeTab === "amenities" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 className="text-sm font-bold text-textPrimary mb-3">Amenities</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-3">
+                    Amenities
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {(listing.amenities && listing.amenities.length > 0) ? listing.amenities.map((amenity: string, idx: number) => {
-                      // Stored values are canonical tokens ('air_conditioning'); labelFor turns
-                      // those into readable text and leaves free-text wording alone.
-                      const label = labelFor(amenity);
-                      const lower = `${amenity} ${label}`.toLowerCase();
-                      let Icon = CheckmarkBadge01Icon;
-                      if (lower.includes('wifi') || lower.includes('internet')) Icon = Wifi01Icon;
-                      else if (lower.includes('park') || lower.includes('garage')) Icon = CheckmarkBadge01Icon;
-                      else if (lower.includes('ac') || lower.includes('air') || lower.includes('condition')) Icon = CheckmarkBadge01Icon;
-                      else if (lower.includes('work') || lower.includes('desk') || lower.includes('study')) Icon = CheckmarkBadge01Icon;
-                      else if (lower.includes('balcony') || lower.includes('patio')) Icon = CheckmarkBadge01Icon;
-                      else if (lower.includes('secur') || lower.includes('guard')) Icon = CheckmarkBadge01Icon;
-                      else if (lower.includes('power') || lower.includes('electric')) Icon = FlashIcon;
-                      else if (lower.includes('water')) Icon = DropletIcon;
-                      else if (lower.includes('furnish')) Icon = Sofa01Icon;
+                    {listing.amenities && listing.amenities.length > 0 ? (
+                      listing.amenities.map((amenity: string, idx: number) => {
+                        // Stored values are canonical tokens ('air_conditioning'); labelFor turns
+                        // those into readable text and leaves free-text wording alone.
+                        const label = labelFor(amenity);
+                        const lower = `${amenity} ${label}`.toLowerCase();
+                        let Icon = CheckmarkBadge01Icon;
+                        if (
+                          lower.includes("wifi") ||
+                          lower.includes("internet")
+                        )
+                          Icon = Wifi01Icon;
+                        else if (
+                          lower.includes("park") ||
+                          lower.includes("garage")
+                        )
+                          Icon = CheckmarkBadge01Icon;
+                        else if (
+                          lower.includes("ac") ||
+                          lower.includes("air") ||
+                          lower.includes("condition")
+                        )
+                          Icon = CheckmarkBadge01Icon;
+                        else if (
+                          lower.includes("work") ||
+                          lower.includes("desk") ||
+                          lower.includes("study")
+                        )
+                          Icon = CheckmarkBadge01Icon;
+                        else if (
+                          lower.includes("balcony") ||
+                          lower.includes("patio")
+                        )
+                          Icon = CheckmarkBadge01Icon;
+                        else if (
+                          lower.includes("secur") ||
+                          lower.includes("guard")
+                        )
+                          Icon = CheckmarkBadge01Icon;
+                        else if (
+                          lower.includes("power") ||
+                          lower.includes("electric")
+                        )
+                          Icon = FlashIcon;
+                        else if (lower.includes("water")) Icon = DropletIcon;
+                        else if (lower.includes("furnish")) Icon = Sofa01Icon;
 
-                      return (
-                        <div key={idx} className="flex items-center gap-2 bg-surface p-3 rounded-xl border border-borderLight">
-                          <Icon size={16} className="text-accent shrink-0" variant={Icon === CheckmarkBadge01Icon ? "solid" : "stroke"} />
-                          <span className="text-sm font-medium text-textPrimary truncate">{label}</span>
-                        </div>
-                      );
-                    }) : (
-                      <p className="text-sm text-textSecondary">No amenities listed</p>
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-surface p-3 rounded-xl border border-borderLight"
+                          >
+                            <Icon
+                              size={16}
+                              className="text-accent shrink-0"
+                              variant={
+                                Icon === CheckmarkBadge01Icon
+                                  ? "solid"
+                                  : "stroke"
+                              }
+                            />
+                            <span className="text-sm font-medium text-textPrimary truncate">
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-textSecondary">
+                        No amenities listed
+                      </p>
                     )}
                   </div>
                 </motion.div>
               )}
 
               {/* Fallback for other tabs */}
-              {activeTab === 'location' && (
+              {activeTab === "location" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 className="text-sm font-bold text-textPrimary mb-4">Location Details</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-4">
+                    Location Details
+                  </h3>
 
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Address</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">{listing.address || 'Address not available'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Address
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">
+                        {listing.address || "Address not available"}
+                      </span>
                     </div>
                     {listing.city && (
                       <div className="flex justify-between items-start pb-3 border-b border-borderLight">
                         <span className="text-sm text-textSecondary">City</span>
-                        <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">{listing.city}</span>
+                        <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">
+                          {listing.city}
+                        </span>
                       </div>
                     )}
                     {listing.landmark && (
                       <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                        <span className="text-sm text-textSecondary">Landmarks Around</span>
-                        <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">{listing.landmark}</span>
+                        <span className="text-sm text-textSecondary">
+                          Landmarks Around
+                        </span>
+                        <span className="text-sm font-semibold text-textPrimary text-right max-w-[60%]">
+                          {listing.landmark}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -723,9 +979,14 @@ export function ListingDetail() {
                       <Button
                         variant="primary"
                         onClick={() => {
-                          const query = encodeURIComponent(`${listing.address || ''} ${listing.city || ''} ${listing.landmark || ''}`.trim());
+                          const query = encodeURIComponent(
+                            `${listing.address || ""} ${listing.city || ""} ${listing.landmark || ""}`.trim(),
+                          );
                           if (query) {
-                            window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                            window.open(
+                              `https://www.google.com/maps/search/?api=1&query=${query}`,
+                              "_blank",
+                            );
                           }
                         }}
                       >
@@ -736,102 +997,180 @@ export function ListingDetail() {
                 </motion.div>
               )}
 
-              {activeTab === 'details' && (
+              {activeTab === "details" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 className="text-sm font-bold text-textPrimary mb-4">Property Details</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-4">
+                    Property Details
+                  </h3>
                   <div className="space-y-4 mb-8">
                     {/* The lease term drives the agreement and renewals; rentDuration is the old
                         free-text field, shown only for listings created before it was removed. */}
                     {(listing.leaseDuration || listing.rentDuration) && (
                       <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                        <span className="text-sm text-textSecondary">Lease Duration</span>
-                        <span className="text-sm font-semibold text-textPrimary text-right capitalize">{listing.leaseDuration || listing.rentDuration}</span>
+                        <span className="text-sm text-textSecondary">
+                          Lease Duration
+                        </span>
+                        <span className="text-sm font-semibold text-textPrimary text-right capitalize">
+                          {listing.leaseDuration || listing.rentDuration}
+                        </span>
                       </div>
                     )}
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Property Type</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.propertyType) || 'N/A'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Property Type
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">
+                        {labelFor(listing.propertyType) || "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Furnishing</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.furnishing) || 'N/A'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Furnishing
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">
+                        {labelFor(listing.furnishing) || "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Power Supply</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.power) || 'N/A'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Power Supply
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">
+                        {labelFor(listing.power) || "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Gender Preference</span>
-                      <span className="text-sm font-semibold text-textPrimary text-right">{labelFor(listing.genderRestriction) || 'Any'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Gender Preference
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary text-right">
+                        {labelFor(listing.genderRestriction) || "Any"}
+                      </span>
                     </div>
                     {listing.additionalNotes && (
                       <div className="flex flex-col items-start pb-3 border-b border-borderLight">
-                        <span className="text-sm text-textSecondary mb-1">Additional Notes</span>
-                        <span className="text-sm font-semibold text-textPrimary">{listing.additionalNotes}</span>
+                        <span className="text-sm text-textSecondary mb-1">
+                          Additional Notes
+                        </span>
+                        <span className="text-sm font-semibold text-textPrimary">
+                          {listing.additionalNotes}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-textPrimary mb-4">House Rules</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-4">
+                    House Rules
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Pets Allowed</span>
-                      <span className="text-sm font-semibold text-textPrimary">{listing.petsAllowed ? 'Yes' : 'No'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Pets Allowed
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary">
+                        {listing.petsAllowed ? "Yes" : "No"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Smoking Allowed</span>
-                      <span className="text-sm font-semibold text-textPrimary">{listing.smokingAllowed ? 'Yes' : 'No'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Smoking Allowed
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary">
+                        {listing.smokingAllowed ? "Yes" : "No"}
+                      </span>
                     </div>
                     <div className="flex justify-between items-start pb-3 border-b border-borderLight">
-                      <span className="text-sm text-textSecondary">Students Only</span>
-                      <span className="text-sm font-semibold text-textPrimary">{listing.studentsOnly ? 'Yes' : 'No'}</span>
+                      <span className="text-sm text-textSecondary">
+                        Students Only
+                      </span>
+                      <span className="text-sm font-semibold text-textPrimary">
+                        {listing.studentsOnly ? "Yes" : "No"}
+                      </span>
                     </div>
-                    {listing.rules && listing.rules.filter((r: string) => !['pets_allowed', 'smoking_allowed', 'students_only'].includes(r)).length > 0 && (
-                      <div className="flex flex-col items-start pb-3 border-b border-borderLight">
-                        <span className="text-sm text-textSecondary mb-1">Other Rules</span>
-                        {listing.rules.filter((r: string) => !['pets_allowed', 'smoking_allowed', 'students_only'].includes(r)).map((rule: string, i: number) => (
-                          <span key={i} className="text-sm font-semibold text-textPrimary capitalize">• {rule.replace(/_/g, ' ')}</span>
-                        ))}
-                      </div>
-                    )}
+                    {listing.rules &&
+                      listing.rules.filter(
+                        (r: string) =>
+                          ![
+                            "pets_allowed",
+                            "smoking_allowed",
+                            "students_only",
+                          ].includes(r),
+                      ).length > 0 && (
+                        <div className="flex flex-col items-start pb-3 border-b border-borderLight">
+                          <span className="text-sm text-textSecondary mb-1">
+                            Other Rules
+                          </span>
+                          {listing.rules
+                            .filter(
+                              (r: string) =>
+                                ![
+                                  "pets_allowed",
+                                  "smoking_allowed",
+                                  "students_only",
+                                ].includes(r),
+                            )
+                            .map((rule: string, i: number) => (
+                              <span
+                                key={i}
+                                className="text-sm font-semibold text-textPrimary capitalize"
+                              >
+                                • {rule.replace(/_/g, " ")}
+                              </span>
+                            ))}
+                        </div>
+                      )}
                   </div>
                 </motion.div>
               )}
 
-              {activeTab === 'inquiries' && (
+              {activeTab === "inquiries" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h3 className="text-sm font-bold text-textPrimary mb-4">Inquiries</h3>
+                  <h3 className="text-sm font-bold text-textPrimary mb-4">
+                    Inquiries
+                  </h3>
 
                   {inquiries.length > 0 ? (
                     <div className="space-y-4">
                       {inquiries.map((inq: any, i: number) => (
-                        <div key={inq._id || i} className="bg-surface p-4 rounded-xl border border-borderLight">
-                          <p className="text-sm font-medium text-textPrimary mb-1">{inq.question}</p>
-                          <p className="text-xs text-textSecondary">{inq.answer ? inq.answer : 'Waiting for response'}</p>
+                        <div
+                          key={inq._id || i}
+                          className="bg-surface p-4 rounded-xl border border-borderLight"
+                        >
+                          <p className="text-sm font-medium text-textPrimary mb-1">
+                            {inq.question}
+                          </p>
+                          <p className="text-xs text-textSecondary">
+                            {inq.answer ? inq.answer : "Waiting for response"}
+                          </p>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-10 gap-4">
                       <BubbleChatIcon size={48} className="text-textTertiary" />
-                      <p className="text-sm text-textSecondary">No inquiries yet</p>
+                      <p className="text-sm text-textSecondary">
+                        No inquiries yet
+                      </p>
                     </div>
                   )}
 
                   {!isPreview && (
-                  <button
-                    className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
-                    onClick={() => setShowInquiryModal(true)}
-                  >
-                    <span className="text-sm font-semibold text-primary">Ask a Question</span>
-                  </button>
+                    <button
+                      className="w-full bg-softSurface p-4 rounded-xl mt-6 flex items-center justify-center active:scale-[0.98] transition-transform"
+                      onClick={() => setShowInquiryModal(true)}
+                    >
+                      <span className="text-sm font-semibold text-primary">
+                        Ask a Question
+                      </span>
+                    </button>
                   )}
                 </motion.div>
               )}
 
               <div className="mt-8 mb-[100px] p-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl">
                 <p className="text-xs text-[#92400E] leading-relaxed">
-                  ileSure does not own this property. Always verify and inspect before making any payments. Report any suspicious activity.
+                  ileSure does not own this property. Always verify and inspect
+                  before making any payments. Report any suspicious activity.
                 </p>
               </div>
             </div>
@@ -844,10 +1183,9 @@ export function ListingDetail() {
             onClick={handleBottomCTA}
             className="bg-[#3E1F0A] text-[#FFF8E1] hover:bg-[#3E1F0A]/90"
           >
-            {isPreview ? 'Book Apartment' : cta.title}
+            {isPreview ? "Book Apartment" : cta.title}
           </Button>
         </div>
-
       </div>
 
       {/* Modals */}
@@ -862,7 +1200,7 @@ export function ListingDetail() {
         visible={showInspectionBooking}
         onClose={() => setShowInspectionBooking(false)}
         onSubmit={handleScheduleInspection}
-        initialName={user?.fullName || ''}
+        initialName={user?.fullName || ""}
       />
 
       <AgentReportModal
@@ -902,12 +1240,16 @@ export function ListingDetail() {
         onSubmit={async (message) => {
           try {
             await listingService.submitInquiry(listing._id, message);
-            customAlert('Question submitted successfully', 'Success', 'success');
+            customAlert(
+              "Question submitted successfully",
+              "Success",
+              "success",
+            );
             // Fetch again
             const inqRes = await listingService.getInquiries(listing._id);
             setInquiries(inqRes.data?.inquiries || []);
           } catch (err) {
-            customAlert('Failed to submit question', 'Error', 'error');
+            customAlert("Failed to submit question", "Error", "error");
           }
         }}
       />

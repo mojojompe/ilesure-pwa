@@ -1,104 +1,257 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { useEffect, lazy, Suspense } from 'react';
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
+import { useEffect, lazy, Suspense } from "react";
 
-import { Splash } from './pages/auth/Splash';
-const Onboarding = lazy(() => import('./pages/auth/Onboarding').then(module => ({ default: module.Onboarding })));
+import { Splash } from "./pages/auth/Splash";
+const Onboarding = lazy(() =>
+  import("./pages/auth/Onboarding").then((module) => ({
+    default: module.Onboarding,
+  })),
+);
 
-const Login = lazy(() => import('./pages/auth/Login').then(module => ({ default: module.Login })));
+const Login = lazy(() =>
+  import("./pages/auth/Login").then((module) => ({ default: module.Login })),
+);
 
-const Register = lazy(() => import('./pages/auth/Register').then(module => ({ default: module.Register })));
+const Register = lazy(() =>
+  import("./pages/auth/Register").then((module) => ({
+    default: module.Register,
+  })),
+);
 
-const AuthChoice = lazy(() => import('./pages/auth/AuthChoice').then(module => ({ default: module.AuthChoice })));
+const AuthChoice = lazy(() =>
+  import("./pages/auth/AuthChoice").then((module) => ({
+    default: module.AuthChoice,
+  })),
+);
 
-const RoleSelection = lazy(() => import('./pages/auth/RoleSelection').then(module => ({ default: module.RoleSelection })));
+const RoleSelection = lazy(() =>
+  import("./pages/auth/RoleSelection").then((module) => ({
+    default: module.RoleSelection,
+  })),
+);
 
-const SchoolSelection = lazy(() => import('./pages/auth/SchoolSelection').then(module => ({ default: module.SchoolSelection })));
+const SchoolSelection = lazy(() =>
+  import("./pages/auth/SchoolSelection").then((module) => ({
+    default: module.SchoolSelection,
+  })),
+);
 
-const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+const ForgotPassword = lazy(() =>
+  import("./pages/auth/ForgotPassword").then((module) => ({
+    default: module.ForgotPassword,
+  })),
+);
 
-const OTP = lazy(() => import('./pages/auth/OTP').then(module => ({ default: module.OTP })));
+const OTP = lazy(() =>
+  import("./pages/auth/OTP").then((module) => ({ default: module.OTP })),
+);
 
-const ReactivateAccount = lazy(() => import('./pages/auth/ReactivateAccount').then(module => ({ default: module.ReactivateAccount })));
+const ReactivateAccount = lazy(() =>
+  import("./pages/auth/ReactivateAccount").then((module) => ({
+    default: module.ReactivateAccount,
+  })),
+);
 
+const Discover = lazy(() =>
+  import("./pages/tabs/Discover").then((module) => ({
+    default: module.Discover,
+  })),
+);
+const CategoryListings = lazy(() =>
+  import("./pages/details/CategoryListings").then((module) => ({
+    default: module.CategoryListings,
+  })),
+);
 
-const Discover = lazy(() => import('./pages/tabs/Discover').then(module => ({ default: module.Discover })));
-const CategoryListings = lazy(() => import('./pages/details/CategoryListings').then(module => ({ default: module.CategoryListings })));
+const Roommates = lazy(() =>
+  import("./pages/tabs/Roommates").then((module) => ({
+    default: module.Roommates,
+  })),
+);
 
-const Roommates = lazy(() => import('./pages/tabs/Roommates').then(module => ({ default: module.Roommates })));
+const MyApartments = lazy(() =>
+  import("./pages/tabs/MyApartments").then((module) => ({
+    default: module.MyApartments,
+  })),
+);
 
-const MyApartments = lazy(() => import('./pages/tabs/MyApartments').then(module => ({ default: module.MyApartments })));
+const Services = lazy(() => import("./pages/tabs/Services"));
 
-const Services = lazy(() => import('./pages/tabs/Services'));
+const ChatsList = lazy(() =>
+  import("./pages/tabs/ChatsList").then((module) => ({
+    default: module.ChatsList,
+  })),
+);
 
-const ChatsList = lazy(() => import('./pages/tabs/ChatsList').then(module => ({ default: module.ChatsList })));
+const Waitlist = lazy(() =>
+  import("./pages/settings/Waitlist").then((module) => ({
+    default: module.Waitlist,
+  })),
+);
 
-const Waitlist = lazy(() => import('./pages/settings/Waitlist').then(module => ({ default: module.Waitlist })));
+const SafetyTips = lazy(() =>
+  import("./pages/common/SafetyTips").then((module) => ({
+    default: module.SafetyTips,
+  })),
+);
 
-const SafetyTips = lazy(() => import('./pages/common/SafetyTips').then(module => ({ default: module.SafetyTips })));
+const Notifications = lazy(() =>
+  import("./pages/tabs/Notifications").then((module) => ({
+    default: module.Notifications,
+  })),
+);
 
-const Notifications = lazy(() => import('./pages/tabs/Notifications').then(module => ({ default: module.Notifications })));
+const Profile = lazy(() =>
+  import("./pages/tabs/Profile").then((module) => ({
+    default: module.Profile,
+  })),
+);
 
-const Profile = lazy(() => import('./pages/tabs/Profile').then(module => ({ default: module.Profile })));
+const ListingDetail = lazy(() =>
+  import("./pages/details/ListingDetail").then((module) => ({
+    default: module.ListingDetail,
+  })),
+);
 
+const AgentProfile = lazy(() =>
+  import("./pages/details/AgentProfile").then((module) => ({
+    default: module.AgentProfile,
+  })),
+);
 
-const ListingDetail = lazy(() => import('./pages/details/ListingDetail').then(module => ({ default: module.ListingDetail })));
+const MatchProfile = lazy(() =>
+  import("./pages/details/MatchProfile").then((module) => ({
+    default: module.MatchProfile,
+  })),
+);
 
-const AgentProfile = lazy(() => import('./pages/details/AgentProfile').then(module => ({ default: module.AgentProfile })));
+const ChatScreen = lazy(() =>
+  import("./pages/details/ChatScreen").then((module) => ({
+    default: module.ChatScreen,
+  })),
+);
 
-const MatchProfile = lazy(() => import('./pages/details/MatchProfile').then(module => ({ default: module.MatchProfile })));
+const LifestyleSurvey = lazy(() =>
+  import("./pages/roommate/LifestyleSurvey").then((module) => ({
+    default: module.LifestyleSurvey,
+  })),
+);
 
-const ChatScreen = lazy(() => import('./pages/details/ChatScreen').then(module => ({ default: module.ChatScreen })));
+const IncomingRequests = lazy(() =>
+  import("./pages/roommate/IncomingRequests").then((module) => ({
+    default: module.IncomingRequests,
+  })),
+);
 
-const LifestyleSurvey = lazy(() => import('./pages/roommate/LifestyleSurvey').then(module => ({ default: module.LifestyleSurvey })));
+const RoommateProfile = lazy(() =>
+  import("./pages/roommate/RoommateProfile").then((module) => ({
+    default: module.RoommateProfile,
+  })),
+);
 
-const IncomingRequests = lazy(() => import('./pages/roommate/IncomingRequests').then(module => ({ default: module.IncomingRequests })));
+const Checkout = lazy(() =>
+  import("./pages/booking/Checkout").then((module) => ({
+    default: module.Checkout,
+  })),
+);
 
-const RoommateProfile = lazy(() => import('./pages/roommate/RoommateProfile').then(module => ({ default: module.RoommateProfile })));
+const KYC = lazy(() =>
+  import("./pages/booking/KYC").then((module) => ({ default: module.KYC })),
+);
 
+const Signature = lazy(() =>
+  import("./pages/booking/Signature").then((module) => ({
+    default: module.Signature,
+  })),
+);
 
-const Checkout = lazy(() => import('./pages/booking/Checkout').then(module => ({ default: module.Checkout })));
+const Payment = lazy(() =>
+  import("./pages/booking/Payment").then((module) => ({
+    default: module.Payment,
+  })),
+);
 
-const KYC = lazy(() => import('./pages/booking/KYC').then(module => ({ default: module.KYC })));
+const PaymentCallback = lazy(() =>
+  import("./pages/booking/PaymentCallback").then((module) => ({
+    default: module.PaymentCallback,
+  })),
+);
 
-const Signature = lazy(() => import('./pages/booking/Signature').then(module => ({ default: module.Signature })));
+const BookingDetail = lazy(() =>
+  import("./pages/booking/BookingDetail").then((module) => ({
+    default: module.BookingDetail,
+  })),
+);
 
-const Payment = lazy(() => import('./pages/booking/Payment').then(module => ({ default: module.Payment })));
+const SharedBookingDetail = lazy(() =>
+  import("./pages/booking/SharedBookingDetail").then((module) => ({
+    default: module.SharedBookingDetail,
+  })),
+);
 
-const PaymentCallback = lazy(() => import('./pages/booking/PaymentCallback').then(module => ({ default: module.PaymentCallback })));
+const PaymentHistory = lazy(() =>
+  import("./pages/booking/PaymentHistory").then((module) => ({
+    default: module.PaymentHistory,
+  })),
+);
 
-const BookingDetail = lazy(() => import('./pages/booking/BookingDetail').then(module => ({ default: module.BookingDetail })));
+const PaymentDetail = lazy(() =>
+  import("./pages/booking/PaymentDetail").then((module) => ({
+    default: module.PaymentDetail,
+  })),
+);
 
-const SharedBookingDetail = lazy(() => import('./pages/booking/SharedBookingDetail').then(module => ({ default: module.SharedBookingDetail })));
+const SavedListings = lazy(() =>
+  import("./pages/settings/SavedListings").then((module) => ({
+    default: module.SavedListings,
+  })),
+);
 
-const PaymentHistory = lazy(() => import('./pages/booking/PaymentHistory').then(module => ({ default: module.PaymentHistory })));
+const NotificationSettings = lazy(() =>
+  import("./pages/settings/NotificationSettings").then((module) => ({
+    default: module.NotificationSettings,
+  })),
+);
 
-const PaymentDetail = lazy(() => import('./pages/booking/PaymentDetail').then(module => ({ default: module.PaymentDetail })));
+const PrivacySecurity = lazy(() =>
+  import("./pages/settings/PrivacySecurity").then((module) => ({
+    default: module.PrivacySecurity,
+  })),
+);
 
+const TermsPrivacy = lazy(() =>
+  import("./pages/settings/TermsPrivacy").then((module) => ({
+    default: module.TermsPrivacy,
+  })),
+);
 
-const SavedListings = lazy(() => import('./pages/settings/SavedListings').then(module => ({ default: module.SavedListings })));
+const HelpSupport = lazy(() =>
+  import("./pages/settings/HelpSupport").then((module) => ({
+    default: module.HelpSupport,
+  })),
+);
 
-const NotificationSettings = lazy(() => import('./pages/settings/NotificationSettings').then(module => ({ default: module.NotificationSettings })));
+const EditProfile = lazy(() =>
+  import("./pages/settings/EditProfile").then((module) => ({
+    default: module.EditProfile,
+  })),
+);
 
-const PrivacySecurity = lazy(() => import('./pages/settings/PrivacySecurity').then(module => ({ default: module.PrivacySecurity })));
+const DeleteAccount = lazy(() =>
+  import("./pages/settings/DeleteAccount").then((module) => ({
+    default: module.DeleteAccount,
+  })),
+);
 
-const TermsPrivacy = lazy(() => import('./pages/settings/TermsPrivacy').then(module => ({ default: module.TermsPrivacy })));
-
-const HelpSupport = lazy(() => import('./pages/settings/HelpSupport').then(module => ({ default: module.HelpSupport })));
-
-const EditProfile = lazy(() => import('./pages/settings/EditProfile').then(module => ({ default: module.EditProfile })));
-
-const DeleteAccount = lazy(() => import('./pages/settings/DeleteAccount').then(module => ({ default: module.DeleteAccount })));
-
-import { AlertModal } from './components/common/AlertModal';
-import { PWAInstallModal } from './components/common/PWAInstallModal';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import { CallProvider } from './contexts/CallContext';
-import { CallOverlay } from './components/call/CallOverlay';
-import { socketService } from './api/socketService';
-import { useAuthStore } from './stores/authStore';
-import { authService } from './api/authService';
-import { registerPushNotifications } from './utils/pushNotification';
-
+import { AlertModal } from "./components/common/AlertModal";
+import { PWAInstallModal } from "./components/common/PWAInstallModal";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { CallProvider } from "./contexts/CallContext";
+import { CallOverlay } from "./components/call/CallOverlay";
+import { socketService } from "./api/socketService";
+import { useAuthStore } from "./stores/authStore";
+import { authService } from "./api/authService";
+import { registerPushNotifications } from "./utils/pushNotification";
 
 const NotFound = () => <div className="p-4 text-center">404 - Not Found</div>;
 
@@ -113,9 +266,15 @@ export default function App() {
     // (or fields the cached copy never had) are reflected instead of a stale localStorage blob.
     const { isAuthenticated, token, setUser } = useAuthStore.getState();
     if (!isAuthenticated || !token) return;
-    authService.getProfile()
-      .then((res) => { if (res?.success && res.data) setUser({ ...useAuthStore.getState().user, ...res.data } as any); })
-      .catch(() => { /* offline or expired session, the API client handles 401s */ });
+    authService
+      .getProfile()
+      .then((res) => {
+        if (res?.success && res.data)
+          setUser({ ...useAuthStore.getState().user, ...res.data } as any);
+      })
+      .catch(() => {
+        /* offline or expired session, the API client handles 401s */
+      });
   }, []);
 
   /**
@@ -134,7 +293,9 @@ export default function App() {
       return;
     }
     socketService.connect();
-    return () => { socketService.disconnect(); };
+    return () => {
+      socketService.disconnect();
+    };
   }, [isAuthenticated]);
 
   // Register push notifications when authenticated or when app is installed
@@ -145,14 +306,14 @@ export default function App() {
     const onAppInstalled = () => {
       registerPushNotifications().catch(() => {});
     };
-    window.addEventListener('appinstalled', onAppInstalled);
-    return () => window.removeEventListener('appinstalled', onAppInstalled);
+    window.addEventListener("appinstalled", onAppInstalled);
+    return () => window.removeEventListener("appinstalled", onAppInstalled);
   }, [isAuthenticated]);
 
   // Send a constant ping to the backend to keep the Render free plan active
   useEffect(() => {
     const pingBackend = () => {
-      fetch('https://api.ilesure.com/api/v1/health').catch(() => {});
+      fetch("https://api.ilesure.com/api/v1/health").catch(() => {});
     };
     pingBackend();
     const interval = setInterval(pingBackend, 5 * 60 * 1000);
@@ -162,75 +323,96 @@ export default function App() {
   return (
     <CallProvider>
       <div className="w-full min-h-screen bg-background flex flex-col md:max-w-md mx-auto shadow-2xl relative overflow-hidden">
-        
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center bg-background">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          }
+        >
           <Routes>
-          <Route path="/" element={<Splash />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/auth/choice" element={<AuthChoice />} />
-          <Route path="/auth/role" element={<RoleSelection />} />
-          <Route path="/auth/school" element={<SchoolSelection />} />
-          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-          <Route path="/auth/otp" element={<OTP />} />
-          <Route path="/auth/reactivate" element={<ReactivateAccount />} />
+            <Route path="/" element={<Splash />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/auth/choice" element={<AuthChoice />} />
+            <Route path="/auth/role" element={<RoleSelection />} />
+            <Route path="/auth/school" element={<SchoolSelection />} />
+            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/otp" element={<OTP />} />
+            <Route path="/auth/reactivate" element={<ReactivateAccount />} />
 
             {/* Public shared links allow browsing and send signed-out booking attempts to auth choice. */}
-          <Route path="/listing/:id" element={<ListingDetail />} />
-          <Route path="/category/:categoryKey" element={<CategoryListings />} />
-          {/* Shared links are /l/:id. In production the host proxies them to the API's
+            <Route path="/listing/:id" element={<ListingDetail />} />
+            <Route
+              path="/category/:categoryKey"
+              element={<CategoryListings />}
+            />
+            {/* Shared links are /l/:id. In production the host proxies them to the API's
               link-preview page first; this catches them anywhere that does not (dev). */}
-          <Route path="/l/:id" element={<SharedListingRedirect />} />
+            <Route path="/l/:id" element={<SharedListingRedirect />} />
 
-          {/* Protected Routes - Only for Students and Individuals on PWA */}
-          <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
-            <Route path="/discover" element={<Discover />} />
-            <Route path="/roommates" element={<Roommates />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/my-apartments" element={<MyApartments />} />
-            <Route path="/chats" element={<ChatsList />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<Profile />} />
+            {/* Protected Routes - Only for Students and Individuals on PWA */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={["student", "individual"]} />
+              }
+            >
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/roommates" element={<Roommates />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/my-apartments" element={<MyApartments />} />
+              <Route path="/chats" element={<ChatsList />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile" element={<Profile />} />
 
-            {/* Details & Modals */}
-            <Route path="/agent/:id" element={<AgentProfile />} />
-            <Route path="/match/:id" element={<MatchProfile />} />
-            <Route path="/roommate-profile" element={<RoommateProfile />} />
-            <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
-            <Route path="/chat/:id" element={<ChatScreen />} />
+              {/* Details & Modals */}
+              <Route path="/agent/:id" element={<AgentProfile />} />
+              <Route path="/match/:id" element={<MatchProfile />} />
+              <Route path="/roommate-profile" element={<RoommateProfile />} />
+              <Route path="/lifestyle-survey" element={<LifestyleSurvey />} />
+              <Route path="/chat/:id" element={<ChatScreen />} />
 
-            {/* Booking & Checkout */}
-            <Route path="/booking/:id" element={<BookingDetail />} />
-            <Route path="/shared-booking/:id" element={<SharedBookingDetail />} />
-            <Route path="/booking/checkout/:id" element={<Checkout />} />
-            {/* KYC is account-level: the :id form carries the listing the renter came from; the bare form is the Profile entry point. Must stay explicit, or "/booking/:id" would swallow it. */}
-            <Route path="/booking/kyc" element={<KYC />} />
-            <Route path="/booking/kyc/:id" element={<KYC />} />
-            <Route path="/booking/signature/:id" element={<Signature />} />
-            <Route path="/booking/payment/:id" element={<Payment />} />
-            {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
-            <Route path="/payment/callback" element={<PaymentCallback />} />
-            <Route path="/payment-history" element={<PaymentHistory />} />
-            <Route path="/payment-detail" element={<PaymentDetail />} />
+              {/* Booking & Checkout */}
+              <Route path="/booking/:id" element={<BookingDetail />} />
+              <Route
+                path="/shared-booking/:id"
+                element={<SharedBookingDetail />}
+              />
+              <Route path="/booking/checkout/:id" element={<Checkout />} />
+              {/* KYC is account-level: the :id form carries the listing the renter came from; the bare form is the Profile entry point. Must stay explicit, or "/booking/:id" would swallow it. */}
+              <Route path="/booking/kyc" element={<KYC />} />
+              <Route path="/booking/kyc/:id" element={<KYC />} />
+              <Route path="/booking/signature/:id" element={<Signature />} />
+              <Route path="/booking/payment/:id" element={<Payment />} />
+              {/* SECURITY-FIX (P-H5): Paystack callbackUrl target so real payments can be verified in-app */}
+              <Route path="/payment/callback" element={<PaymentCallback />} />
+              <Route path="/payment-history" element={<PaymentHistory />} />
+              <Route path="/payment-detail" element={<PaymentDetail />} />
 
-            {/* Settings & Support */}
-            <Route path="/saved-listings" element={<SavedListings />} />
-            <Route path="/settings/notifications" element={<NotificationSettings />} />
-            <Route path="/settings/privacy" element={<PrivacySecurity />} />
-            <Route path="/settings/delete-account" element={<DeleteAccount />} />
-            <Route path="/terms" element={<TermsPrivacy />} />
-            <Route path="/support" element={<HelpSupport />} />
-            <Route path="/settings/edit-profile" element={<EditProfile />} />
-            <Route path="/safety-tips" element={<SafetyTips />} />
+              {/* Settings & Support */}
+              <Route path="/saved-listings" element={<SavedListings />} />
+              <Route
+                path="/settings/notifications"
+                element={<NotificationSettings />}
+              />
+              <Route path="/settings/privacy" element={<PrivacySecurity />} />
+              <Route
+                path="/settings/delete-account"
+                element={<DeleteAccount />}
+              />
+              <Route path="/terms" element={<TermsPrivacy />} />
+              <Route path="/support" element={<HelpSupport />} />
+              <Route path="/settings/edit-profile" element={<EditProfile />} />
+              <Route path="/safety-tips" element={<SafetyTips />} />
 
-            {/* Missing Parity Pages */}
-            <Route path="/incoming-requests" element={<IncomingRequests />} />
-            <Route path="/waitlist" element={<Waitlist />} />
-          </Route>
+              {/* Missing Parity Pages */}
+              <Route path="/incoming-requests" element={<IncomingRequests />} />
+              <Route path="/waitlist" element={<Waitlist />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </Suspense>
         <AlertModal />
         <PWAInstallModal />

@@ -1,27 +1,39 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft01Icon, ArrowRight01Icon, FilterIcon } from '@hugeicons/react';
-import { AppShell } from '../../components/layout/AppShell';
-import { ListingCard } from '../../components/listing/ListingCard';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { ListingCardSkeleton } from '../../components/ui/SkeletonLoader';
-import { listingService, Listing, ListingFilter } from '../../api/listingService';
-import { CHIP_PROPERTY_TYPES, PropertyType, labelFor } from '../../constants/listingVocabulary';
-import { useAuthStore } from '../../stores/authStore';
-import { FilterModal, FilterState } from '../../components/common/FilterModal';
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  FilterIcon,
+} from "@hugeicons/react";
+import { AppShell } from "../../components/layout/AppShell";
+import { ListingCard } from "../../components/listing/ListingCard";
+import { EmptyState } from "../../components/ui/EmptyState";
+import { ListingCardSkeleton } from "../../components/ui/SkeletonLoader";
+import {
+  listingService,
+  Listing,
+  ListingFilter,
+} from "../../api/listingService";
+import {
+  CHIP_PROPERTY_TYPES,
+  PropertyType,
+  labelFor,
+} from "../../constants/listingVocabulary";
+import { useAuthStore } from "../../stores/authStore";
+import { FilterModal, FilterState } from "../../components/common/FilterModal";
 
 const CATEGORY_TITLES: Record<string, string> = {
-  shared: 'Shared Apartments',
-  hostel: 'Student Hostels',
-  apartment: 'Flats & Apartments',
-  shortlet: 'Shortlet Spaces',
-  self_con: 'Self-Con / Studios',
+  shared: "Shared Apartments",
+  hostel: "Student Hostels",
+  apartment: "Flats & Apartments",
+  shortlet: "Shortlet Spaces",
+  self_con: "Self-Con / Studios",
 };
 
 const ITEMS_PER_PAGE = 5;
 
 export function CategoryListings() {
-  const { categoryKey = 'apartment' } = useParams<{ categoryKey: string }>();
+  const { categoryKey = "apartment" } = useParams<{ categoryKey: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
@@ -34,40 +46,51 @@ export function CategoryListings() {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
 
-  const displayTitle = CATEGORY_TITLES[categoryKey] || labelFor(categoryKey) || 'Category Listings';
+  const displayTitle =
+    CATEGORY_TITLES[categoryKey] ||
+    labelFor(categoryKey) ||
+    "Category Listings";
 
-  const fetchCategoryListings = useCallback(async (page = 1) => {
-    try {
-      setLoading(true);
-      const filters: ListingFilter = {};
+  const fetchCategoryListings = useCallback(
+    async (page = 1) => {
+      try {
+        setLoading(true);
+        const filters: ListingFilter = {};
 
-      const chipTypes = CHIP_PROPERTY_TYPES[categoryKey];
-      if (chipTypes && chipTypes.length > 0) {
-        filters.propertyType = [...chipTypes] as PropertyType[];
-      } else if (categoryKey === 'self_con') {
-        filters.propertyType = ['self_con'];
+        const chipTypes = CHIP_PROPERTY_TYPES[categoryKey];
+        if (chipTypes && chipTypes.length > 0) {
+          filters.propertyType = [...chipTypes] as PropertyType[];
+        } else if (categoryKey === "self_con") {
+          filters.propertyType = ["self_con"];
+        }
+
+        if (categoryKey === "shared") {
+          filters.shareable = true;
+        }
+
+        if (activeFilters) {
+          if (activeFilters.priceMin) filters.priceMin = activeFilters.priceMin;
+          if (activeFilters.priceMax) filters.priceMax = activeFilters.priceMax;
+          if (activeFilters.anchor?.areaCluster)
+            filters.areaCluster = activeFilters.anchor.areaCluster;
+        }
+
+        const res = await listingService.getListings(
+          filters,
+          page,
+          ITEMS_PER_PAGE,
+        );
+        setListings(res.listings || []);
+        setTotalCount(res.total || 0);
+        setTotalPages(Math.ceil((res.total || 0) / ITEMS_PER_PAGE) || 1);
+      } catch (err) {
+        console.error("Failed to fetch category listings", err);
+      } finally {
+        setLoading(false);
       }
-
-      if (categoryKey === 'shared') {
-        filters.shareable = true;
-      }
-
-      if (activeFilters) {
-        if (activeFilters.priceMin) filters.priceMin = activeFilters.priceMin;
-        if (activeFilters.priceMax) filters.priceMax = activeFilters.priceMax;
-        if (activeFilters.anchor?.areaCluster) filters.areaCluster = activeFilters.anchor.areaCluster;
-      }
-
-      const res = await listingService.getListings(filters, page, ITEMS_PER_PAGE);
-      setListings(res.listings || []);
-      setTotalCount(res.total || 0);
-      setTotalPages(Math.ceil((res.total || 0) / ITEMS_PER_PAGE) || 1);
-    } catch (err) {
-      console.error('Failed to fetch category listings', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryKey, activeFilters]);
+    },
+    [categoryKey, activeFilters],
+  );
 
   useEffect(() => {
     setCurrentPage(1);
@@ -75,8 +98,8 @@ export function CategoryListings() {
   }, [fetchCategoryListings]);
 
   const toggleSave = (id: string) => {
-    setSavedListings(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    setSavedListings((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
   };
 
@@ -98,7 +121,8 @@ export function CategoryListings() {
                 {displayTitle}
               </h1>
               <p className="text-xs font-semibold text-textSecondary">
-                {totalCount} {totalCount === 1 ? 'property' : 'properties'} available
+                {totalCount} {totalCount === 1 ? "property" : "properties"}{" "}
+                available
               </p>
             </div>
           </div>
@@ -125,12 +149,20 @@ export function CategoryListings() {
                 {listings.map((listing: any, index: number) => (
                   <div
                     key={listing._id || listing.id}
-                    className={index === listings.length - 1 ? "pb-4" : undefined}
+                    className={
+                      index === listings.length - 1 ? "pb-4" : undefined
+                    }
                   >
                     <ListingCard
                       listing={listing}
-                      onPress={() => navigate(`/listing/${listing._id || listing.id}`, { state: { listing } })}
-                      isSaved={savedListings.includes(listing._id || listing.id)}
+                      onPress={() =>
+                        navigate(`/listing/${listing._id || listing.id}`, {
+                          state: { listing },
+                        })
+                      }
+                      isSaved={savedListings.includes(
+                        listing._id || listing.id,
+                      )}
                       onSave={() => toggleSave(listing._id || listing.id)}
                     />
                   </div>
@@ -145,7 +177,9 @@ export function CategoryListings() {
                       const prevPage = Math.max(1, currentPage - 1);
                       setCurrentPage(prevPage);
                       fetchCategoryListings(prevPage);
-                      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+                      document
+                        .querySelector("main")
+                        ?.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     disabled={currentPage === 1 || loading}
                     aria-label="Previous Page"
@@ -163,7 +197,9 @@ export function CategoryListings() {
                       const nextPage = Math.min(totalPages, currentPage + 1);
                       setCurrentPage(nextPage);
                       fetchCategoryListings(nextPage);
-                      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+                      document
+                        .querySelector("main")
+                        ?.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     disabled={currentPage === totalPages || loading}
                     aria-label="Next Page"

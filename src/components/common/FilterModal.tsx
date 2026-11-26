@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '../ui/Button';
-import { Cancel01Icon } from '@hugeicons/react';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "../ui/Button";
+import { Cancel01Icon } from "@hugeicons/react";
 import {
   PROPERTY_TYPE_OPTIONS,
   DISTANCE_OPTIONS,
@@ -9,8 +9,8 @@ import {
   PropertyType,
   DistanceBucket,
   GenderRestriction,
-} from '../../constants/listingVocabulary';
-import { LocationAnchorPicker, LocationAnchor } from './LocationAnchorPicker';
+} from "../../constants/listingVocabulary";
+import { LocationAnchorPicker, LocationAnchor } from "./LocationAnchorPicker";
 
 /**
  * Every enumerated field holds a canonical value ('2_bed'), never the display
@@ -52,10 +52,10 @@ interface FilterModalProps {
 }
 
 export const PRICE_RANGES = [
-  { label: '< ₦100k', min: 0, max: 100_000 },
-  { label: '₦100k–300k', min: 100_000, max: 300_000 },
-  { label: '₦300k–600k', min: 300_000, max: 600_000 },
-  { label: '₦600k+', min: 600_000, max: 2_000_000 },
+  { label: "< ₦100k", min: 0, max: 100_000 },
+  { label: "₦100k–300k", min: 100_000, max: 300_000 },
+  { label: "₦300k–600k", min: 300_000, max: 600_000 },
+  { label: "₦600k+", min: 600_000, max: 2_000_000 },
 ];
 
 /**
@@ -63,9 +63,9 @@ export const PRICE_RANGES = [
  * campus-framed labels meant nothing to a renter who is not a student.
  */
 export const RADIUS_OPTIONS = [
-  { value: 1500, label: 'Walking distance' },
-  { value: 4000, label: 'Nearby' },
-  { value: 15000, label: 'Wider area' },
+  { value: 1500, label: "Walking distance" },
+  { value: 4000, label: "Nearby" },
+  { value: 15000, label: "Wider area" },
 ];
 
 export const PRICE_FLOOR = 0;
@@ -86,25 +86,35 @@ export const DEFAULT_FILTERS: FilterState = {
   excludeStudentsOnly: false,
 };
 
-const pill = (isActive: boolean, accent: 'primary' | 'accent' = 'primary') =>
-  `px-4 py-2 rounded-full text-sm font-semibold transition-colors border ${isActive
-    ? accent === 'accent'
-      ? 'bg-accent text-white border-accent'
-      : 'bg-primary text-white border-primary'
-    : 'bg-surface text-textSecondary border-borderLight'
+const pill = (isActive: boolean, accent: "primary" | "accent" = "primary") =>
+  `px-4 py-2 rounded-full text-sm font-semibold transition-colors border ${
+    isActive
+      ? accent === "accent"
+        ? "bg-accent text-white border-accent"
+        : "bg-primary text-white border-primary"
+      : "bg-surface text-textSecondary border-borderLight"
   }`;
 
-const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean) => void }> = ({
-  label,
-  checked,
-  onChange,
-}) => (
+const Toggle: React.FC<{
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}> = ({ label, checked, onChange }) => (
   <label className="flex items-center justify-between cursor-pointer">
     <span className="text-sm font-semibold text-textSecondary">{label}</span>
     <div className="relative">
-      <input type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
-      <div className={`block w-14 h-8 rounded-full ${checked ? 'bg-accent' : 'bg-borderLight'}`}></div>
-      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${checked ? 'transform translate-x-6 bg-primary' : ''}`}></div>
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <div
+        className={`block w-14 h-8 rounded-full ${checked ? "bg-accent" : "bg-borderLight"}`}
+      ></div>
+      <div
+        className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${checked ? "transform translate-x-6 bg-primary" : ""}`}
+      ></div>
     </div>
   </label>
 );
@@ -118,8 +128,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   userRole,
   university,
 }) => {
-  const isStudent = userRole === 'student';
-  const [filters, setFilters] = useState<FilterState>(initialFilters || DEFAULT_FILTERS);
+  const isStudent = userRole === "student";
+  const [filters, setFilters] = useState<FilterState>(
+    initialFilters || DEFAULT_FILTERS,
+  );
 
   // Re-seed from what is actually applied each time it opens; otherwise it
   // reappears showing defaults while the feed is still filtered.
@@ -128,10 +140,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   }, [visible, initialFilters]);
 
   const togglePropertyType = (type: PropertyType) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       propertyTypes: prev.propertyTypes.includes(type)
-        ? prev.propertyTypes.filter(t => t !== type)
+        ? prev.propertyTypes.filter((t) => t !== type)
         : [...prev.propertyTypes, type],
     }));
   };
@@ -158,17 +170,22 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             onClick={onClose}
           />
           <motion.div
-            initial={{ y: '100%' }}
+            initial={{ y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="relative w-full max-w-md bg-background rounded-t-[24px] sm:rounded-[24px] shadow-2xl flex flex-col max-h-[90vh]"
           >
             <div className="w-12 h-1.5 bg-borderLight rounded-full mx-auto my-3 sm:hidden" />
 
             <div className="flex justify-between items-center px-6 py-4 border-b border-borderLight shrink-0">
-              <h2 className="text-xl font-bold text-textPrimary">Filter Listings</h2>
-              <button onClick={handleReset} className="text-primary font-semibold text-sm active:scale-95 transition-transform">
+              <h2 className="text-xl font-bold text-textPrimary">
+                Filter Listings
+              </h2>
+              <button
+                onClick={handleReset}
+                className="text-primary font-semibold text-sm active:scale-95 transition-transform"
+              >
                 Reset
               </button>
             </div>
@@ -176,23 +193,44 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <div className="p-6 overflow-y-auto flex-1">
               {/* Search Near, available to every renter, not just students. */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-textPrimary mb-3">Search Near</h3>
+                <h3 className="text-base font-bold text-textPrimary mb-3">
+                  Search Near
+                </h3>
                 <LocationAnchorPicker
                   value={filters.anchor}
-                  onChange={anchor => setFilters(prev => ({ ...prev, anchor }))}
-                  suggestion={isStudent && university ? { label: university, landmark: university } : null}
-                  defaultTypes={isStudent ? 'university,area,estate' : 'area,estate,market,landmark'}
+                  onChange={(anchor) =>
+                    setFilters((prev) => ({ ...prev, anchor }))
+                  }
+                  suggestion={
+                    isStudent && university
+                      ? { label: university, landmark: university }
+                      : null
+                  }
+                  defaultTypes={
+                    isStudent
+                      ? "university,area,estate"
+                      : "area,estate,market,landmark"
+                  }
                 />
 
                 {filters.anchor && (
                   <div className="mt-4">
-                    <h3 className="text-base font-bold text-textPrimary mb-3">How Far</h3>
+                    <h3 className="text-base font-bold text-textPrimary mb-3">
+                      How Far
+                    </h3>
                     <div className="flex flex-wrap gap-2">
-                      {RADIUS_OPTIONS.map(option => (
+                      {RADIUS_OPTIONS.map((option) => (
                         <button
                           key={option.value}
-                          className={pill(filters.radiusMetres === option.value)}
-                          onClick={() => setFilters(prev => ({ ...prev, radiusMetres: option.value }))}
+                          className={pill(
+                            filters.radiusMetres === option.value,
+                          )}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              radiusMetres: option.value,
+                            }))
+                          }
                         >
                           {option.label}
                         </button>
@@ -204,13 +242,24 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
               {/* Price Range */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-textPrimary mb-3">Price Range</h3>
+                <h3 className="text-base font-bold text-textPrimary mb-3">
+                  Price Range
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {PRICE_RANGES.map(range => (
+                  {PRICE_RANGES.map((range) => (
                     <button
                       key={range.label}
-                      className={pill(filters.priceMin === range.min && filters.priceMax === range.max)}
-                      onClick={() => setFilters(prev => ({ ...prev, priceMin: range.min, priceMax: range.max }))}
+                      className={pill(
+                        filters.priceMin === range.min &&
+                          filters.priceMax === range.max,
+                      )}
+                      onClick={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          priceMin: range.min,
+                          priceMax: range.max,
+                        }))
+                      }
                     >
                       {range.label}
                     </button>
@@ -220,12 +269,17 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
               {/* Property Type */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-textPrimary mb-3">Property Type</h3>
+                <h3 className="text-base font-bold text-textPrimary mb-3">
+                  Property Type
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {PROPERTY_TYPE_OPTIONS.map(option => (
+                  {PROPERTY_TYPE_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      className={pill(filters.propertyTypes.includes(option.value), 'accent')}
+                      className={pill(
+                        filters.propertyTypes.includes(option.value),
+                        "accent",
+                      )}
                       onClick={() => togglePropertyType(option.value)}
                     >
                       {option.label}
@@ -236,16 +290,25 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
               {/* Gender */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-textPrimary mb-3">Gender</h3>
+                <h3 className="text-base font-bold text-textPrimary mb-3">
+                  Gender
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {GENDER_OPTIONS.map(option => (
+                  {GENDER_OPTIONS.map((option) => (
                     <button
                       key={option.value}
-                      className={pill(filters.genderRestriction === option.value)}
-                      onClick={() => setFilters(prev => ({
-                        ...prev,
-                        genderRestriction: prev.genderRestriction === option.value ? null : option.value,
-                      }))}
+                      className={pill(
+                        filters.genderRestriction === option.value,
+                      )}
+                      onClick={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          genderRestriction:
+                            prev.genderRestriction === option.value
+                              ? null
+                              : option.value,
+                        }))
+                      }
                     >
                       {option.label}
                     </button>
@@ -255,44 +318,64 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
               {/* Toggles */}
               <div className="space-y-4 mb-6">
-                <h3 className="text-base font-bold text-textPrimary">Features</h3>
+                <h3 className="text-base font-bold text-textPrimary">
+                  Features
+                </h3>
 
                 <Toggle
                   label="Shareable / Room Sharing"
                   checked={filters.shareable}
-                  onChange={v => setFilters(prev => ({ ...prev, shareable: v }))}
+                  onChange={(v) =>
+                    setFilters((prev) => ({ ...prev, shareable: v }))
+                  }
                 />
                 <Toggle
                   label="Furnished"
                   checked={filters.furnished}
-                  onChange={v => setFilters(prev => ({ ...prev, furnished: v }))}
+                  onChange={(v) =>
+                    setFilters((prev) => ({ ...prev, furnished: v }))
+                  }
                 />
                 <Toggle
                   label="Stable Power (Solar/Hybrid)"
                   checked={filters.powerStable}
-                  onChange={v => setFilters(prev => ({ ...prev, powerStable: v }))}
+                  onChange={(v) =>
+                    setFilters((prev) => ({ ...prev, powerStable: v }))
+                  }
                 />
                 {!isStudent && (
                   <Toggle
                     label="Hide student-only listings"
                     checked={filters.excludeStudentsOnly}
-                    onChange={v => setFilters(prev => ({ ...prev, excludeStudentsOnly: v }))}
+                    onChange={(v) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        excludeStudentsOnly: v,
+                      }))
+                    }
                   />
                 )}
               </div>
 
               {/* The lister's own "distance from landmark" bucket */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-textPrimary mb-3">Distance from Landmark</h3>
+                <h3 className="text-base font-bold text-textPrimary mb-3">
+                  Distance from Landmark
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {DISTANCE_OPTIONS.map(option => (
+                  {DISTANCE_OPTIONS.map((option) => (
                     <button
                       key={option.value}
                       className={`${pill(filters.distance === option.value)} w-full text-left`}
-                      onClick={() => setFilters(prev => ({
-                        ...prev,
-                        distance: prev.distance === option.value ? null : option.value,
-                      }))}
+                      onClick={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          distance:
+                            prev.distance === option.value
+                              ? null
+                              : option.value,
+                        }))
+                      }
                     >
                       {option.label}
                     </button>

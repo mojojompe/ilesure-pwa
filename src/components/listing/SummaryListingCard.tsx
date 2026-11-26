@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Location01Icon } from '@hugeicons/react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Location01Icon } from "@hugeicons/react";
 
 export interface SummaryListingCardProps {
   listing: any;
@@ -9,28 +9,37 @@ export interface SummaryListingCardProps {
 }
 
 const PLACEHOLDER_IMAGES = [
-  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80',
-  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80',
-  'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80',
-  'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80',
+  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80",
+  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80",
 ];
 
-export function SummaryListingCard({ listing, onPress, onClick }: SummaryListingCardProps) {
+export function SummaryListingCard({
+  listing,
+  onPress,
+  onClick,
+}: SummaryListingCardProps) {
   const handleAction = onPress || onClick;
-  const isFullyBooked = listing.status === 'fully_booked' || listing.status === 'booked';
+  const isFullyBooked =
+    listing.status === "fully_booked" || listing.status === "booked";
 
   const imageUrl =
     listing.images && listing.images.length > 0
       ? listing.images[0]
-      : PLACEHOLDER_IMAGES[parseInt(listing._id || listing.id || '0', 10) % PLACEHOLDER_IMAGES.length] ||
-        PLACEHOLDER_IMAGES[0];
+      : PLACEHOLDER_IMAGES[
+          parseInt(listing._id || listing.id || "0", 10) %
+            PLACEHOLDER_IMAGES.length
+        ] || PLACEHOLDER_IMAGES[0];
 
   return (
     <motion.div
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       onClick={!isFullyBooked ? handleAction : undefined}
       className={`relative w-full h-52 rounded-2xl overflow-hidden shadow-[0_3px_12px_rgba(62,31,10,0.08)] bg-white ${
-        isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
+        isFullyBooked
+          ? "opacity-60 grayscale cursor-not-allowed pointer-events-none"
+          : "cursor-pointer"
       }`}
     >
       {/* Full Background Image */}
@@ -63,7 +72,7 @@ export function SummaryListingCard({ listing, onPress, onClick }: SummaryListing
         <div className="flex items-center gap-1 mt-1 text-white/80">
           <Location01Icon size={12} className="shrink-0 text-[#E1AD01]" />
           <span className="text-xs truncate text-white/85">
-            {listing.areaCluster || listing.city || 'Nigeria'}
+            {listing.areaCluster || listing.city || "Nigeria"}
           </span>
         </div>
       </div>

@@ -46,16 +46,12 @@
  * ─────────────────────────────────────────────────────────────────────
  */
 
-import React, { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { AppShell } from '../../components/layout/AppShell';
-import { ServiceComingSoonModal } from '../../components/services/ServiceComingSoonModal';
-import { SERVICE_CATEGORIES } from '../../data/serviceCategories';
-import {
-  Search01Icon,
-  FilterIcon,
-  Wrench01Icon,
-} from '@hugeicons/react';
+import React, { useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import { AppShell } from "../../components/layout/AppShell";
+import { ServiceComingSoonModal } from "../../components/services/ServiceComingSoonModal";
+import { SERVICE_CATEGORIES } from "../../data/serviceCategories";
+import { Search01Icon, FilterIcon, Wrench01Icon } from "@hugeicons/react";
 
 export default function Services() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
@@ -66,7 +62,6 @@ export default function Services() {
   return (
     <AppShell>
       <div className="flex flex-col min-h-full bg-background pt-safe-top pb-24 overflow-x-clip">
-
         {/* ── Page Header ─────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
@@ -98,9 +93,14 @@ export default function Services() {
             className="w-full flex items-center gap-3 bg-white border border-[#E7DCD4] rounded-2xl px-4 py-3 shadow-sm text-left"
           >
             <Search01Icon size={20} className="text-[#A0806A] shrink-0" />
-            <span className="text-sm text-[#A0806A] font-medium">Search artisans, plumbers, cleaners…</span>
+            <span className="text-sm text-[#A0806A] font-medium">
+              Search artisans, plumbers, cleaners…
+            </span>
             <button
-              onClick={(e) => { e.stopPropagation(); openComingSoon(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                openComingSoon();
+              }}
               className="ml-auto flex items-center gap-1 bg-[#F5F1EB] rounded-xl px-3 py-1.5"
             >
               <FilterIcon size={14} className="text-[#6B4F3A]" />
@@ -132,7 +132,9 @@ export default function Services() {
               <h2 className="text-[#E8DCC4] text-[18px] font-black tracking-tight leading-snug">
                 Trusted Artisans &amp; Home Services
               </h2>
-              <p className="text-[#C4A88A] text-[11px] mt-0.5">Vetted professionals at your doorstep</p>
+              <p className="text-[#C4A88A] text-[11px] mt-0.5">
+                Vetted professionals at your doorstep
+              </p>
             </div>
           </div>
         </motion.div>
@@ -145,7 +147,9 @@ export default function Services() {
           className="mb-6"
         >
           <div className="px-5 mb-3">
-            <h2 className="text-base font-extrabold text-[#3E1F0A]">Service Categories</h2>
+            <h2 className="text-base font-extrabold text-[#3E1F0A]">
+              Service Categories
+            </h2>
           </div>
           <div className="overflow-x-auto no-scrollbar py-2">
             <div className="flex flex-row gap-3 px-5 min-w-max">
@@ -156,7 +160,11 @@ export default function Services() {
                   className="flex flex-col items-center gap-2 outline-none group shrink-0"
                 >
                   <div className="w-[114px] h-[96px] rounded-[22px] flex items-center justify-center p-2 bg-[#F5F1EB] shadow-[0_10px_24px_-4px_rgba(62,31,10,0.12),0_4px_10px_-2px_rgba(62,31,10,0.06)] hover:shadow-[0_14px_30px_-4px_rgba(62,31,10,0.16)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 relative overflow-hidden grayscale opacity-80">
-                    <cat.icon size={54} aria-hidden="true" className="text-[#6B4F3A]" />
+                    <cat.icon
+                      size={54}
+                      aria-hidden="true"
+                      className="text-[#6B4F3A]"
+                    />
                     <div className="absolute inset-0 bg-[#3E1F0A]/15 flex items-end justify-center pb-1.5">
                       <span className="bg-[#3E1F0A] text-[#FAF1CC] text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
                         Soon
@@ -189,8 +197,14 @@ export default function Services() {
               {/* Category Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <cat.icon size={22} aria-hidden="true" className="text-[#6B4F3A] opacity-60" />
-                  <h3 className="text-base font-extrabold text-[#3E1F0A]">{cat.label}</h3>
+                  <cat.icon
+                    size={22}
+                    aria-hidden="true"
+                    className="text-[#6B4F3A] opacity-60"
+                  />
+                  <h3 className="text-base font-extrabold text-[#3E1F0A]">
+                    {cat.label}
+                  </h3>
                 </div>
                 <button
                   onClick={openComingSoon}
@@ -208,8 +222,12 @@ export default function Services() {
                 <div className="w-12 h-12 rounded-xl bg-[#FFF8E7] flex items-center justify-center mb-2 border border-[#E1AD01]/20">
                   <cat.icon size={24} className="text-[#E1AD01]" />
                 </div>
-                <p className="text-xs font-bold text-[#3E1F0A] mb-0.5">{cat.label} · {cat.examplePriceLabel}</p>
-                <p className="text-[11px] text-[#A0806A] mb-2 max-w-[220px]">{cat.description}</p>
+                <p className="text-xs font-bold text-[#3E1F0A] mb-0.5">
+                  {cat.label} · {cat.examplePriceLabel}
+                </p>
+                <p className="text-[11px] text-[#A0806A] mb-2 max-w-[220px]">
+                  {cat.description}
+                </p>
                 <span className="bg-[#3E1F0A] text-[#FAF1CC] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
                   Coming Soon
                 </span>
@@ -219,7 +237,10 @@ export default function Services() {
         </div>
       </div>
 
-      <ServiceComingSoonModal isOpen={comingSoonOpen} onClose={closeComingSoon} />
+      <ServiceComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={closeComingSoon}
+      />
     </AppShell>
   );
 }

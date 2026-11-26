@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   FavouriteIcon,
   Location01Icon,
   UserCircleIcon,
   Alert01Icon,
   FireIcon,
-  GraduateMaleIcon
-} from '@hugeicons/react';
-import { Tag } from '../ui/Tag';
-import { AmenityRow } from '../ui/AmenityIcon';
-import { labelFor } from '../../constants/listingVocabulary';
-import { getListingShortletTiers, formatShortletTier } from '../../utils/shortlet';
+  GraduateMaleIcon,
+} from "@hugeicons/react";
+import { Tag } from "../ui/Tag";
+import { AmenityRow } from "../ui/AmenityIcon";
+import { labelFor } from "../../constants/listingVocabulary";
+import {
+  getListingShortletTiers,
+  formatShortletTier,
+} from "../../utils/shortlet";
 
 export interface ListingCardProps {
   listing: any;
@@ -22,10 +25,10 @@ export interface ListingCardProps {
 }
 
 const PLACEHOLDER_IMAGES = [
-  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80',
-  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80',
-  'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80',
-  'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80',
+  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80",
+  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80",
 ];
 
 /**
@@ -33,7 +36,7 @@ const PLACEHOLDER_IMAGES = [
  * Only present when the feed was queried around a point or a landmark.
  */
 function formatDistance(metres?: number): string | null {
-  if (typeof metres !== 'number' || !Number.isFinite(metres)) return null;
+  if (typeof metres !== "number" || !Number.isFinite(metres)) return null;
   if (metres < 950) return `${Math.round(metres / 50) * 50}m away`;
   return `${(metres / 1000).toFixed(1)}km away`;
 }
@@ -56,43 +59,58 @@ export function ListingCard({
   const imageUrl =
     listing.images && listing.images.length > 0
       ? listing.images[0]
-      : PLACEHOLDER_IMAGES[parseInt(listing._id || listing.id || '0', 10) % PLACEHOLDER_IMAGES.length] ||
-      PLACEHOLDER_IMAGES[0];
+      : PLACEHOLDER_IMAGES[
+          parseInt(listing._id || listing.id || "0", 10) %
+            PLACEHOLDER_IMAGES.length
+        ] || PLACEHOLDER_IMAGES[0];
 
-  const isShortlet = listing.propertyType?.toLowerCase() === 'shortlet';
+  const isShortlet = listing.propertyType?.toLowerCase() === "shortlet";
 
   // Reads shortletRates first, falling back to the deprecated shortletPricing map, listings
   // priced with the flexible tiers used to render an empty price here.
   const formattedPrice = isShortlet
-    ? getListingShortletTiers(listing).map(formatShortletTier).join(' · ')
-    : listing.rentAnnual ? `₦${listing.rentAnnual.toLocaleString()}` : '₦0';
+    ? getListingShortletTiers(listing).map(formatShortletTier).join(" · ")
+    : listing.rentAnnual
+      ? `₦${listing.rentAnnual.toLocaleString()}`
+      : "₦0";
 
   const powerStatus =
-    listing.power === 'constant' ? 'good'
-      : listing.power === 'solar_backed' || listing.power === 'hybrid' ? 'partial'
-        : 'poor';
-  const waterStatus = listing.water === 'borehole' ? 'good' : 'partial';
-  const isFullyBooked = listing.status === 'fully_booked' || listing.status === 'booked';
+    listing.power === "constant"
+      ? "good"
+      : listing.power === "solar_backed" || listing.power === "hybrid"
+        ? "partial"
+        : "poor";
+  const waterStatus = listing.water === "borehole" ? "good" : "partial";
+  const isFullyBooked =
+    listing.status === "fully_booked" || listing.status === "booked";
 
   const displayRules = listing.rules?.length
     ? listing.rules
     : [
-      ...(listing.petsAllowed ? ['pets_allowed'] : []),
-      ...(listing.smokingAllowed ? ['smoking_allowed'] : []),
-      ...(listing.studentsOnly ? ['students_only'] : []),
-    ];
+        ...(listing.petsAllowed ? ["pets_allowed"] : []),
+        ...(listing.smokingAllowed ? ["smoking_allowed"] : []),
+        ...(listing.studentsOnly ? ["students_only"] : []),
+      ];
   const hasRules = displayRules.length > 0;
 
-  const agentName = listing.companyId?.name || listing.agentId?.fullName || listing.landlordId?.fullName || listing.agentName || listing.companyName;
+  const agentName =
+    listing.companyId?.name ||
+    listing.agentId?.fullName ||
+    listing.landlordId?.fullName ||
+    listing.agentName ||
+    listing.companyName;
 
   return (
     <motion.div
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={!isFullyBooked ? onPress : undefined}
-      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_3px_12px_rgba(62,31,10,0.08)] border border-black/5 bg-white ${isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
-        }`}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_3px_12px_rgba(62,31,10,0.08)] border border-black/5 bg-white ${
+        isFullyBooked
+          ? "opacity-60 grayscale cursor-not-allowed pointer-events-none"
+          : "cursor-pointer"
+      }`}
+      style={{ WebkitTapHighlightColor: "transparent" }}
     >
       <div className="relative w-full h-[380px]">
         {/* Main Image */}
@@ -117,15 +135,29 @@ export function ListingCard({
         <div className="absolute top-3 left-3 flex flex-col items-start gap-2 z-10">
           <div className="flex flex-row flex-wrap gap-2">
             {listing.propertyType && (
-              <Tag label={labelFor(listing.propertyType)} variant="mustard" className="shadow-md" />
+              <Tag
+                label={labelFor(listing.propertyType)}
+                variant="mustard"
+                className="shadow-md"
+              />
             )}
             {listing.needsRoommate && (
-              <Tag label="Needs Roommate" variant="brown" className="shadow-md" />
+              <Tag
+                label="Needs Roommate"
+                variant="brown"
+                className="shadow-md"
+              />
             )}
           </div>
-          {listing.genderRestriction && listing.genderRestriction !== 'any' && (
+          {listing.genderRestriction && listing.genderRestriction !== "any" && (
             <Tag
-              label={listing.genderRestriction === 'female_only' ? 'Female Only' : listing.genderRestriction === 'male_only' ? 'Male Only' : 'Mixed'}
+              label={
+                listing.genderRestriction === "female_only"
+                  ? "Female Only"
+                  : listing.genderRestriction === "male_only"
+                    ? "Male Only"
+                    : "Mixed"
+              }
               variant="outline"
               className="bg-white/80 backdrop-blur-md !border-white text-primary font-bold shadow-sm"
             />
@@ -135,7 +167,7 @@ export function ListingCard({
         {/* Floating Save Button (Top Right) */}
         <button
           /* A11Y-FIX (QA-A11Y-002): icon-only button, announced as just "button". */
-          aria-label={saved ? 'Remove from saved' : 'Save this listing'}
+          aria-label={saved ? "Remove from saved" : "Save this listing"}
           aria-pressed={saved}
           onClick={handleSave}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center transition-transform active:scale-90"
@@ -154,14 +186,22 @@ export function ListingCard({
           {/* Title and Price */}
           {isShortlet ? (
             <div className="mb-2">
-              <h3 className="text-white text-lg font-bold truncate mr-2">{listing.title}</h3>
-              <p className="text-white text-base font-bold mt-1 leading-5">{formattedPrice}</p>
+              <h3 className="text-white text-lg font-bold truncate mr-2">
+                {listing.title}
+              </h3>
+              <p className="text-white text-base font-bold mt-1 leading-5">
+                {formattedPrice}
+              </p>
             </div>
           ) : (
             <div className="flex flex-row justify-between items-start mb-2">
-              <h3 className="text-white text-lg font-bold truncate flex-1 mr-2">{listing.title}</h3>
+              <h3 className="text-white text-lg font-bold truncate flex-1 mr-2">
+                {listing.title}
+              </h3>
               <div className="flex items-baseline">
-                <span className="text-white text-xl font-extrabold">{formattedPrice}</span>
+                <span className="text-white text-xl font-extrabold">
+                  {formattedPrice}
+                </span>
                 <span className="text-white/80 text-sm font-medium">/yr</span>
               </div>
             </div>
@@ -174,9 +214,13 @@ export function ListingCard({
               {listing.areaCluster}
             </span>
             {formatDistance((listing as any).distanceMeters) ? (
-              <span className="text-[#E1AD01] text-xs font-bold">· {formatDistance((listing as any).distanceMeters)}</span>
+              <span className="text-[#E1AD01] text-xs font-bold">
+                · {formatDistance((listing as any).distanceMeters)}
+              </span>
             ) : listing.distanceBucket ? (
-              <span className="text-[#E1AD01] text-xs font-bold">· {labelFor(listing.distanceBucket)}</span>
+              <span className="text-[#E1AD01] text-xs font-bold">
+                · {labelFor(listing.distanceBucket)}
+              </span>
             ) : null}
           </div>
 
@@ -184,29 +228,35 @@ export function ListingCard({
           {agentName && (
             <div className="flex flex-row items-center gap-1.5 mb-2">
               <UserCircleIcon size={14} className="text-white/70" />
-              <span className="text-white/70 text-sm truncate flex-1">{agentName}</span>
+              <span className="text-white/70 text-sm truncate flex-1">
+                {agentName}
+              </span>
             </div>
           )}
 
           {/* Rules */}
           {hasRules && (
             <div className="flex flex-row flex-wrap gap-2 mb-2 mt-2">
-              {displayRules.includes('pets_allowed') && (
+              {displayRules.includes("pets_allowed") && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
                   <Alert01Icon size={12} className="text-[#E1AD01]" />
                   <span className="text-white text-xs font-semibold">Pets</span>
                 </div>
               )}
-              {displayRules.includes('smoking_allowed') && (
+              {displayRules.includes("smoking_allowed") && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
                   <FireIcon size={12} className="text-[#E1AD01]" />
-                  <span className="text-white text-xs font-semibold">Smoking</span>
+                  <span className="text-white text-xs font-semibold">
+                    Smoking
+                  </span>
                 </div>
               )}
-              {displayRules.includes('students_only') && (
+              {displayRules.includes("students_only") && (
                 <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15">
                   <GraduateMaleIcon size={12} className="text-[#E1AD01]" />
-                  <span className="text-white text-xs font-semibold">Students</span>
+                  <span className="text-white text-xs font-semibold">
+                    Students
+                  </span>
                 </div>
               )}
             </div>
@@ -217,7 +267,7 @@ export function ListingCard({
             <AmenityRow
               power={powerStatus}
               water={waterStatus}
-              wifi={isInterested ? 'good' : 'partial'}
+              wifi={isInterested ? "good" : "partial"}
               security="good"
               size="small"
             />
