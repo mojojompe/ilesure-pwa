@@ -9,6 +9,7 @@ import {
   Notification01Icon,
   UserCircleIcon,
   SidebarBottomIcon,
+  Wrench01Icon,
 } from '@hugeicons/react';
 import { Modal } from '../ui/Modal';
 import { useAuthStore } from '../../stores/authStore';
@@ -18,21 +19,35 @@ export function BottomTabBar() {
   const { user } = useAuthStore();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   
+  const isStudent = user?.role === 'student';
+
+  /**
+   * Tab layout:
+   *   Students:     Home | Match | Services | More(Manage, Chats, Notifs, Profile)
+   *   Individuals:  Home | Services | Chats  | More(Manage, Notifs, Profile)
+   *
+   * "Manage" (/my-apartments) has moved to the More modal for all users.
+   * Services is now the 3rd tab in bar for students (after Home + Match),
+   * and 2nd tab for individuals (after Home, before Chats).
+   */
   const allTabs = [
-    { path: '/discover', icon: Home01Icon, label: 'Home' },
-    { path: '/roommates', icon: UserMultipleIcon, label: 'Match', restrictedTo: 'student' },
-    { path: '/my-apartments', icon: Building03Icon, label: 'Manage' },
-    { path: '/chats', icon: BubbleChatIcon, label: 'Chats' },
+    { path: '/discover',      icon: Home01Icon,       label: 'Home' },
+    { path: '/roommates',     icon: UserMultipleIcon, label: 'Match',    restrictedTo: 'student' },
+    { path: '/services',      icon: Wrench01Icon,     label: 'Services' },
+    { path: '/chats',         icon: BubbleChatIcon,   label: 'Chats' },
+    // ── More modal tabs ──────────────────────────────────────────────────────
+    { path: '/my-apartments', icon: Building03Icon,   label: 'Manage' },
     { path: '/notifications', icon: Notification01Icon, label: 'Notifications' },
-    { path: '/profile', icon: UserCircleIcon, label: 'Profile' },
+    { path: '/profile',       icon: UserCircleIcon,   label: 'Profile' },
   ];
 
-  // Filter out restricted tabs (like Match for non-students)
+  // Filter restricted tabs
   const allowedTabs = allTabs.filter(tab => !tab.restrictedTo || tab.restrictedTo === user?.role);
 
-  // Take the first 3 tabs for the bottom bar
-  const mainTabs = allowedTabs.slice(0, 3);
-  const moreTabs = allowedTabs.slice(3);
+  // Students get 3 main tabs (Home, Match, Services), others get 3 (Home, Services, Chats)
+  const mainTabCount = isStudent ? 3 : 3;
+  const mainTabs = allowedTabs.slice(0, mainTabCount);
+  const moreTabs = allowedTabs.slice(mainTabCount);
 
   const isMoreActive = moreTabs.some(tab => location.pathname.startsWith(tab.path));
   const isMoreButtonActive = isMoreActive || isMoreOpen;

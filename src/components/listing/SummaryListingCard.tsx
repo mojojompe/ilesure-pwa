@@ -29,7 +29,7 @@ export function SummaryListingCard({ listing, onPress, onClick }: SummaryListing
     <motion.div
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       onClick={!isFullyBooked ? handleAction : undefined}
-      className={`relative w-full h-52 rounded-2xl overflow-hidden shadow-clay-sm bg-white ${
+      className={`relative w-full h-52 rounded-2xl overflow-hidden shadow-[0_3px_12px_rgba(62,31,10,0.08)] bg-white ${
         isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
       }`}
     >

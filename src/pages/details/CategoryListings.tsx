@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { ArrowLeft01Icon, ArrowRight01Icon, FilterIcon } from '@hugeicons/react';
 import { AppShell } from '../../components/layout/AppShell';
 import { ListingCard } from '../../components/listing/ListingCard';
@@ -122,17 +121,11 @@ export function CategoryListings() {
             </div>
           ) : listings.length > 0 ? (
             <div className="relative pb-4">
-              {/* Scroll Stack of Listings */}
-              <div className="relative">
+              <div className="space-y-5">
                 {listings.map((listing: any, index: number) => (
-                  <motion.div
+                  <div
                     key={listing._id || listing.id}
-                    className="sticky transition-all duration-300"
-                    style={{
-                      top: `${72 + index * 12}px`,
-                      zIndex: index + 1,
-                      marginBottom: index === listings.length - 1 ? '16px' : '20px',
-                    }}
+                    className={index === listings.length - 1 ? "pb-4" : undefined}
                   >
                     <ListingCard
                       listing={listing}
@@ -140,7 +133,7 @@ export function CategoryListings() {
                       isSaved={savedListings.includes(listing._id || listing.id)}
                       onSave={() => toggleSave(listing._id || listing.id)}
                     />
-                  </motion.div>
+                  </div>
                 ))}
               </div>
 

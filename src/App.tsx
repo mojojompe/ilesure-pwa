@@ -28,6 +28,8 @@ const Roommates = lazy(() => import('./pages/tabs/Roommates').then(module => ({ 
 
 const MyApartments = lazy(() => import('./pages/tabs/MyApartments').then(module => ({ default: module.MyApartments })));
 
+const Services = lazy(() => import('./pages/tabs/Services'));
+
 const ChatsList = lazy(() => import('./pages/tabs/ChatsList').then(module => ({ default: module.ChatsList })));
 
 const Waitlist = lazy(() => import('./pages/settings/Waitlist').then(module => ({ default: module.Waitlist })));
@@ -174,8 +176,7 @@ export default function App() {
           <Route path="/auth/otp" element={<OTP />} />
           <Route path="/auth/reactivate" element={<ReactivateAccount />} />
 
-          {/* Public: a shared listing link opens as a read-only preview for signed-out
-              visitors (ListingDetail hides booking, chat and save for them). */}
+            {/* Public shared links allow browsing and send signed-out booking attempts to auth choice. */}
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/category/:categoryKey" element={<CategoryListings />} />
           {/* Shared links are /l/:id. In production the host proxies them to the API's
@@ -186,6 +187,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['student', 'individual']} />}>
             <Route path="/discover" element={<Discover />} />
             <Route path="/roommates" element={<Roommates />} />
+            <Route path="/services" element={<Services />} />
             <Route path="/my-apartments" element={<MyApartments />} />
             <Route path="/chats" element={<ChatsList />} />
             <Route path="/notifications" element={<Notifications />} />

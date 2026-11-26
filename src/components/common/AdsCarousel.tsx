@@ -56,13 +56,14 @@ export const AdsCarousel: React.FC = () => {
     fetchAds();
   }, []);
 
-  const carouselItems: any[] =
-    ads.length > 0
-      ? ads.map((ad) => ({ type: 'ad', id: ad._id, ...ad }))
-      : [
-          { type: 'placeholder', id: 'placeholder-1' },
-          { type: 'placeholder', id: 'placeholder-2' },
-        ];
+  const WHATSAPP_AD_URL =
+    'https://wa.me/2348169384301?text=Hello%20il%C3%A9Sure%2C%20I%20want%20to%20place%20an%20Advert%20of%20my%20Trade%2Fbusiness';
+
+  // Keep exactly one contact placeholder after active ads, including when there are no ads.
+  const carouselItems: any[] = [
+    ...ads.map((ad) => ({ type: 'ad', id: ad._id, ...ad })),
+    { type: 'placeholder', id: 'placeholder-ad-slot' },
+  ];
 
   useEffect(() => {
     if (carouselItems.length <= 1) return;
@@ -107,16 +108,19 @@ export const AdsCarousel: React.FC = () => {
         {carouselItems.map((item: any) => {
           if (item.type === 'placeholder') {
             return (
-              <div
+              <a
                 key={item.id}
-                className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[150px] rounded-[24px] bg-[#FAF8F5] border-2 border-dashed border-[#E7DCD4] flex flex-col items-center justify-center shadow-xs"
+                href={WHATSAPP_AD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="snap-center shrink-0 w-[85vw] max-w-[320px] h-[150px] rounded-[24px] bg-[#FAF8F5] border-2 border-dashed border-[#E7DCD4] flex flex-col items-center justify-center shadow-xs cursor-pointer active:scale-[0.98] transition-transform group"
               >
-                <div className="w-10 h-10 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#E1AD01] mb-2">
+                <div className="w-10 h-10 rounded-full bg-[#FFF8E7] flex items-center justify-center text-[#E1AD01] mb-2 group-hover:scale-110 transition-transform">
                   <Megaphone01Icon size={22} />
                 </div>
-                <span className="text-textSecondary font-bold text-sm">Advertisement Space</span>
-                <span className="text-[11px] text-textTertiary mt-0.5">Contact iléSure to sponsor here</span>
-              </div>
+                <span className="text-textSecondary font-bold text-sm">Place Your Advert Here</span>
+                <span className="text-[11px] text-textTertiary mt-0.5">Tap to chat with iléSure on WhatsApp</span>
+              </a>
             );
           }
 

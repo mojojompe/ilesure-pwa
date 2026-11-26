@@ -22,7 +22,7 @@ export interface FilterState {
   priceMin: number;
   priceMax: number;
   propertyTypes: PropertyType[];
-  /** The lister's own "distance from school" bucket. Student-facing only. */
+  /** The lister's distance-from-landmark bucket, available to all renters. */
   distance: DistanceBucket | null;
   genderRestriction: GenderRestriction | null;
   shareable: boolean;
@@ -281,27 +281,24 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 )}
               </div>
 
-              {/* The lister's own "distance from school" bucket, only meaningful
-                  to a student, so it is the one thing here that stays gated. */}
-              {isStudent && (
-                <div className="mb-6">
-                  <h3 className="text-base font-bold text-textPrimary mb-3">Distance from School</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {DISTANCE_OPTIONS.map(option => (
-                      <button
-                        key={option.value}
-                        className={`${pill(filters.distance === option.value)} w-full text-left`}
-                        onClick={() => setFilters(prev => ({
-                          ...prev,
-                          distance: prev.distance === option.value ? null : option.value,
-                        }))}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+              {/* The lister's own "distance from landmark" bucket */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-textPrimary mb-3">Distance from Landmark</h3>
+                <div className="flex flex-wrap gap-2">
+                  {DISTANCE_OPTIONS.map(option => (
+                    <button
+                      key={option.value}
+                      className={`${pill(filters.distance === option.value)} w-full text-left`}
+                      onClick={() => setFilters(prev => ({
+                        ...prev,
+                        distance: prev.distance === option.value ? null : option.value,
+                      }))}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="p-6 pb-safe border-t border-borderLight bg-background shrink-0 rounded-b-[24px]">

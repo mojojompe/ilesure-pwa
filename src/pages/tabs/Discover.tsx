@@ -14,6 +14,7 @@ import {
   ArrowRight01Icon,
   Building01Icon,
   Home01Icon,
+  Wrench01Icon,
 } from '@hugeicons/react';
 import { listingService, Listing, ListingFilter } from '../../api/listingService';
 import {
@@ -24,6 +25,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useListingStore } from '../../stores/listingStore';
 import { chatService } from '../../api/chatService';
 import { AdsCarousel, HomeHeroBanner } from '../../components/common/AdsCarousel';
+import { ServiceComingSoonModal } from '../../components/services/ServiceComingSoonModal';
 import {
   FilterModal,
   FilterState,
@@ -52,6 +54,7 @@ export function Discover() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
+  const [servicesComingSoon, setServicesComingSoon] = useState(false);
 
   const { listingFilters } = useMemo(() => {
     const filters: ListingFilter = {};
@@ -287,7 +290,13 @@ export function Discover() {
               <CategoryPillCard
                 key={cat.id}
                 category={cat}
-                onClick={() => navigate(`/category/${cat.id}`)}
+                onClick={() => {
+                  if (cat.isComingSoon) {
+                    setServicesComingSoon(true);
+                  } else {
+                    navigate(`/category/${cat.id}`);
+                  }
+                }}
               />
             ))}
           </div>
@@ -392,6 +401,31 @@ export function Discover() {
                         <AdsCarousel />
                       </div>
                     )}
+
+                    {/* Services Promo Banner – shown below "Standard Apartments" */}
+                    {group.key === 'apartment' && (
+                      <div
+                        onClick={() => navigate('/services')}
+                        className="w-full h-[130px] rounded-[24px] bg-gradient-to-br from-[#3E1F0A] to-[#5C2D10] relative overflow-hidden flex flex-row items-center px-5 shadow-clay cursor-pointer active:scale-[0.98] transition-transform"
+                      >
+                        {/* Services icon LEFT */}
+                        <div className="w-[108px] h-[108px] shrink-0 flex items-center justify-center mr-4 relative">
+                          <div className="absolute inset-2 rounded-full bg-[#E1AD01]/20" />
+                          <Wrench01Icon size={64} className="relative text-[#E8DCC4]" />
+                        </div>
+                        {/* Text RIGHT */}
+                        <div className="flex-1">
+                          <span className="bg-[#E1AD01] text-[#3E1F0A] text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mb-1.5 inline-block">
+                            Coming Soon
+                          </span>
+                          <h3 className="text-[#E8DCC4] text-[17px] font-black leading-snug">
+                            Home Services
+                          </h3>
+                          <p className="text-[#C4A88A] text-[11px] mt-0.5">Vetted artisans at your doorstep</p>
+                        </div>
+                        <ArrowRight01Icon size={18} className="text-[#E8DCC4] ml-2 shrink-0" />
+                      </div>
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -419,6 +453,11 @@ export function Discover() {
         }}
         userRole={user?.role}
         university={(user as any)?.university}
+      />
+
+      <ServiceComingSoonModal
+        isOpen={servicesComingSoon}
+        onClose={() => setServicesComingSoon(false)}
       />
     </AppShell>
   );

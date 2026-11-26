@@ -353,6 +353,13 @@ export function ListingDetail() {
   const agentName = l.companyId?.name || l.agentId?.fullName || l.landlordId?.fullName || l.agentName || l.companyName || l.agent?.fullName || 'Property Manager';
   const agentAvatar = l.companyId?.logo || l.agentId?.avatar || l.landlordId?.avatar || l.agent?.avatar;
   const cta = getBookingCTA();
+  const handleBottomCTA = () => {
+    if (isPreview) {
+      navigate('/auth/choice');
+      return;
+    }
+    cta.action();
+  };
 
   return (
     <AppShell hideTabBar>
@@ -831,18 +838,15 @@ export function ListingDetail() {
           </div>
         </div>
 
-        {/* Bottom CTA. Not in the signed-out preview: a shared link is for looking, not booking. */}
-        {!isPreview && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-borderLight z-30 pb-safe-bottom">
           <Button
             fullWidth
-            onClick={cta.action}
+            onClick={handleBottomCTA}
             className="bg-[#3E1F0A] text-[#FFF8E1] hover:bg-[#3E1F0A]/90"
           >
-            {cta.title}
+            {isPreview ? 'Book Apartment' : cta.title}
           </Button>
         </div>
-        )}
 
       </div>
 

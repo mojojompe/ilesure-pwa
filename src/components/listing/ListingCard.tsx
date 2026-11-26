@@ -90,7 +90,7 @@ export function ListingCard({
       whileTap={!isFullyBooked ? { scale: 0.97 } : {}}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={!isFullyBooked ? onPress : undefined}
-      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-black/5 bg-white ${isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
+      className={`mx-4 mb-0 relative rounded-3xl overflow-hidden shadow-[0_3px_12px_rgba(62,31,10,0.08)] border border-black/5 bg-white ${isFullyBooked ? 'opacity-60 grayscale cursor-not-allowed pointer-events-none' : 'cursor-pointer'
         }`}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
